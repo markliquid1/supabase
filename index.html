@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alternator Regulator Test Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .metric-unit {
+            font-size: 0.8em;
+            color: #a0aec0;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #2d3748;
+            text-align: center;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online { background: #48bb78; }
+        .status-offline { background: #f56565; }
+        
+        .last-update {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            margin: 50px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Alternator Regulator Dashboard</h1>
+            <p>Real-time monitoring test system</p>
+        </div>
+        
+        <div class="status-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin-bottom: 5px;">System Status</h3>
+                    <div>
+                        <span id="status-indicator" class="status-indicator status-offline"></span>
+                        <span id="status-text">Connecting...</span>
+                    </div>
+                </div>
+                <div>
+                    <strong>Device:</strong> <span id="device-id">esp32_test_001</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading">Loading dashboard...</div>
+        
+        <div id="dashboard" style="display: none;">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div id="battery-voltage" class="metric-value">--</div>
+                    <div class="metric-label">Battery Voltage <span class="metric-unit">V</span></div>
+                </div>
+                <div class="metric-card">
+                    <div id="alternator-current" class="metric-value">--</div>
+                    <div class="metric-label">Alternator Current <span class="metric-unit">A</span></div>
+                </div>
+                <div class="metric-card">
+                    <div id="engine-rpm" class="metric-value">--</div>
+                    <div class="metric-label">Engine RPM</div>
+                </div>
+                <div class="metric-card">
+                    <div id="alternator-temp" class="metric-value">--</div>
+                    <div class="metric-label">Alternator Temp <span class="metric-unit">°F</span></div>
+                </div>
+                <div class="metric-card">
+                    <div id="engine-runtime" class="metric-value">--</div>
+                    <div class="metric-label">Engine Runtime <span class="metric-unit">min</span></div>
+                </div>
+                <div class="metric-card">
+                    <div id="free-heap" class="metric-value">--</div>
+                    <div class="metric-label">Free Memory <span class="metric-unit">KB</span></div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Battery Voltage & Alternator Current (Last 24 Hours)</div>
+                <canvas id="mainChart" width="400" height="200"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Engine RPM & Temperature (Last 24 Hours)</div>
+                <canvas id="engineChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <div class="last-update">
+            Last updated: <span id="last-update">Never</span>
+        </div>
+    </div>
+
+    <script>
+        // Supabase configuration - REPLACE WITH YOUR ACTUAL VALUES
+const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
+const SUPABASE_ANON_KEY = 'your-actual-anon-key-here';
+        
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let mainChart, engineChart;
+        
+        // Initialize dashboard
+        async function initDashboard() {
+            try {
+                await loadLatestData();
+                await loadChartData();
+                setupRealtimeSubscription();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                
+                // Update every 30 seconds
+                setInterval(loadLatestData, 30000);
+                
+                updateStatus(true);
+            } catch (error) {
+                console.error('Dashboard initialization failed:', error);
+                updateStatus(false);
+            }
+        }
+        
+        // Load latest sensor data
+        async function loadLatestData() {
+            try {
+                const { data, error } = await supabase
+                    .from('sensor_data')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                
+                if (error) throw error;
+                
+                if (data && data.length > 0) {
+                    updateMetrics(data[0]);
+                    updateStatus(true);
+                }
+            } catch (error) {
+                console.error('Error loading latest data:', error);
+                updateStatus(false);
+            }
+        }
+        
+        // Load chart data
+        async function loadChartData() {
+            try {
+                const { data, error } = await supabase
+                    .from('sensor_data')
+                    .select('*')
+                    .order('created_at', { ascending: true })
+                    .limit(100); // Last 100 readings
+                
+                if (error) throw error;
+                
+                if (data) {
+                    updateCharts(data);
+                }
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+            }
+        }
+        
+        // Update metric displays
+        function updateMetrics(data) {
+            document.getElementById('battery-voltage').textContent = 
+                data.battery_voltage ? data.battery_voltage.toFixed(2) : '--';
+            document.getElementById('alternator-current').textContent = 
+                data.alternator_current ? data.alternator_current.toFixed(1) : '--';
+            document.getElementById('engine-rpm').textContent = 
+                data.engine_rpm || '--';
+            document.getElementById('alternator-temp').textContent = 
+                data.alternator_temp ? data.alternator_temp.toFixed(1) : '--';
+            document.getElementById('engine-runtime').textContent = 
+                data.engine_runtime || '--';
+            document.getElementById('free-heap').textContent = 
+                data.free_heap ? Math.round(data.free_heap / 1024) : '--';
+            
+            document.getElementById('last-update').textContent = 
+                new Date(data.created_at).toLocaleString();
+        }
+        
+        // Update charts
+        function updateCharts(data) {
+            const labels = data.map(d => new Date(d.created_at).toLocaleTimeString());
+            
+            // Main chart: Battery voltage and alternator current
+            if (mainChart) mainChart.destroy();
+            const ctx1 = document.getElementById('mainChart').getContext('2d');
+            mainChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Battery Voltage (V)',
+                        data: data.map(d => d.battery_voltage),
+                        borderColor: '#4299e1',
+                        backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Alternator Current (A)',
+                        data: data.map(d => d.alternator_current),
+                        borderColor: '#48bb78',
+                        backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    }
+                }
+            });
+            
+            // Engine chart: RPM and temperature
+            if (engineChart) engineChart.destroy();
+            const ctx2 = document.getElementById('engineChart').getContext('2d');
+            engineChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Engine RPM',
+                        data: data.map(d => d.engine_rpm),
+                        borderColor: '#ed8936',
+                        backgroundColor: 'rgba(237, 137, 54, 0.1)',
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Temperature (°F)',
+                        data: data.map(d => d.alternator_temp),
+                        borderColor: '#e53e3e',
+                        backgroundColor: 'rgba(229, 62, 62, 0.1)',
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update status indicator
+        function updateStatus(online) {
+            const indicator = document.getElementById('status-indicator');
+            const text = document.getElementById('status-text');
+            
+            if (online) {
+                indicator.className = 'status-indicator status-online';
+                text.textContent = 'Online';
+            } else {
+                indicator.className = 'status-indicator status-offline';
+                text.textContent = 'Offline';
+            }
+        }
+        
+        // Setup real-time subscription
+        function setupRealtimeSubscription() {
+            supabase
+                .channel('sensor_data_changes')
+                .on('postgres_changes', 
+                    { event: 'INSERT', schema: 'public', table: 'sensor_data' },
+                    (payload) => {
+                        console.log('New data received:', payload.new);
+                        updateMetrics(payload.new);
+                        // Optionally reload chart data for real-time updates
+                        loadChartData();
+                    }
+                )
+                .subscribe();
+        }
+        
+        // Start the dashboard
+        initDashboard();
+    </script>
+</body>
+</html>
