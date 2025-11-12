@@ -44,18 +44,24 @@
             document.getElementById('error-message').style.display = 'block';
         }
 
-        // Validate token and get device_uid
+        // Validate token using Edge Function and get device_uid
         async function validateToken(token) {
             try {
-                const { data, error } = await supabase
-                    .from('devices')
-                    .select('device_uid, user_id')
-                    .eq('auth_token', token)
-                    .single();
+                const response = await fetch('https://qnbekuaoweuteylitzvo.supabase.co/functions/v1/validate-token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2NTI4NjMsImV4cCI6MjA1MTIyODg2M30.iYsOpXZrOCzqhAqhvXxQzCsXkDCZvCl5eRIajZfgV1M'
+                    },
+                    body: JSON.stringify({ token: token })
+                });
 
-                if (error) throw error;
-                if (!data) throw new Error('Invalid token');
-
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Invalid token');
+                }
+                
+                const data = await response.json();
                 return data.device_uid;
             } catch (error) {
                 console.error('Token validation error:', error);
