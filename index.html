@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My History</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
     <div class="container">
         <div class="settings-card">
             <div class="section-title">My History</div>
-            
-            <div id="error-message" style="display:none; color:#f44336; margin:15px 0; padding:10px; background:#ffebee; border-radius:4px;"></div>
+
+            <div id="error-message"
+                style="display:none; color:#f44336; margin:15px 0; padding:10px; background:#ffebee; border-radius:4px;">
+            </div>
             <div id="loading-message" style="margin:15px 0; color:#666;">Loading data...</div>
-            
+
             <div id="chart-container" style="display:none; margin:20px 0;">
                 <canvas id="voltageChart"></canvas>
             </div>
@@ -26,9 +32,9 @@
         // Supabase configuration
         const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
-        
+
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
+
         let chart = null;
 
         // Parse token from URL
@@ -60,7 +66,7 @@
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Invalid token');
                 }
-                
+
                 const data = await response.json();
                 return data.device_uid;
             } catch (error) {
@@ -89,7 +95,7 @@
         // Create Chart.js chart
         function createChart(data) {
             const ctx = document.getElementById('voltageChart').getContext('2d');
-            
+
             // Extract timestamps and voltage data
             const timestamps = data.map(d => new Date(d.timestamp));
             const minVoltages = data.map(d => d.batt_volt_min);
@@ -175,7 +181,7 @@
         // Main initialization
         async function init() {
             const token = getTokenFromUrl();
-            
+
             if (!token) {
                 showError('No authentication token provided');
                 return;
@@ -184,10 +190,10 @@
             try {
                 // Validate token and get device_uid
                 const deviceUid = await validateToken(token);
-                
+
                 // Fetch sensor history
                 const sensorData = await fetchSensorHistory(deviceUid);
-                
+
                 if (!sensorData || sensorData.length === 0) {
                     showError('No sensor data available yet. Start collecting data to see your history!');
                     return;
@@ -195,7 +201,7 @@
 
                 // Create chart
                 createChart(sensorData);
-                
+
             } catch (error) {
                 showError(error.message);
             }
@@ -205,4 +211,5 @@
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
+
 </html>
