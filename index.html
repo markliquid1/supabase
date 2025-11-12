@@ -76,20 +76,30 @@
 
         // Fetch sensor history for device
         async function fetchSensorHistory(deviceUid) {
-            try {
-                const { data, error } = await supabase
-                    .from('sensor_history')
-                    .select('timestamp, batt_volt_min, batt_volt_max, batt_volt_avg')
-                    .eq('device_uid', deviceUid)
-                    .order('timestamp', { ascending: true });
+    try {
+        const { data, error } = await supabase
+            .from('sensor_history')
+            .select('timestamp, batt_volt_min, batt_volt_max, batt_volt_avg')
+            .eq('device_uid', deviceUid)
+            .order('timestamp', { ascending: true });
 
-                if (error) throw error;
-                return data;
-            } catch (error) {
-                console.error('Data fetch error:', error);
-                throw new Error('Failed to fetch sensor data');
-            }
-        }
+        if (error) throw error;
+        
+        // Filter out invalid timestamps (before 2020 or after 2100)
+        const minDate = new Date('2020-01-01').getTime();
+        const maxDate = new Date('2100-01-01').getTime();
+        
+        const filtered = data.filter(d => {
+            const ts = new Date(d.timestamp).getTime();
+            return ts >= minDate && ts <= maxDate;
+        });
+        
+        return filtered;
+    } catch (error) {
+        console.error('Data fetch error:', error);
+        throw new Error('Failed to fetch sensor data');
+    }
+}
 
         // Create Chart.js chart
         function createChart(data) {
