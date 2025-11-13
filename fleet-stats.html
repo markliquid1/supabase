@@ -35,7 +35,7 @@
 
                 <hr />
                 <div class="form-row">
-                    <div class="form-label">Active Devices (Last 24h)</div>
+                    <div class="form-label">Total Registered Devices</div>
                     <div class="form-input">
                         <span id="fleet-active-devices" style="font-weight: bold; font-size: 18px;">-</span>
                     </div>
@@ -92,20 +92,6 @@
 
                 if (devicesError) throw devicesError;
 
-                // 2. Active Devices (Last 24h)
-                const twentyFourHoursAgo = Math.floor(Date.now() / 1000) - (24 * 60 * 60);
-                
-                const { data: activeData, error: activeError } = await supabase
-                    .from('sensor_history')
-                    .select('device_uid')
-                    .filter('timestamp', 'gt', twentyFourHoursAgo);
-
-                if (activeError) throw activeError;
-
-                // Count distinct device_uids
-                const uniqueDevices = new Set(activeData.map(d => d.device_uid));
-                const activeDevices = uniqueDevices.size;
-
                 // 3. Average Battery Voltage (Lifetime)
                 const { data: voltageData, error: voltageError } = await supabase
                     .rpc('avg_battery_voltage');
@@ -146,7 +132,6 @@
 
                 return {
                     totalDevices,
-                    activeDevices,
                     avgVoltage,
                     avgSoc
                 };
@@ -160,7 +145,7 @@
         // Display fleet statistics
         function displayStats(stats) {
             document.getElementById('fleet-total-devices').textContent = stats.totalDevices || '0';
-            document.getElementById('fleet-active-devices').textContent = stats.activeDevices || '0';
+            document.getElementById('fleet-active-devices').textContent = stats.totalDevices || '0';
             
             if (stats.avgVoltage !== null) {
                 document.getElementById('fleet-avg-voltage').textContent = stats.avgVoltage.toFixed(2) + ' V';
