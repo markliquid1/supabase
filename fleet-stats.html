@@ -101,8 +101,8 @@
 
                 if (allDataError) throw allDataError;
 
-                const sevenDaysAgo = Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60);
-                const recentData = allData.filter(d => d.timestamp > sevenDaysAgo);
+                const sevenDaysAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000));
+                const recentData = allData.filter(d => new Date(d.timestamp) > sevenDaysAgo);
                 const uniqueDevices = new Set(recentData.map(d => d.device_uid));
                 const activeDevices = uniqueDevices.size;
 
