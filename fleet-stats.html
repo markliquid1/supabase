@@ -94,18 +94,16 @@
                 if (devicesError) throw devicesError;
 
 
-                // 2. Active Devices (Last 7 days)
-                const sevenDaysAgo = Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60);
-
-                const { data: activeData, error: activeError } = await supabase
+                // 2. Active Devices (Last 7 days) - fetch all, filter client-side
+                const { data: allData, error: allDataError } = await supabase
                     .from('sensor_history')
-                    .select('device_uid')
-                    .gt('timestamp', sevenDaysAgo);
+                    .select('device_uid, timestamp');
 
-                if (activeError) throw activeError;
+                if (allDataError) throw allDataError;
 
-                // Count distinct device_uids
-                const uniqueDevices = new Set(activeData.map(d => d.device_uid));
+                const sevenDaysAgo = Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60);
+                const recentData = allData.filter(d => d.timestamp > sevenDaysAgo);
+                const uniqueDevices = new Set(recentData.map(d => d.device_uid));
                 const activeDevices = uniqueDevices.size;
 
                 // 3. Average Battery Voltage (Lifetime)
