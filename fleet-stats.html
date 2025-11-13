@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Statistics</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="settings-card">
+            <div class="section-title">Fleet Statistics</div>
+
+            <p style="margin: 15px 0; color: #666;">Global statistics from all active devices in the X Engineering fleet.</p>
+
+            <div id="error-message"
+                style="display:none; color:#f44336; margin:15px 0; padding:10px; background:#ffebee; border-radius:4px;">
+            </div>
+            <div id="loading-message" style="margin:15px 0; color:#666;">Loading fleet statistics...</div>
+
+            <div id="stats-content" style="display:none;">
+                <!-- Fleet Overview -->
+                <div class="section-title">Fleet Overview</div>
+
+                <hr />
+                <div class="form-row">
+                    <div class="form-label">Total Registered Devices</div>
+                    <div class="form-input">
+                        <span id="fleet-total-devices" style="font-weight: bold; font-size: 18px;">-</span>
+                    </div>
+                </div>
+
+                <hr />
+                <div class="form-row">
+                    <div class="form-label">Active Devices (Last 24h)</div>
+                    <div class="form-input">
+                        <span id="fleet-active-devices" style="font-weight: bold; font-size: 18px;">-</span>
+                    </div>
+                </div>
+
+                <!-- Fleet Averages -->
+                <div class="section-title">Fleet Averages (Lifetime, Time-Weighted)</div>
+
+                <hr />
+                <div class="form-row">
+                    <div class="form-label">Average Battery Voltage</div>
+                    <div class="form-input">
+                        <span id="fleet-avg-voltage" style="font-weight: bold; font-size: 18px;">-</span>
+                    </div>
+                </div>
+
+                <hr />
+                <div class="form-row">
+                    <div class="form-label">Average Battery SOC</div>
+                    <div class="form-input">
+                        <span id="fleet-avg-soc" style="font-weight: bold; font-size: 18px;">-</span>
+                    </div>
+                </div>
+
+                <p style="margin-top: 30px; font-size: 13px; color: #888;">
+                    Fleet statistics represent all registered X Engineering Alternator Regulator users.
+                    Averages are time-weighted across all sensor readings.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Show error message
+        function showError(message) {
+            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-message').style.display = 'block';
+        }
+
+        // Fetch fleet statistics
+        async function fetchFleetStats() {
+            try {
+                // 1. Total Registered Devices
+                const { count: totalDevices, error: devicesError } = await supabase
+                    .from('devices')
+                    .select('*', { count: 'exact', head: true });
+
+                if (devicesError) throw devicesError;
+
+                // 2. Active Devices (Last 24h)
+                const twentyFourHoursAgo = Math.floor(Date.now() / 1000) - (24 * 60 * 60);
+                
+                const { data: activeData, error: activeError } = await supabase
+                    .from('sensor_history')
+                    .select('device_uid')
+                    .gt('timestamp', twentyFourHoursAgo);
+
+                if (activeError) throw activeError;
+
+                // Count distinct device_uids
+                const uniqueDevices = new Set(activeData.map(d => d.device_uid));
+                const activeDevices = uniqueDevices.size;
+
+                // 3. Average Battery Voltage (Lifetime)
+                const { data: voltageData, error: voltageError } = await supabase
+                    .rpc('avg_battery_voltage');
+
+                let avgVoltage = null;
+                if (!voltageError && voltageData !== null) {
+                    avgVoltage = voltageData;
+                } else {
+                    // Fallback: calculate client-side
+                    const { data: allVoltages, error: voltFetchError } = await supabase
+                        .from('sensor_history')
+                        .select('batt_volt_avg');
+                    
+                    if (!voltFetchError && allVoltages && allVoltages.length > 0) {
+                        const sum = allVoltages.reduce((acc, d) => acc + (d.batt_volt_avg || 0), 0);
+                        avgVoltage = sum / allVoltages.length;
+                    }
+                }
+
+                // 4. Average Battery SOC (Lifetime)
+                const { data: socData, error: socError } = await supabase
+                    .rpc('avg_battery_soc');
+
+                let avgSoc = null;
+                if (!socError && socData !== null) {
+                    avgSoc = socData;
+                } else {
+                    // Fallback: calculate client-side
+                    const { data: allSoc, error: socFetchError } = await supabase
+                        .from('sensor_history')
+                        .select('soc_avg');
+                    
+                    if (!socFetchError && allSoc && allSoc.length > 0) {
+                        const sum = allSoc.reduce((acc, d) => acc + (d.soc_avg || 0), 0);
+                        avgSoc = sum / allSoc.length;
+                    }
+                }
+
+                return {
+                    totalDevices,
+                    activeDevices,
+                    avgVoltage,
+                    avgSoc
+                };
+
+            } catch (error) {
+                console.error('Fleet stats fetch error:', error);
+                throw new Error('Failed to fetch fleet statistics');
+            }
+        }
+
+        // Display fleet statistics
+        function displayStats(stats) {
+            document.getElementById('fleet-total-devices').textContent = stats.totalDevices || '0';
+            document.getElementById('fleet-active-devices').textContent = stats.activeDevices || '0';
+            
+            if (stats.avgVoltage !== null) {
+                document.getElementById('fleet-avg-voltage').textContent = stats.avgVoltage.toFixed(2) + ' V';
+            } else {
+                document.getElementById('fleet-avg-voltage').textContent = 'No data';
+            }
+
+            if (stats.avgSoc !== null) {
+                document.getElementById('fleet-avg-soc').textContent = stats.avgSoc.toFixed(1) + ' %';
+            } else {
+                document.getElementById('fleet-avg-soc').textContent = 'No data';
+            }
+
+            // Show stats, hide loading
+            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('stats-content').style.display = 'block';
+        }
+
+        // Main initialization
+        async function init() {
+            try {
+                const stats = await fetchFleetStats();
+                displayStats(stats);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Run on page load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
