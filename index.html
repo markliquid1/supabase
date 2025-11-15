@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
             padding: 20px;
             background: #f5f5f5;
@@ -18,6 +18,8 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: none !important;
+            width: 100% !important;
         }
         .section-title {
             font-size: 24px;
@@ -27,8 +29,8 @@
             border-bottom: 3px solid #1976d2;
         }
         .time-range-section {
-            margin: 15px 0;
-            padding: 10px;
+            margin: 10px 0;
+            padding: 8px 10px;
             background: #fafafa;
             border-radius: 4px;
             display: flex;
@@ -104,44 +106,39 @@
             background: #e0e0e0;
         }
         .variable-controls {
-            margin: 15px 0;
-            padding: 15px;
+            margin: 10px 0;
+            padding: 10px;
             background: #fafafa;
             border-radius: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .variable-row {
             display: flex;
             align-items: center;
-            margin: 10px 0;
-            padding: 8px;
+            padding: 6px 12px;
             background: white;
             border-radius: 4px;
             border-left: 4px solid #ddd;
-            flex-wrap: wrap;
-            gap: 10px;
+            flex: 0 1 auto;
+            min-width: 180px;
         }
         .variable-row:hover {
             background: #f5f5f5;
         }
         .variable-master {
-            min-width: 160px;
             font-weight: 500;
-            font-size: 14px;
+            font-size: 13px;
             display: flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
-        }
-        @media (max-width: 768px) {
-            .variable-master {
-                min-width: 120px;
-                font-size: 13px;
-            }
+            white-space: nowrap;
         }
         .chart-section {
-            margin: 20px 0;
-            margin-bottom: 25px;
-            padding-bottom: 20px;
+            margin: 15px 0;
+            padding-bottom: 15px;
             border-bottom: 1px solid #e0e0e0;
             height: 500px;
             position: relative;
@@ -150,16 +147,33 @@
             .chart-section {
                 height: 400px;
             }
+            .variable-row {
+                min-width: 100%;
+            }
         }
         .control-group-label {
             font-weight: 600;
-            color: #333;
-            margin-top: 10px;
-            margin-bottom: 5px;
-            padding: 8px 10px;
-            background: #e8f5e9;
+            color: #555;
+            margin-top: 8px;
+            margin-bottom: 4px;
+            padding: 6px 10px;
+            background: #f0f0f0;
             border-radius: 4px;
-            font-size: 13px;
+            font-size: 12px;
+        }
+        .toggle-tools-btn {
+            padding: 4px 12px;
+            background: #757575;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .toggle-tools-btn:hover {
+            background: #616161;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
@@ -174,22 +188,11 @@
 
         <div id="error-message" style="display:none; color:#f44336; margin:15px 0; padding:10px; background:#ffebee; border-radius:4px;"></div>
 
-        <!-- ==================== PLOT 1: Battery Metrics ==================== -->
-        <div class="chart-section">
-            <div id="loadingChart1" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
-                Loading chart...
-            </div>
-            <canvas id="chart1" style="display: none;"></canvas>
-        </div>
-
-        <div style="margin: 15px 0; text-align: center;">
-            <button id="toggleTools1" style="padding: 6px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-                ▼ Show Plot Editing Tools
-            </button>
-        </div>
+        <!-- Plot Editing Tools Button (top left, small) -->
+        <button id="toggleTools1" class="toggle-tools-btn">▼ Plot Tools</button>
 
         <div id="plotTools1" style="display: none;">
-            <div class="control-group-label">⏱️ Time Range Controls</div>
+            <div class="control-group-label">Time Range Controls</div>
             
             <div class="time-range-section">
                 <label>Show last:</label>
@@ -211,7 +214,7 @@
                 <button class="preset-btn preset1" data-value="30" data-unit="days">Last Month</button>
             </div>
 
-            <div class="control-group-label">📊 Y-Axis Controls</div>
+            <div class="control-group-label">Y-Axis Controls</div>
 
             <div class="time-range-section">
                 <label style="font-weight: 500;">Y-axis:</label>
@@ -227,7 +230,7 @@
                 <button id="applyYAxis1" style="margin-left: 5px;" disabled>Apply</button>
             </div>
 
-            <div class="control-group-label">📈 Variables</div>
+            <div class="control-group-label">Variables</div>
 
             <div class="variable-controls">
                 <div class="variable-row" style="border-left-color: #ff6384;">
@@ -260,148 +263,12 @@
             </div>
         </div>
 
-        <!-- ==================== PLOT 2: Battery Voltage ==================== -->
+        <!-- Chart -->
         <div class="chart-section">
-            <div id="loadingChart2" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
+            <div id="loadingChart1" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
                 Loading chart...
             </div>
-            <canvas id="chart2" style="display: none;"></canvas>
-        </div>
-
-        <div style="margin: 15px 0; text-align: center;">
-            <button id="toggleTools2" style="padding: 6px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-                ▼ Show Plot Editing Tools
-            </button>
-        </div>
-
-        <div id="plotTools2" style="display: none;">
-            <div class="control-group-label">⏱️ Time Range Controls</div>
-            
-            <div class="time-range-section">
-                <label>Show last:</label>
-                <input type="number" id="timeValue2" value="24" min="1">
-                <div class="time-unit-box plot2-unit" data-unit="seconds">sec</div>
-                <div class="time-unit-box plot2-unit" data-unit="minutes">min</div>
-                <div class="time-unit-box plot2-unit active" data-unit="hours">hrs</div>
-                <div class="time-unit-box plot2-unit" data-unit="days">days</div>
-                <button id="applyTimeRange2">Apply</button>
-                <button id="panLeft2" class="secondary">◀</button>
-                <button id="panRight2" class="secondary">▶</button>
-            </div>
-
-            <div class="time-range-section">
-                <label>Quick:</label>
-                <button class="preset-btn preset2" data-value="1" data-unit="hours">Last Hour</button>
-                <button class="preset-btn preset2" data-value="24" data-unit="hours">Last Day</button>
-                <button class="preset-btn preset2" data-value="7" data-unit="days">Last Week</button>
-                <button class="preset-btn preset2" data-value="30" data-unit="days">Last Month</button>
-            </div>
-
-            <div class="control-group-label">📊 Y-Axis Controls</div>
-
-            <div class="time-range-section">
-                <label style="font-weight: 500;">Y-axis:</label>
-                <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
-                    <input type="checkbox" id="yAxisAutoScale2" checked> Auto scale
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
-                    Min: <input type="number" id="yAxisMin2" style="width: 70px;" placeholder="auto" disabled>
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px;">
-                    Max: <input type="number" id="yAxisMax2" style="width: 70px;" placeholder="auto" disabled>
-                </label>
-                <button id="applyYAxis2" style="margin-left: 5px;" disabled>Apply</button>
-            </div>
-
-            <div class="control-group-label">📈 Variables</div>
-
-            <div class="variable-controls">
-                <div class="variable-row" style="border-left-color: #9966ff;">
-                    <label class="variable-master">
-                        <input type="checkbox" class="variable-toggle2" data-group="batteryVoltage" checked> 
-                        <strong>Battery Voltage</strong>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== PLOT 3: Temperature ==================== -->
-        <div class="chart-section">
-            <div id="loadingChart3" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
-                Loading chart...
-            </div>
-            <canvas id="chart3" style="display: none;"></canvas>
-        </div>
-
-        <div style="margin: 15px 0; text-align: center;">
-            <button id="toggleTools3" style="padding: 6px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-                ▼ Show Plot Editing Tools
-            </button>
-        </div>
-
-        <div id="plotTools3" style="display: none;">
-            <div class="control-group-label">⏱️ Time Range Controls</div>
-            
-            <div class="time-range-section">
-                <label>Show last:</label>
-                <input type="number" id="timeValue3" value="24" min="1">
-                <div class="time-unit-box plot3-unit" data-unit="seconds">sec</div>
-                <div class="time-unit-box plot3-unit" data-unit="minutes">min</div>
-                <div class="time-unit-box plot3-unit active" data-unit="hours">hrs</div>
-                <div class="time-unit-box plot3-unit" data-unit="days">days</div>
-                <button id="applyTimeRange3">Apply</button>
-                <button id="panLeft3" class="secondary">◀</button>
-                <button id="panRight3" class="secondary">▶</button>
-            </div>
-
-            <div class="time-range-section">
-                <label>Quick:</label>
-                <button class="preset-btn preset3" data-value="1" data-unit="hours">Last Hour</button>
-                <button class="preset-btn preset3" data-value="24" data-unit="hours">Last Day</button>
-                <button class="preset-btn preset3" data-value="7" data-unit="days">Last Week</button>
-                <button class="preset-btn preset3" data-value="30" data-unit="days">Last Month</button>
-            </div>
-
-            <div class="control-group-label">📊 Y-Axis Controls</div>
-
-            <div class="time-range-section">
-                <label style="font-weight: 500;">Y-axis:</label>
-                <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
-                    <input type="checkbox" id="yAxisAutoScale3" checked> Auto scale
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
-                    Min: <input type="number" id="yAxisMin3" style="width: 70px;" placeholder="auto" disabled>
-                </label>
-                <label style="display: flex; align-items: center; gap: 5px;">
-                    Max: <input type="number" id="yAxisMax3" style="width: 70px;" placeholder="auto" disabled>
-                </label>
-                <button id="applyYAxis3" style="margin-left: 5px;" disabled>Apply</button>
-            </div>
-
-            <div class="control-group-label">📈 Variables</div>
-
-            <div class="variable-controls">
-                <div class="variable-row" style="border-left-color: #ff6384;">
-                    <label class="variable-master">
-                        <input type="checkbox" class="variable-toggle3" data-group="TempToUse" checked> 
-                        <strong>TempToUse</strong>
-                    </label>
-                </div>
-
-                <div class="variable-row" style="border-left-color: #36a2eb;">
-                    <label class="variable-master">
-                        <input type="checkbox" class="variable-toggle3" data-group="temperatureThermistor"> 
-                        <strong>temperatureThermistor</strong>
-                    </label>
-                </div>
-
-                <div class="variable-row" style="border-left-color: #ffce56;">
-                    <label class="variable-master">
-                        <input type="checkbox" class="variable-toggle3" data-group="ambientTemp"> 
-                        <strong>ambientTemp</strong>
-                    </label>
-                </div>
-            </div>
+            <canvas id="chart1" style="display: none;"></canvas>
         </div>
 
     </div>
@@ -415,8 +282,6 @@
         
         let fullData = [];
         let chart1 = null;
-        let chart2 = null;
-        let chart3 = null;
 
         // Parse token from URL
         function getTokenFromUrl() {
@@ -427,8 +292,6 @@
         // Show error message
         function showError(message) {
             document.getElementById('loadingChart1').style.display = 'none';
-            document.getElementById('loadingChart2').style.display = 'none';
-            document.getElementById('loadingChart3').style.display = 'none';
             document.getElementById('error-message').textContent = message;
             document.getElementById('error-message').style.display = 'block';
         }
@@ -468,11 +331,7 @@
                         soc_min, soc_max, soc_avg,
                         batt_curr_min, batt_curr_max, batt_curr_avg,
                         alt_curr_min, alt_curr_max, alt_curr_avg,
-                        victron_curr_min, victron_curr_max, victron_curr_avg,
-                        batt_volt_min, batt_volt_max, batt_volt_avg,
-                        alt_temp_min, alt_temp_max, alt_temp_avg,
-                        temp_therm_min, temp_therm_max, temp_therm_avg,
-                        amb_temp_min, amb_temp_max, amb_temp_avg
+                        victron_curr_min, victron_curr_max, victron_curr_avg
                     `)
                     .eq('device_uid', deviceUid)
                     .order('timestamp', { ascending: true });
@@ -512,7 +371,7 @@
             return data.filter(d => new Date(d.timestamp) >= cutoff);
         }
 
-        // Create Chart 1: Battery Metrics (NO VOLTAGE!)
+        // Create Chart 1: Battery Metrics
         function createChart1(data) {
             const ctx = document.getElementById('chart1').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
@@ -744,323 +603,7 @@
             document.getElementById('chart1').style.display = 'block';
         }
 
-        // Create Chart 2: Battery Voltage
-        function createChart2(data) {
-            const ctx = document.getElementById('chart2').getContext('2d');
-            const timestamps = data.map(d => new Date(d.timestamp));
-
-            const checkedVars = new Set();
-            document.querySelectorAll('.variable-toggle2:checked').forEach(cb => {
-                checkedVars.add(cb.dataset.group);
-            });
-
-            const datasets = [];
-
-            if (checkedVars.has('batteryVoltage')) {
-                datasets.push(
-                    {
-                        label: 'Batt Volt Min',
-                        data: data.map(d => d.batt_volt_min),
-                        borderColor: 'rgba(153, 102, 255, 0.3)',
-                        backgroundColor: 'rgba(153, 102, 255, 0)',
-                        pointRadius: 0,
-                        borderWidth: 1,
-                        fill: 1,
-                        order: 2
-                    },
-                    {
-                        label: 'Batt Volt Max',
-                        data: data.map(d => d.batt_volt_max),
-                        borderColor: 'rgba(153, 102, 255, 0.3)',
-                        backgroundColor: 'rgba(153, 102, 255, 0.3)',
-                        pointRadius: 0,
-                        borderWidth: 1,
-                        fill: '-1',
-                        order: 2
-                    },
-                    {
-                        label: 'Batt Volt Avg (V)',
-                        data: data.map(d => d.batt_volt_avg),
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        backgroundColor: 'rgba(153, 102, 255, 1)',
-                        pointRadius: 2,
-                        borderWidth: 2,
-                        fill: false,
-                        order: 1
-                    }
-                );
-            }
-
-            if (chart2) chart2.destroy();
-
-            chart2 = new Chart(ctx, {
-                type: 'line',
-                data: { labels: timestamps, datasets: datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            enabled: true,
-                            mode: 'nearest',
-                            intersect: false,
-                            callbacks: {
-                                title: function(items) {
-                                    return new Date(items[0].parsed.x).toLocaleString();
-                                }
-                            }
-                        },
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                pointStyleWidth: 6,
-                                padding: 8,
-                                font: { size: 10 },
-                                filter: function(item, chart) {
-                                    return item.text.includes('Avg');
-                                }
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Battery Voltage',
-                            font: { size: 16 }
-                        },
-                        zoom: {
-                            zoom: {
-                                wheel: { enabled: true },
-                                pinch: { enabled: true },
-                                mode: 'x'
-                            },
-                            pan: {
-                                enabled: true,
-                                mode: 'x',
-                                modifierKey: null,
-                                threshold: 0
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'hour',
-                                displayFormats: { hour: 'MMM d, HH:mm' }
-                            }
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            beginAtZero: false
-                        }
-                    }
-                }
-            });
-
-            document.getElementById('loadingChart2').style.display = 'none';
-            document.getElementById('chart2').style.display = 'block';
-        }
-
-        // Create Chart 3: Temperature
-        function createChart3(data) {
-            const ctx = document.getElementById('chart3').getContext('2d');
-            const timestamps = data.map(d => new Date(d.timestamp));
-
-            const checkedVars = new Set();
-            document.querySelectorAll('.variable-toggle3:checked').forEach(cb => {
-                checkedVars.add(cb.dataset.group);
-            });
-
-            const datasets = [];
-
-            if (checkedVars.has('TempToUse')) {
-                datasets.push(
-                    {
-                        label: 'TempToUse Min',
-                        data: data.map(d => d.alt_temp_min),
-                        borderColor: 'rgba(255, 99, 132, 0.3)',
-                        backgroundColor: 'rgba(255, 99, 132, 0)',
-                        pointRadius: 0,
-                        borderWidth: 1,
-                        fill: 1,
-                        order: 2
-                    },
-                    {
-                        label: 'TempToUse Max',
-                        data: data.map(d => d.alt_temp_max),
-                        borderColor: 'rgba(255, 99, 132, 0.3)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.3)',
-                        pointRadius: 0,
-                        borderWidth: 1,
-                        fill: '-1',
-                        order: 2
-                    },
-                    {
-                        label: 'TempToUse Avg (°F)',
-                        data: data.map(d => d.alt_temp_avg),
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 1)',
-                        pointRadius: 2,
-                        borderWidth: 2,
-                        fill: false,
-                        order: 1
-                    }
-                );
-            }
-
-            if (checkedVars.has('temperatureThermistor')) {
-                datasets.push(
-                    {
-                        label: 'Temp Therm Min',
-                        data: data.map(d => d.temp_therm_min),
-                        borderColor: 'rgba(54, 162, 235, 0.3)',
-                        backgroundColor: 'rgba(54, 162, 235, 0)',
-                        pointRadius: 0,
-                        borderWidth: 1,
-                        fill: 1,
-                        order: 2
-                    },
-                    {
-                        label: 'Temp Therm Max',
-                        data: data.map(d => d.temp_therm_max),
-                        borderColor: 'rgba(54, 162, 235, 0.3)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.3)',
-                        pointRadius: 0,
-                        borderWidth: 1,
-                        fill: '-1',
-                        order: 2
-                    },
-                    {
-                        label: 'Temp Therm Avg (°F)',
-                        data: data.map(d => d.temp_therm_avg),
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        backgroundColor: 'rgba(54, 162, 235, 1)',
-                        pointRadius: 2,
-                        borderWidth: 2,
-                        fill: false,
-                        order: 1
-                    }
-                );
-            }
-
-            if (checkedVars.has('ambientTemp')) {
-                datasets.push(
-                    {
-                        label: 'Ambient Temp Min',
-                        data: data.map(d => d.amb_temp_min),
-                        borderColor: 'rgba(255, 206, 86, 0.3)',
-                        backgroundColor: 'rgba(255, 206, 86, 0)',
-                        pointRadius: 0,
-                        borderWidth: 1,
-                        fill: 1,
-                        order: 2
-                    },
-                    {
-                        label: 'Ambient Temp Max',
-                        data: data.map(d => d.amb_temp_max),
-                        borderColor: 'rgba(255, 206, 86, 0.3)',
-                        backgroundColor: 'rgba(255, 206, 86, 0.3)',
-                        pointRadius: 0,
-                        borderWidth: 1,
-                        fill: '-1',
-                        order: 2
-                    },
-                    {
-                        label: 'Ambient Temp Avg (°F)',
-                        data: data.map(d => d.amb_temp_avg),
-                        borderColor: 'rgba(255, 206, 86, 1)',
-                        backgroundColor: 'rgba(255, 206, 86, 1)',
-                        pointRadius: 2,
-                        borderWidth: 2,
-                        fill: false,
-                        order: 1
-                    }
-                );
-            }
-
-            if (chart3) chart3.destroy();
-
-            chart3 = new Chart(ctx, {
-                type: 'line',
-                data: { labels: timestamps, datasets: datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            enabled: true,
-                            mode: 'nearest',
-                            intersect: false,
-                            callbacks: {
-                                title: function(items) {
-                                    return new Date(items[0].parsed.x).toLocaleString();
-                                }
-                            }
-                        },
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                pointStyleWidth: 6,
-                                padding: 8,
-                                font: { size: 10 },
-                                filter: function(item, chart) {
-                                    return item.text.includes('Avg');
-                                }
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Temperature',
-                            font: { size: 16 }
-                        },
-                        zoom: {
-                            zoom: {
-                                wheel: { enabled: true },
-                                pinch: { enabled: true },
-                                mode: 'x'
-                            },
-                            pan: {
-                                enabled: true,
-                                mode: 'x',
-                                modifierKey: null,
-                                threshold: 0
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'hour',
-                                displayFormats: { hour: 'MMM d, HH:mm' }
-                            }
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            beginAtZero: false
-                        }
-                    }
-                }
-            });
-
-            document.getElementById('loadingChart3').style.display = 'none';
-            document.getElementById('chart3').style.display = 'block';
-        }
-
-        // Update chart functions
+        // Update chart
         function updateChart1() {
             const timeValue = parseInt(document.getElementById('timeValue1').value);
             const activeUnit = document.querySelector('.plot1-unit.active');
@@ -1069,45 +612,15 @@
             createChart1(filteredData);
         }
 
-        function updateChart2() {
-            const timeValue = parseInt(document.getElementById('timeValue2').value);
-            const activeUnit = document.querySelector('.plot2-unit.active');
-            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart2(filteredData);
-        }
-
-        function updateChart3() {
-            const timeValue = parseInt(document.getElementById('timeValue3').value);
-            const activeUnit = document.querySelector('.plot3-unit.active');
-            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart3(filteredData);
-        }
-
         // Toggle controls
         document.getElementById('toggleTools1').addEventListener('click', function() {
             const tools = document.getElementById('plotTools1');
             const isHidden = tools.style.display === 'none';
             tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Editing Tools' : '▼ Show Plot Editing Tools';
+            this.textContent = isHidden ? '▲ Plot Tools' : '▼ Plot Tools';
         });
 
-        document.getElementById('toggleTools2').addEventListener('click', function() {
-            const tools = document.getElementById('plotTools2');
-            const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Editing Tools' : '▼ Show Plot Editing Tools';
-        });
-
-        document.getElementById('toggleTools3').addEventListener('click', function() {
-            const tools = document.getElementById('plotTools3');
-            const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Editing Tools' : '▼ Show Plot Editing Tools';
-        });
-
-        // Preset buttons for plot 1
+        // Preset buttons
         document.querySelectorAll('.preset1').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.getElementById('timeValue1').value = this.dataset.value;
@@ -1115,28 +628,6 @@
                     box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
                 });
                 updateChart1();
-            });
-        });
-
-        // Preset buttons for plot 2
-        document.querySelectorAll('.preset2').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('timeValue2').value = this.dataset.value;
-                document.querySelectorAll('.plot2-unit').forEach(box => {
-                    box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
-                });
-                updateChart2();
-            });
-        });
-
-        // Preset buttons for plot 3
-        document.querySelectorAll('.preset3').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('timeValue3').value = this.dataset.value;
-                document.querySelectorAll('.plot3-unit').forEach(box => {
-                    box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
-                });
-                updateChart3();
             });
         });
 
@@ -1148,47 +639,23 @@
             });
         });
 
-        document.querySelectorAll('.plot2-unit').forEach(box => {
-            box.addEventListener('click', function() {
-                document.querySelectorAll('.plot2-unit').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        document.querySelectorAll('.plot3-unit').forEach(box => {
-            box.addEventListener('click', function() {
-                document.querySelectorAll('.plot3-unit').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        // Apply buttons
+        // Apply button
         document.getElementById('applyTimeRange1').addEventListener('click', updateChart1);
-        document.getElementById('applyTimeRange2').addEventListener('click', updateChart2);
-        document.getElementById('applyTimeRange3').addEventListener('click', updateChart3);
 
         // Pan buttons
-        document.getElementById('panLeft1').addEventListener('click', () => { if (chart1) chart1.pan({x: -100}, undefined, 'default'); });
-        document.getElementById('panRight1').addEventListener('click', () => { if (chart1) chart1.pan({x: 100}, undefined, 'default'); });
-        document.getElementById('panLeft2').addEventListener('click', () => { if (chart2) chart2.pan({x: -100}, undefined, 'default'); });
-        document.getElementById('panRight2').addEventListener('click', () => { if (chart2) chart2.pan({x: 100}, undefined, 'default'); });
-        document.getElementById('panLeft3').addEventListener('click', () => { if (chart3) chart3.pan({x: -100}, undefined, 'default'); });
-        document.getElementById('panRight3').addEventListener('click', () => { if (chart3) chart3.pan({x: 100}, undefined, 'default'); });
+        document.getElementById('panLeft1').addEventListener('click', () => { 
+            if (chart1) chart1.pan({x: -100}, undefined, 'default'); 
+        });
+        document.getElementById('panRight1').addEventListener('click', () => { 
+            if (chart1) chart1.pan({x: 100}, undefined, 'default'); 
+        });
 
         // Variable toggles
         document.querySelectorAll('.variable-toggle1').forEach(cb => {
             cb.addEventListener('change', updateChart1);
         });
 
-        document.querySelectorAll('.variable-toggle2').forEach(cb => {
-            cb.addEventListener('change', updateChart2);
-        });
-
-        document.querySelectorAll('.variable-toggle3').forEach(cb => {
-            cb.addEventListener('change', updateChart3);
-        });
-
-        // Y-axis controls for plot 1
+        // Y-axis controls
         document.getElementById('yAxisAutoScale1').addEventListener('change', function() {
             const isAuto = this.checked;
             document.getElementById('yAxisMin1').disabled = isAuto;
@@ -1210,50 +677,6 @@
             chart1.update('none');
         });
 
-        // Y-axis controls for plot 2
-        document.getElementById('yAxisAutoScale2').addEventListener('change', function() {
-            const isAuto = this.checked;
-            document.getElementById('yAxisMin2').disabled = isAuto;
-            document.getElementById('yAxisMax2').disabled = isAuto;
-            document.getElementById('applyYAxis2').disabled = isAuto;
-            if (isAuto && chart2) {
-                chart2.options.scales.y.min = undefined;
-                chart2.options.scales.y.max = undefined;
-                chart2.update('none');
-            }
-        });
-
-        document.getElementById('applyYAxis2').addEventListener('click', function() {
-            if (!chart2) return;
-            const min = parseFloat(document.getElementById('yAxisMin2').value);
-            const max = parseFloat(document.getElementById('yAxisMax2').value);
-            if (!isNaN(min)) chart2.options.scales.y.min = min;
-            if (!isNaN(max)) chart2.options.scales.y.max = max;
-            chart2.update('none');
-        });
-
-        // Y-axis controls for plot 3
-        document.getElementById('yAxisAutoScale3').addEventListener('change', function() {
-            const isAuto = this.checked;
-            document.getElementById('yAxisMin3').disabled = isAuto;
-            document.getElementById('yAxisMax3').disabled = isAuto;
-            document.getElementById('applyYAxis3').disabled = isAuto;
-            if (isAuto && chart3) {
-                chart3.options.scales.y.min = undefined;
-                chart3.options.scales.y.max = undefined;
-                chart3.update('none');
-            }
-        });
-
-        document.getElementById('applyYAxis3').addEventListener('click', function() {
-            if (!chart3) return;
-            const min = parseFloat(document.getElementById('yAxisMin3').value);
-            const max = parseFloat(document.getElementById('yAxisMax3').value);
-            if (!isNaN(min)) chart3.options.scales.y.min = min;
-            if (!isNaN(max)) chart3.options.scales.y.max = max;
-            chart3.update('none');
-        });
-
         // Main initialization
         async function init() {
             const token = getTokenFromUrl();
@@ -1273,11 +696,7 @@
                 }
 
                 fullData = sensorData;
-
-                // Create all charts
                 updateChart1();
-                updateChart2();
-                updateChart3();
 
             } catch (error) {
                 showError(error.message);
