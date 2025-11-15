@@ -8,9 +8,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 10px;
             background: #f5f5f5;
         }
         .container {
@@ -375,12 +374,10 @@
                         cb.checked = settings.checkedVariables.includes(cb.dataset.group);
                     });
                 } else {
-                    // Fallback: all on
                     document.querySelectorAll('.variable-toggle1').forEach(cb => cb.checked = true);
                 }
             } catch (e) {
                 console.error('Failed to load settings:', e);
-                // On error, fall back to default "Last Day" + all on
                 document.getElementById('timeValue1').value = 24;
                 document.querySelectorAll('.plot1-unit').forEach(box => {
                     box.classList.toggle('active', box.dataset.unit === 'hours');
@@ -442,7 +439,7 @@
                         order: 2
                     },
                     {
-                        label: 'Batt Curr Avg (A)',
+                        label: 'Batt Curr Avg',
                         data: data.map(d => d.batt_curr_avg),
                         borderColor: 'rgba(54, 162, 235, 1)',
                         backgroundColor: 'rgba(54, 162, 235, 1)',
@@ -478,7 +475,7 @@
                         order: 2
                     },
                     {
-                        label: 'Solar Curr Avg (A)',
+                        label: 'Solar Curr Avg',
                         data: data.map(d => d.victron_curr_avg),
                         borderColor: 'rgba(255, 206, 86, 1)',
                         backgroundColor: 'rgba(255, 206, 86, 1)',
@@ -514,7 +511,7 @@
                         order: 2
                     },
                     {
-                        label: 'Alt Curr Avg (A)',
+                        label: 'Alt Curr Avg',
                         data: data.map(d => d.alt_curr_avg),
                         borderColor: 'rgba(75, 192, 192, 1)',
                         backgroundColor: 'rgba(75, 192, 192, 1)',
