@@ -24,22 +24,39 @@
             <!-- Plot 1: Battery Metrics -->
             <div id="plot1-container" class="chart-section" style="display:none; margin:30px 0;">
                 <h3>Battery Metrics</h3>
+                
+                <!-- Time Range Selector -->
+                <div style="margin:10px 0; padding:10px; background:#e8f5e9; border-radius:4px;">
+                    <label style="font-weight:bold; margin-right:10px;">Time Range:</label>
+                    <select id="timeRange1" style="padding:5px; border-radius:4px; border:1px solid #ccc;">
+                        <option value="1h">Last Hour</option>
+                        <option value="6h">Last 6 Hours</option>
+                        <option value="24h">Last 24 Hours</option>
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d">Last 30 Days</option>
+                        <option value="all" selected>All Time</option>
+                    </select>
+                </div>
+
+                <!-- Variable Toggles -->
                 <div class="chart-controls" style="margin:10px 0; padding:10px; background:#f5f5f5; border-radius:4px;">
                     <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="soc" checked> SOC %
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="SOC"> SOC %
                     </label>
                     <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="bcur" checked> Battery Current
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="Bcur"> Battery Current
                     </label>
                     <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="victron" checked> Solar Current
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="VictronCurrent"> Solar Current
                     </label>
                     <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="alt" checked> Alternator Current
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="MeasuredAmps" checked> Alternator Current
                     </label>
                     <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="volt" checked> Battery Voltage
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="batteryVoltage"> Battery Voltage
                     </label>
+                    
+                    <!-- Min/Max/Avg Toggles -->
                     <div style="margin-top:10px; padding-top:10px; border-top:1px solid #ddd;">
                         <label style="margin-right:10px;">
                             <input type="checkbox" class="minmaxavg-toggle" data-chart="plot1" data-type="min" checked> Min
@@ -65,6 +82,7 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let charts = {};
+        let sensorDataCache = null;
 
         // Parse token from URL
         function getTokenFromUrl() {
@@ -138,183 +156,225 @@
             }
         }
 
+        // Filter data by time range
+        function filterDataByTimeRange(data, range) {
+            if (!data || data.length === 0) return data;
+            const now = new Date(data[data.length - 1].timestamp);
+            let cutoffTime;
+            
+            switch(range) {
+                case '1h': cutoffTime = new Date(now - 60 * 60 * 1000); break;
+                case '6h': cutoffTime = new Date(now - 6 * 60 * 60 * 1000); break;
+                case '24h': cutoffTime = new Date(now - 24 * 60 * 60 * 1000); break;
+                case '7d': cutoffTime = new Date(now - 7 * 24 * 60 * 60 * 1000); break;
+                case '30d': cutoffTime = new Date(now - 30 * 24 * 60 * 60 * 1000); break;
+                default: return data; // 'all'
+            }
+            
+            return data.filter(d => new Date(d.timestamp) >= cutoffTime);
+        }
+
         // Create Plot 1: Battery Metrics (5 variables, single Y-axis)
         function createPlot1(data) {
             const ctx = document.getElementById('plot1').getContext('2d');
-            const timestamps = data.map(d => new Date(d.timestamp));
+            
+            // Get time range from dropdown
+            const timeRange = document.getElementById('timeRange1')?.value || 'all';
+            const filteredData = filterDataByTimeRange(data, timeRange);
+            
+            const timestamps = filteredData.map(d => new Date(d.timestamp));
 
             const datasets = [
-                // SOC
+                // SOC - Red shades
                 {
                     label: 'SOC Min (%)',
-                    data: data.map(d => d.soc_min),
-                    borderColor: '#ff6b6b',
-                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.soc_min),
+                    borderColor: 'rgba(255, 99, 132, 0.5)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'soc',
+                    hidden: true,
+                    seriesGroup: 'SOC',
                     mmavgType: 'min'
                 },
                 {
                     label: 'SOC Avg (%)',
-                    data: data.map(d => d.soc_avg),
-                    borderColor: '#ff8787',
-                    backgroundColor: 'rgba(255, 135, 135, 0.1)',
+                    data: filteredData.map(d => d.soc_avg),
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 1)',
+                    pointRadius: 2,
                     borderWidth: 2,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'soc',
+                    hidden: true,
+                    seriesGroup: 'SOC',
                     mmavgType: 'avg'
                 },
                 {
                     label: 'SOC Max (%)',
-                    data: data.map(d => d.soc_max),
-                    borderColor: '#ffa3a3',
-                    backgroundColor: 'rgba(255, 163, 163, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.soc_max),
+                    borderColor: 'rgba(255, 150, 170, 0.5)',
+                    backgroundColor: 'rgba(255, 150, 170, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'soc',
+                    hidden: true,
+                    seriesGroup: 'SOC',
                     mmavgType: 'max'
                 },
-                // Battery Current
+                // Battery Current - Blue shades
                 {
                     label: 'Batt Curr Min (A)',
-                    data: data.map(d => d.batt_curr_min),
-                    borderColor: '#4ecdc4',
-                    backgroundColor: 'rgba(78, 205, 196, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.batt_curr_min),
+                    borderColor: 'rgba(54, 162, 235, 0.5)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'bcur',
+                    hidden: true,
+                    seriesGroup: 'Bcur',
                     mmavgType: 'min'
                 },
                 {
                     label: 'Batt Curr Avg (A)',
-                    data: data.map(d => d.batt_curr_avg),
-                    borderColor: '#6ed9d0',
-                    backgroundColor: 'rgba(110, 217, 208, 0.1)',
+                    data: filteredData.map(d => d.batt_curr_avg),
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 1)',
+                    pointRadius: 2,
                     borderWidth: 2,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'bcur',
+                    hidden: true,
+                    seriesGroup: 'Bcur',
                     mmavgType: 'avg'
                 },
                 {
                     label: 'Batt Curr Max (A)',
-                    data: data.map(d => d.batt_curr_max),
-                    borderColor: '#8ee5dc',
-                    backgroundColor: 'rgba(142, 229, 220, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.batt_curr_max),
+                    borderColor: 'rgba(120, 200, 255, 0.5)',
+                    backgroundColor: 'rgba(120, 200, 255, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'bcur',
+                    hidden: true,
+                    seriesGroup: 'Bcur',
                     mmavgType: 'max'
                 },
-                // Victron/Solar Current
+                // Solar Current - Yellow shades
                 {
                     label: 'Solar Curr Min (A)',
-                    data: data.map(d => d.victron_curr_min),
-                    borderColor: '#ffd700',
-                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.victron_curr_min),
+                    borderColor: 'rgba(255, 206, 86, 0.5)',
+                    backgroundColor: 'rgba(255, 206, 86, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'victron',
+                    hidden: true,
+                    seriesGroup: 'VictronCurrent',
                     mmavgType: 'min'
                 },
                 {
                     label: 'Solar Curr Avg (A)',
-                    data: data.map(d => d.victron_curr_avg),
-                    borderColor: '#ffe033',
-                    backgroundColor: 'rgba(255, 224, 51, 0.1)',
+                    data: filteredData.map(d => d.victron_curr_avg),
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    backgroundColor: 'rgba(255, 206, 86, 1)',
+                    pointRadius: 2,
                     borderWidth: 2,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'victron',
+                    hidden: true,
+                    seriesGroup: 'VictronCurrent',
                     mmavgType: 'avg'
                 },
                 {
                     label: 'Solar Curr Max (A)',
-                    data: data.map(d => d.victron_curr_max),
-                    borderColor: '#ffe966',
-                    backgroundColor: 'rgba(255, 233, 102, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.victron_curr_max),
+                    borderColor: 'rgba(255, 230, 150, 0.5)',
+                    backgroundColor: 'rgba(255, 230, 150, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'victron',
+                    hidden: true,
+                    seriesGroup: 'VictronCurrent',
                     mmavgType: 'max'
                 },
-                // Alternator Current
+                // Alternator Current - Teal shades
                 {
                     label: 'Alt Curr Min (A)',
-                    data: data.map(d => d.alt_curr_min),
-                    borderColor: '#95e1d3',
-                    backgroundColor: 'rgba(149, 225, 211, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.alt_curr_min),
+                    borderColor: 'rgba(75, 192, 192, 0.5)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
                     hidden: false,
-                    seriesGroup: 'alt',
+                    seriesGroup: 'MeasuredAmps',
                     mmavgType: 'min'
                 },
                 {
                     label: 'Alt Curr Avg (A)',
-                    data: data.map(d => d.alt_curr_avg),
-                    borderColor: '#aae7df',
-                    backgroundColor: 'rgba(170, 231, 223, 0.1)',
+                    data: filteredData.map(d => d.alt_curr_avg),
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 1)',
+                    pointRadius: 2,
                     borderWidth: 2,
                     fill: false,
                     hidden: false,
-                    seriesGroup: 'alt',
+                    seriesGroup: 'MeasuredAmps',
                     mmavgType: 'avg'
                 },
                 {
                     label: 'Alt Curr Max (A)',
-                    data: data.map(d => d.alt_curr_max),
-                    borderColor: '#bfedeb',
-                    backgroundColor: 'rgba(191, 237, 235, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.alt_curr_max),
+                    borderColor: 'rgba(140, 230, 230, 0.5)',
+                    backgroundColor: 'rgba(140, 230, 230, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
                     hidden: false,
-                    seriesGroup: 'alt',
+                    seriesGroup: 'MeasuredAmps',
                     mmavgType: 'max'
                 },
-                // Battery Voltage
+                // Battery Voltage - Purple shades
                 {
                     label: 'Batt Volt Min (V)',
-                    data: data.map(d => d.batt_volt_min),
-                    borderColor: '#00a19a',
-                    backgroundColor: 'rgba(0, 161, 154, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.batt_volt_min),
+                    borderColor: 'rgba(153, 102, 255, 0.5)',
+                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'volt',
+                    hidden: true,
+                    seriesGroup: 'batteryVoltage',
                     mmavgType: 'min'
                 },
                 {
                     label: 'Batt Volt Avg (V)',
-                    data: data.map(d => d.batt_volt_avg),
-                    borderColor: '#00b7ad',
-                    backgroundColor: 'rgba(0, 183, 173, 0.1)',
+                    data: filteredData.map(d => d.batt_volt_avg),
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    backgroundColor: 'rgba(153, 102, 255, 1)',
+                    pointRadius: 2,
                     borderWidth: 2,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'volt',
+                    hidden: true,
+                    seriesGroup: 'batteryVoltage',
                     mmavgType: 'avg'
                 },
                 {
                     label: 'Batt Volt Max (V)',
-                    data: data.map(d => d.batt_volt_max),
-                    borderColor: '#00cdc0',
-                    backgroundColor: 'rgba(0, 205, 192, 0.1)',
-                    borderWidth: 1,
+                    data: filteredData.map(d => d.batt_volt_max),
+                    borderColor: 'rgba(200, 170, 255, 0.5)',
+                    backgroundColor: 'rgba(200, 170, 255, 0.5)',
+                    pointRadius: 2,
+                    borderWidth: 1.5,
                     fill: false,
-                    hidden: false,
-                    seriesGroup: 'volt',
+                    hidden: true,
+                    seriesGroup: 'batteryVoltage',
                     mmavgType: 'max'
                 }
             ];
+
+            if (charts.plot1) {
+                charts.plot1.destroy();
+            }
 
             charts.plot1 = new Chart(ctx, {
                 type: 'line',
@@ -329,8 +389,10 @@
                         legend: {
                             position: 'top',
                             labels: {
-                                boxWidth: 12,
-                                font: { size: 10 }
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 10,
+                                font: { size: 11 }
                             }
                         },
                         title: {
@@ -403,6 +465,13 @@
                     chart.update();
                 });
             });
+
+            // Time range selector
+            document.getElementById('timeRange1')?.addEventListener('change', function() {
+                if (sensorDataCache) {
+                    createPlot1(sensorDataCache);
+                }
+            });
         }
 
         // Main initialization
@@ -425,6 +494,9 @@
                     showError('No sensor data available yet. Start collecting data to see your history!');
                     return;
                 }
+
+                // Cache data for time range filtering
+                sensorDataCache = sensorData;
 
                 // Create chart
                 createPlot1(sensorData);
