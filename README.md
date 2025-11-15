@@ -25,6 +25,16 @@ Vercel-hosted page for displaying sensor history with Chart.js visualization.
 ```bash
 vercel --prod
 ```
+### Make Updates
+# Navigate to local repo
+cd "/Users/joeceo/Documents/alternator regulator x engineering/CLOUD FEATURES LOCAL COPIES/supabase"
+
+# Make your changes to files (index.html, styles.css, etc.)
+
+# Commit and push
+git add .
+git commit -m "Description of changes"
+git push origin main
 
 ### Or Deploy via Git
 1. Push to GitHub repo
