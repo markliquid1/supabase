@@ -21,8 +21,38 @@
             </div>
             <div id="loading-message" style="margin:15px 0; color:#666;">Loading data...</div>
 
-            <div id="chart-container" style="display:none; margin:20px 0;">
-                <canvas id="voltageChart"></canvas>
+            <!-- Plot 1: Battery Metrics -->
+            <div id="plot1-container" class="chart-section" style="display:none; margin:30px 0;">
+                <h3>Battery Metrics</h3>
+                <div class="chart-controls" style="margin:10px 0; padding:10px; background:#f5f5f5; border-radius:4px;">
+                    <label style="margin-right:15px;">
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="soc" checked> SOC %
+                    </label>
+                    <label style="margin-right:15px;">
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="bcur" checked> Battery Current
+                    </label>
+                    <label style="margin-right:15px;">
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="victron" checked> Solar Current
+                    </label>
+                    <label style="margin-right:15px;">
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="alt" checked> Alternator Current
+                    </label>
+                    <label style="margin-right:15px;">
+                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="volt" checked> Battery Voltage
+                    </label>
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #ddd;">
+                        <label style="margin-right:10px;">
+                            <input type="checkbox" class="minmaxavg-toggle" data-chart="plot1" data-type="min" checked> Min
+                        </label>
+                        <label style="margin-right:10px;">
+                            <input type="checkbox" class="minmaxavg-toggle" data-chart="plot1" data-type="max" checked> Max
+                        </label>
+                        <label style="margin-right:10px;">
+                            <input type="checkbox" class="minmaxavg-toggle" data-chart="plot1" data-type="avg" checked> Avg
+                        </label>
+                    </div>
+                </div>
+                <canvas id="plot1"></canvas>
             </div>
         </div>
     </div>
@@ -34,7 +64,7 @@
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let chart = null;
+        let charts = {};
 
         // Parse token from URL
         function getTokenFromUrl() {
@@ -56,7 +86,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o'
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     },
                     body: JSON.stringify({ token: token })
                 });
@@ -76,74 +106,221 @@
 
         // Fetch sensor history for device
         async function fetchSensorHistory(deviceUid) {
-    try {
-        const { data, error } = await supabase
-            .from('sensor_history')
-            .select('timestamp, batt_volt_min, batt_volt_max, batt_volt_avg')
-            .eq('device_uid', deviceUid)
-            .order('timestamp', { ascending: true });
+            try {
+                const { data, error } = await supabase
+                    .from('sensor_history')
+                    .select(`
+                        timestamp,
+                        batt_volt_min, batt_volt_max, batt_volt_avg,
+                        batt_curr_min, batt_curr_max, batt_curr_avg,
+                        alt_curr_min, alt_curr_max, alt_curr_avg,
+                        victron_curr_min, victron_curr_max, victron_curr_avg,
+                        soc_min, soc_max, soc_avg
+                    `)
+                    .eq('device_uid', deviceUid)
+                    .order('timestamp', { ascending: true });
 
-        if (error) throw error;
-        
-        // Filter out invalid timestamps (before 2020 or after 2100)
-        const minDate = new Date('2020-01-01').getTime();
-        const maxDate = new Date('2100-01-01').getTime();
-        
-        const filtered = data.filter(d => {
-            const ts = new Date(d.timestamp).getTime();
-            return ts >= minDate && ts <= maxDate;
-        });
-        
-        return filtered;
-    } catch (error) {
-        console.error('Data fetch error:', error);
-        throw new Error('Failed to fetch sensor data');
-    }
-}
+                if (error) throw error;
 
-        // Create Chart.js chart
-        function createChart(data) {
-            const ctx = document.getElementById('voltageChart').getContext('2d');
+                // Filter out invalid timestamps (before 2020 or after 2100)
+                const minDate = new Date('2020-01-01').getTime();
+                const maxDate = new Date('2100-01-01').getTime();
 
-            // Extract timestamps and voltage data
+                const filtered = data.filter(d => {
+                    const ts = new Date(d.timestamp).getTime();
+                    return ts >= minDate && ts <= maxDate;
+                });
+
+                return filtered;
+            } catch (error) {
+                console.error('Data fetch error:', error);
+                throw new Error('Failed to fetch sensor data');
+            }
+        }
+
+        // Create Plot 1: Battery Metrics (5 variables, single Y-axis)
+        function createPlot1(data) {
+            const ctx = document.getElementById('plot1').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
-            const minVoltages = data.map(d => d.batt_volt_min);
-            const maxVoltages = data.map(d => d.batt_volt_max);
-            const avgVoltages = data.map(d => d.batt_volt_avg);
 
-            chart = new Chart(ctx, {
+            const datasets = [
+                // SOC
+                {
+                    label: 'SOC Min (%)',
+                    data: data.map(d => d.soc_min),
+                    borderColor: '#ff6b6b',
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'soc',
+                    mmavgType: 'min'
+                },
+                {
+                    label: 'SOC Avg (%)',
+                    data: data.map(d => d.soc_avg),
+                    borderColor: '#ff8787',
+                    backgroundColor: 'rgba(255, 135, 135, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'soc',
+                    mmavgType: 'avg'
+                },
+                {
+                    label: 'SOC Max (%)',
+                    data: data.map(d => d.soc_max),
+                    borderColor: '#ffa3a3',
+                    backgroundColor: 'rgba(255, 163, 163, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'soc',
+                    mmavgType: 'max'
+                },
+                // Battery Current
+                {
+                    label: 'Batt Curr Min (A)',
+                    data: data.map(d => d.batt_curr_min),
+                    borderColor: '#4ecdc4',
+                    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'bcur',
+                    mmavgType: 'min'
+                },
+                {
+                    label: 'Batt Curr Avg (A)',
+                    data: data.map(d => d.batt_curr_avg),
+                    borderColor: '#6ed9d0',
+                    backgroundColor: 'rgba(110, 217, 208, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'bcur',
+                    mmavgType: 'avg'
+                },
+                {
+                    label: 'Batt Curr Max (A)',
+                    data: data.map(d => d.batt_curr_max),
+                    borderColor: '#8ee5dc',
+                    backgroundColor: 'rgba(142, 229, 220, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'bcur',
+                    mmavgType: 'max'
+                },
+                // Victron/Solar Current
+                {
+                    label: 'Solar Curr Min (A)',
+                    data: data.map(d => d.victron_curr_min),
+                    borderColor: '#ffd700',
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'victron',
+                    mmavgType: 'min'
+                },
+                {
+                    label: 'Solar Curr Avg (A)',
+                    data: data.map(d => d.victron_curr_avg),
+                    borderColor: '#ffe033',
+                    backgroundColor: 'rgba(255, 224, 51, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'victron',
+                    mmavgType: 'avg'
+                },
+                {
+                    label: 'Solar Curr Max (A)',
+                    data: data.map(d => d.victron_curr_max),
+                    borderColor: '#ffe966',
+                    backgroundColor: 'rgba(255, 233, 102, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'victron',
+                    mmavgType: 'max'
+                },
+                // Alternator Current
+                {
+                    label: 'Alt Curr Min (A)',
+                    data: data.map(d => d.alt_curr_min),
+                    borderColor: '#95e1d3',
+                    backgroundColor: 'rgba(149, 225, 211, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'alt',
+                    mmavgType: 'min'
+                },
+                {
+                    label: 'Alt Curr Avg (A)',
+                    data: data.map(d => d.alt_curr_avg),
+                    borderColor: '#aae7df',
+                    backgroundColor: 'rgba(170, 231, 223, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'alt',
+                    mmavgType: 'avg'
+                },
+                {
+                    label: 'Alt Curr Max (A)',
+                    data: data.map(d => d.alt_curr_max),
+                    borderColor: '#bfedeb',
+                    backgroundColor: 'rgba(191, 237, 235, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'alt',
+                    mmavgType: 'max'
+                },
+                // Battery Voltage
+                {
+                    label: 'Batt Volt Min (V)',
+                    data: data.map(d => d.batt_volt_min),
+                    borderColor: '#00a19a',
+                    backgroundColor: 'rgba(0, 161, 154, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'volt',
+                    mmavgType: 'min'
+                },
+                {
+                    label: 'Batt Volt Avg (V)',
+                    data: data.map(d => d.batt_volt_avg),
+                    borderColor: '#00b7ad',
+                    backgroundColor: 'rgba(0, 183, 173, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'volt',
+                    mmavgType: 'avg'
+                },
+                {
+                    label: 'Batt Volt Max (V)',
+                    data: data.map(d => d.batt_volt_max),
+                    borderColor: '#00cdc0',
+                    backgroundColor: 'rgba(0, 205, 192, 0.1)',
+                    borderWidth: 1,
+                    fill: false,
+                    hidden: false,
+                    seriesGroup: 'volt',
+                    mmavgType: 'max'
+                }
+            ];
+
+            charts.plot1 = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: timestamps,
-                    datasets: [
-                        {
-                            label: 'Min Voltage',
-                            data: minVoltages,
-                            borderColor: '#ff6b6b',
-                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
-                            borderWidth: 2,
-                            fill: false,
-                            tension: 0.1
-                        },
-                        {
-                            label: 'Avg Voltage',
-                            data: avgVoltages,
-                            borderColor: '#00a19a',
-                            backgroundColor: 'rgba(0, 161, 154, 0.1)',
-                            borderWidth: 2,
-                            fill: false,
-                            tension: 0.1
-                        },
-                        {
-                            label: 'Max Voltage',
-                            data: maxVoltages,
-                            borderColor: '#4ecdc4',
-                            backgroundColor: 'rgba(78, 205, 196, 0.1)',
-                            borderWidth: 2,
-                            fill: false,
-                            tension: 0.1
-                        }
-                    ]
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
@@ -151,10 +328,14 @@
                     plugins: {
                         legend: {
                             position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 10 }
+                            }
                         },
                         title: {
                             display: true,
-                            text: 'Battery Voltage History'
+                            text: 'Battery Metrics (Single Y-Axis: Amps/Volts/%)'
                         }
                     },
                     scales: {
@@ -174,7 +355,7 @@
                         y: {
                             title: {
                                 display: true,
-                                text: 'Voltage (V)'
+                                text: 'Value'
                             },
                             beginAtZero: false
                         }
@@ -182,9 +363,46 @@
                 }
             });
 
-            // Show chart, hide loading
-            document.getElementById('loading-message').style.display = 'none';
-            document.getElementById('chart-container').style.display = 'block';
+            document.getElementById('plot1-container').style.display = 'block';
+        }
+
+        // Handle toggle controls
+        function setupToggleControls() {
+            // Series toggles (SOC, Battery Current, etc.)
+            document.querySelectorAll('.series-toggle').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const chartId = this.dataset.chart;
+                    const seriesGroup = this.dataset.series;
+                    const chart = charts[chartId];
+                    
+                    if (!chart) return;
+
+                    chart.data.datasets.forEach((dataset, index) => {
+                        if (dataset.seriesGroup === seriesGroup) {
+                            chart.setDatasetVisibility(index, this.checked);
+                        }
+                    });
+                    chart.update();
+                });
+            });
+
+            // Min/Max/Avg toggles
+            document.querySelectorAll('.minmaxavg-toggle').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const chartId = this.dataset.chart;
+                    const mmavgType = this.dataset.type;
+                    const chart = charts[chartId];
+                    
+                    if (!chart) return;
+
+                    chart.data.datasets.forEach((dataset, index) => {
+                        if (dataset.mmavgType === mmavgType) {
+                            chart.setDatasetVisibility(index, this.checked);
+                        }
+                    });
+                    chart.update();
+                });
+            });
         }
 
         // Main initialization
@@ -209,7 +427,13 @@
                 }
 
                 // Create chart
-                createChart(sensorData);
+                createPlot1(sensorData);
+
+                // Setup toggle controls
+                setupToggleControls();
+
+                // Hide loading message
+                document.getElementById('loading-message').style.display = 'none';
 
             } catch (error) {
                 showError(error.message);
