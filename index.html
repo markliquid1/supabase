@@ -13,6 +13,9 @@
             background: #f5f5f5;
         }
         .container {
+            max-width: 1600px;   /* wider on large screens */
+            width: 100%;         /* responsive */
+            margin: 0 auto;      /* centered */
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -225,21 +228,21 @@
 
             <!-- Variable Controls -->
             <div class="variable-controls">
-                <div class="variable-row" style="border-left-color: #36a2eb;">
+                <div class="variable-row" style="border-left-color: #0072B2;">
                     <label class="variable-master">
                         <input type="checkbox" class="variable-toggle1" data-group="Bcur" checked>
                         <strong>Battery Current</strong>
                     </label>
                 </div>
 
-                <div class="variable-row" style="border-left-color: #ffce56;">
+                <div class="variable-row" style="border-left-color: #E69F00;">
                     <label class="variable-master">
                         <input type="checkbox" class="variable-toggle1" data-group="VictronCurrent" checked>
                         <strong>Solar Current</strong>
                     </label>
                 </div>
 
-                <div class="variable-row" style="border-left-color: #4bc0c0;">
+                <div class="variable-row" style="border-left-color: #009E73;">
                     <label class="variable-master">
                         <input type="checkbox" class="variable-toggle1" data-group="MeasuredAmps" checked>
                         <strong>Alternator Current</strong>
@@ -345,7 +348,6 @@
         function loadSettings() {
             const saved = localStorage.getItem('chartSettings_plot1');
             if (!saved) {
-                // Default: Last Day preset, hours, all currents on
                 document.getElementById('timeValue1').value = 24;
                 document.querySelectorAll('.plot1-unit').forEach(box => {
                     box.classList.toggle('active', box.dataset.unit === 'hours');
@@ -357,18 +359,15 @@
             try {
                 const settings = JSON.parse(saved);
                 
-                // Restore time range
                 document.getElementById('timeValue1').value = settings.timeValue || 24;
                 document.querySelectorAll('.plot1-unit').forEach(box => {
                     box.classList.toggle('active', box.dataset.unit === settings.timeUnit);
                 });
                 
-                // Restore Y-axis
                 document.getElementById('yAxisAutoScale1').checked = settings.yAxisAuto !== false;
                 if (settings.yAxisMin) document.getElementById('yAxisMin1').value = settings.yAxisMin;
                 if (settings.yAxisMax) document.getElementById('yAxisMax1').value = settings.yAxisMax;
                 
-                // Restore variable selections
                 if (settings.checkedVariables && settings.checkedVariables.length > 0) {
                     document.querySelectorAll('.variable-toggle1').forEach(cb => {
                         cb.checked = settings.checkedVariables.includes(cb.dataset.group);
@@ -415,14 +414,14 @@
 
             const datasets = [];
 
-            // Battery Current - Blue
+            // Battery Current - Blue (#0072B2)
             if (checkedVars.has('Bcur')) {
                 datasets.push(
                     {
                         label: 'Batt Curr Min',
                         data: data.map(d => d.batt_curr_min),
-                        borderColor: 'rgba(54, 162, 235, 0.3)',
-                        backgroundColor: 'rgba(54, 162, 235, 0)',
+                        borderColor: 'rgba(0, 114, 178, 0.3)',
+                        backgroundColor: 'rgba(0, 114, 178, 0)',
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: 1,
@@ -431,8 +430,8 @@
                     {
                         label: 'Batt Curr Max',
                         data: data.map(d => d.batt_curr_max),
-                        borderColor: 'rgba(54, 162, 235, 0.3)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.3)',
+                        borderColor: 'rgba(0, 114, 178, 0.3)',
+                        backgroundColor: 'rgba(0, 114, 178, 0.3)',
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: '-1',
@@ -441,8 +440,8 @@
                     {
                         label: 'Batt Curr Avg',
                         data: data.map(d => d.batt_curr_avg),
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        backgroundColor: 'rgba(54, 162, 235, 1)',
+                        borderColor: 'rgba(0, 114, 178, 1)',
+                        backgroundColor: 'rgba(0, 114, 178, 1)',
                         pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
@@ -451,14 +450,14 @@
                 );
             }
 
-            // Solar Current - Yellow
+            // Solar Current - Orange (#E69F00)
             if (checkedVars.has('VictronCurrent')) {
                 datasets.push(
                     {
                         label: 'Solar Curr Min',
                         data: data.map(d => d.victron_curr_min),
-                        borderColor: 'rgba(255, 206, 86, 0.3)',
-                        backgroundColor: 'rgba(255, 206, 86, 0)',
+                        borderColor: 'rgba(230, 159, 0, 0.3)',
+                        backgroundColor: 'rgba(230, 159, 0, 0)',
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: 1,
@@ -467,8 +466,8 @@
                     {
                         label: 'Solar Curr Max',
                         data: data.map(d => d.victron_curr_max),
-                        borderColor: 'rgba(255, 206, 86, 0.3)',
-                        backgroundColor: 'rgba(255, 206, 86, 0.3)',
+                        borderColor: 'rgba(230, 159, 0, 0.3)',
+                        backgroundColor: 'rgba(230, 159, 0, 0.3)',
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: '-1',
@@ -477,8 +476,8 @@
                     {
                         label: 'Solar Curr Avg',
                         data: data.map(d => d.victron_curr_avg),
-                        borderColor: 'rgba(255, 206, 86, 1)',
-                        backgroundColor: 'rgba(255, 206, 86, 1)',
+                        borderColor: 'rgba(230, 159, 0, 1)',
+                        backgroundColor: 'rgba(230, 159, 0, 1)',
                         pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
@@ -487,14 +486,14 @@
                 );
             }
 
-            // Alternator Current - Teal
+            // Alternator Current - Green (#009E73)
             if (checkedVars.has('MeasuredAmps')) {
                 datasets.push(
                     {
                         label: 'Alt Curr Min',
                         data: data.map(d => d.alt_curr_min),
-                        borderColor: 'rgba(75, 192, 192, 0.3)',
-                        backgroundColor: 'rgba(75, 192, 192, 0)',
+                        borderColor: 'rgba(0, 158, 115, 0.3)',
+                        backgroundColor: 'rgba(0, 158, 115, 0)',
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: 1,
@@ -503,8 +502,8 @@
                     {
                         label: 'Alt Curr Max',
                         data: data.map(d => d.alt_curr_max),
-                        borderColor: 'rgba(75, 192, 192, 0.3)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.3)',
+                        borderColor: 'rgba(0, 158, 115, 0.3)',
+                        backgroundColor: 'rgba(0, 158, 115, 0.3)',
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: '-1',
@@ -513,8 +512,8 @@
                     {
                         label: 'Alt Curr Avg',
                         data: data.map(d => d.alt_curr_avg),
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 1)',
+                        borderColor: 'rgba(0, 158, 115, 1)',
+                        backgroundColor: 'rgba(0, 158, 115, 1)',
                         pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
@@ -551,7 +550,6 @@
                                 padding: 8,
                                 font: { size: 10 },
                                 filter: function(item, chart) {
-                                    // Only show Avg in legend, hide min/max
                                     return item.text.includes('Avg');
                                 }
                             }
@@ -703,10 +701,7 @@
 
                 fullData = sensorData;
                 
-                // Load saved settings or defaults (Last Day + all currents)
                 loadSettings();
-                
-                // Create initial chart
                 updateChart1();
 
             } catch (error) {
