@@ -5,73 +5,257 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My History</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #1976d2;
+        }
+        .time-range-section {
+            margin: 15px 0;
+            padding: 10px;
+            background: #fafafa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+        }
+        .time-range-section label {
+            font-weight: normal;
+            margin-right: 5px;
+        }
+        .time-range-section input[type="number"] {
+            width: 60px;
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+        .time-unit-box {
+            padding: 4px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .time-unit-box:hover {
+            background: #e3f2fd;
+            border-color: #90caf9;
+        }
+        .time-unit-box.active {
+            background: #1976d2;
+            color: white;
+            border-color: #1976d2;
+        }
+        .time-range-section button {
+            padding: 4px 12px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: normal;
+            min-width: 32px;
+        }
+        .time-range-section button:hover {
+            background: #1565c0;
+        }
+        .time-range-section button.secondary {
+            background: #757575;
+            min-width: 36px;
+            width: 36px;
+            padding: 4px 8px;
+        }
+        .time-range-section button.secondary:hover {
+            background: #616161;
+        }
+        .preset-btn {
+            padding: 5px 15px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #90caf9;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .preset-btn:hover {
+            background: #1976d2;
+            color: white;
+        }
+        .variable-controls {
+            margin: 15px 0;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 6px;
+        }
+        .variable-row {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #ddd;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .variable-row:hover {
+            background: #f5f5f5;
+        }
+        .variable-master {
+            min-width: 160px;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .variable-master {
+                min-width: 120px;
+                font-size: 13px;
+            }
+        }
+        .chart-section {
+            margin: 20px 0;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            height: 500px;
+            position: relative;
+        }
+        @media (max-width: 768px) {
+            .chart-section {
+                height: 400px;
+            }
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
     <div class="container">
-        <div class="settings-card">
-            <div class="section-title">My History</div>
+        <div class="section-title">My History</div>
 
-            <div id="error-message"
-                style="display:none; color:#f44336; margin:15px 0; padding:10px; background:#ffebee; border-radius:4px;">
+        <div id="error-message" style="display:none; color:#f44336; margin:15px 0; padding:10px; background:#ffebee; border-radius:4px;"></div>
+
+        <!-- Chart First -->
+        <div class="chart-section">
+            <div id="loadingChart" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
+                Loading chart...
             </div>
-            <div id="loading-message" style="margin:15px 0; color:#666;">Loading data...</div>
-
-            <!-- Plot 1: Battery Metrics -->
-            <div id="plot1-container" class="chart-section" style="display:none; margin:30px 0;">
-                <h3>Battery Metrics</h3>
-                
-                <!-- Time Range Selector -->
-                <div style="margin:10px 0; padding:10px; background:#e8f5e9; border-radius:4px;">
-                    <label style="font-weight:bold; margin-right:10px;">Time Range:</label>
-                    <select id="timeRange1" style="padding:5px; border-radius:4px; border:1px solid #ccc;">
-                        <option value="1h">Last Hour</option>
-                        <option value="6h">Last 6 Hours</option>
-                        <option value="24h">Last 24 Hours</option>
-                        <option value="7d">Last 7 Days</option>
-                        <option value="30d">Last 30 Days</option>
-                        <option value="all" selected>All Time</option>
-                    </select>
-                </div>
-
-                <!-- Variable Toggles -->
-                <div class="chart-controls" style="margin:10px 0; padding:10px; background:#f5f5f5; border-radius:4px;">
-                    <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="SOC"> SOC %
-                    </label>
-                    <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="Bcur"> Battery Current
-                    </label>
-                    <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="VictronCurrent"> Solar Current
-                    </label>
-                    <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="MeasuredAmps" checked> Alternator Current
-                    </label>
-                    <label style="margin-right:15px;">
-                        <input type="checkbox" class="series-toggle" data-chart="plot1" data-series="batteryVoltage"> Battery Voltage
-                    </label>
-                    
-                    <!-- Min/Max/Avg Toggles -->
-                    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #ddd;">
-                        <label style="margin-right:10px;">
-                            <input type="checkbox" class="minmaxavg-toggle" data-chart="plot1" data-type="min" checked> Min
-                        </label>
-                        <label style="margin-right:10px;">
-                            <input type="checkbox" class="minmaxavg-toggle" data-chart="plot1" data-type="max" checked> Max
-                        </label>
-                        <label style="margin-right:10px;">
-                            <input type="checkbox" class="minmaxavg-toggle" data-chart="plot1" data-type="avg" checked> Avg
-                        </label>
-                    </div>
-                </div>
-                <canvas id="plot1"></canvas>
-            </div>
+            <canvas id="batteryChart" style="display: none;"></canvas>
         </div>
+
+        <!-- Collapsible Plot Tools -->
+        <div style="margin: 15px 0; text-align: center;">
+            <button id="toggleTools" style="padding: 6px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                ▼ Show Plot Editing Tools
+            </button>
+        </div>
+
+        <div id="plotTools" style="display: none;">
+            <!-- Quick Presets -->
+            <div class="time-range-section" style="background: #f0f7ff; border-left: 3px solid #1976d2;">
+                <label style="font-weight: 500;">Quick:</label>
+                <button class="preset-btn" data-value="1" data-unit="hours">Last Hour</button>
+                <button class="preset-btn" data-value="24" data-unit="hours">Last Day</button>
+                <button class="preset-btn" data-value="7" data-unit="days">Last Week</button>
+                <button class="preset-btn" data-value="30" data-unit="days">Last Month</button>
+            </div>
+
+            <!-- Time Range Controls -->
+            <div class="time-range-section">
+                <label>Show last:</label>
+                <input type="number" id="timeValue" value="24" min="1">
+                <div class="time-unit-box" data-unit="seconds">sec</div>
+                <div class="time-unit-box" data-unit="minutes">min</div>
+                <div class="time-unit-box active" data-unit="hours">hrs</div>
+                <div class="time-unit-box" data-unit="days">days</div>
+                <button id="applyTimeRange">Apply</button>
+                <button id="panLeft" class="secondary">◀</button>
+                <button id="panRight" class="secondary">▶</button>
+            </div>
+
+            <!-- Y-Axis Adjustment -->
+            <div class="time-range-section">
+                <label style="font-weight: 500;">Y-axis:</label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
+                    <input type="checkbox" id="yAxisAutoScale" checked> Auto scale
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
+                    Min: <input type="number" id="yAxisMin" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    Max: <input type="number" id="yAxisMax" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <button id="applyYAxis" style="margin-left: 5px;" disabled>Apply</button>
+            </div>
+
+            <!-- Variable Controls -->
+            <div class="variable-controls">
+                <div class="variable-row" style="border-left-color: #ff6384;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle" data-group="SOC"> 
+                        <strong>SOC %</strong>
+                    </label>
+                </div>
+
+                <div class="variable-row" style="border-left-color: #36a2eb;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle" data-group="Bcur"> 
+                        <strong>Battery Current</strong>
+                    </label>
+                </div>
+
+                <div class="variable-row" style="border-left-color: #ffce56;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle" data-group="VictronCurrent"> 
+                        <strong>Solar Current</strong>
+                    </label>
+                </div>
+
+                <div class="variable-row" style="border-left-color: #4bc0c0;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle" data-group="MeasuredAmps" checked> 
+                        <strong>Alternator Current</strong>
+                    </label>
+                </div>
+
+                <div class="variable-row" style="border-left-color: #9966ff;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle" data-group="batteryVoltage"> 
+                        <strong>Battery Voltage</strong>
+                    </label>
+                </div>
+            </div>
+        </div> <!-- end plotTools -->
     </div>
 
     <script>
@@ -80,9 +264,29 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let fullData = [];
+        let chart = null;
 
-        let charts = {};
-        let sensorDataCache = null;
+        // Toggle plot tools
+        document.getElementById('toggleTools').addEventListener('click', function() {
+            const tools = document.getElementById('plotTools');
+            const isHidden = tools.style.display === 'none';
+            tools.style.display = isHidden ? 'block' : 'none';
+            this.textContent = isHidden ? '▲ Hide Plot Editing Tools' : '▼ Show Plot Editing Tools';
+        });
+
+        // Quick preset buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('timeValue').value = this.dataset.value;
+                document.querySelectorAll('.time-unit-box').forEach(box => {
+                    box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
+                });
+                updateChart();
+                saveSettings();
+            });
+        });
 
         // Parse token from URL
         function getTokenFromUrl() {
@@ -92,7 +296,7 @@
 
         // Show error message
         function showError(message) {
-            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('loadingChart').style.display = 'none';
             document.getElementById('error-message').textContent = message;
             document.getElementById('error-message').style.display = 'block';
         }
@@ -129,11 +333,11 @@
                     .from('sensor_history')
                     .select(`
                         timestamp,
-                        batt_volt_min, batt_volt_max, batt_volt_avg,
+                        soc_min, soc_max, soc_avg,
                         batt_curr_min, batt_curr_max, batt_curr_avg,
                         alt_curr_min, alt_curr_max, alt_curr_avg,
                         victron_curr_min, victron_curr_max, victron_curr_avg,
-                        soc_min, soc_max, soc_avg
+                        batt_volt_min, batt_volt_max, batt_volt_avg
                     `)
                     .eq('device_uid', deviceUid)
                     .order('timestamp', { ascending: true });
@@ -156,248 +360,313 @@
             }
         }
 
-        // Filter data by time range
-        function filterDataByTimeRange(data, range) {
-            if (!data || data.length === 0) return data;
-            const now = new Date(data[data.length - 1].timestamp);
-            let cutoffTime;
-            
-            switch(range) {
-                case '1h': cutoffTime = new Date(now - 60 * 60 * 1000); break;
-                case '6h': cutoffTime = new Date(now - 6 * 60 * 60 * 1000); break;
-                case '24h': cutoffTime = new Date(now - 24 * 60 * 60 * 1000); break;
-                case '7d': cutoffTime = new Date(now - 7 * 24 * 60 * 60 * 1000); break;
-                case '30d': cutoffTime = new Date(now - 30 * 24 * 60 * 60 * 1000); break;
-                default: return data; // 'all'
-            }
-            
-            return data.filter(d => new Date(d.timestamp) >= cutoffTime);
+        // LocalStorage functions
+        function saveSettings() {
+            const settings = {
+                checkedVariables: Array.from(document.querySelectorAll('.variable-toggle:checked')).map(cb => cb.dataset.group),
+                timeValue: document.getElementById('timeValue').value,
+                timeUnit: document.querySelector('.time-unit-box.active')?.dataset.unit || 'hours',
+                yAxisAuto: document.getElementById('yAxisAutoScale').checked,
+                yAxisMin: document.getElementById('yAxisMin').value,
+                yAxisMax: document.getElementById('yAxisMax').value
+            };
+            localStorage.setItem('chartSettings_plot1', JSON.stringify(settings));
         }
 
-        // Create Plot 1: Battery Metrics (5 variables, single Y-axis)
-        function createPlot1(data) {
-            const ctx = document.getElementById('plot1').getContext('2d');
+        function loadSettings() {
+            const saved = localStorage.getItem('chartSettings_plot1');
+            if (!saved) return;
             
-            // Get time range from dropdown
-            const timeRange = document.getElementById('timeRange1')?.value || 'all';
-            const filteredData = filterDataByTimeRange(data, timeRange);
+            try {
+                const settings = JSON.parse(saved);
+                
+                // Restore time range
+                document.getElementById('timeValue').value = settings.timeValue || 24;
+                document.querySelectorAll('.time-unit-box').forEach(box => {
+                    box.classList.toggle('active', box.dataset.unit === settings.timeUnit);
+                });
+                
+                // Restore Y-axis
+                document.getElementById('yAxisAutoScale').checked = settings.yAxisAuto !== false;
+                if (settings.yAxisMin) document.getElementById('yAxisMin').value = settings.yAxisMin;
+                if (settings.yAxisMax) document.getElementById('yAxisMax').value = settings.yAxisMax;
+                
+                // Restore variable selections
+                document.querySelectorAll('.variable-toggle').forEach(cb => {
+                    cb.checked = settings.checkedVariables?.includes(cb.dataset.group) || false;
+                });
+            } catch (e) {
+                console.error('Failed to load settings:', e);
+            }
+        }
+
+        function filterDataByTime(data, value, unit) {
+            if (!value || value <= 0) return data;
             
-            const timestamps = filteredData.map(d => new Date(d.timestamp));
+            const now = new Date(data[data.length - 1].timestamp);
+            let milliseconds = 0;
+            
+            switch(unit) {
+                case 'seconds': milliseconds = value * 1000; break;
+                case 'minutes': milliseconds = value * 60 * 1000; break;
+                case 'hours': milliseconds = value * 60 * 60 * 1000; break;
+                case 'days': milliseconds = value * 24 * 60 * 60 * 1000; break;
+            }
+            
+            const cutoff = new Date(now - milliseconds);
+            return data.filter(d => new Date(d.timestamp) >= cutoff);
+        }
 
-            const datasets = [
-                // SOC - Red shades
-                {
-                    label: 'SOC Min (%)',
-                    data: filteredData.map(d => d.soc_min),
-                    borderColor: 'rgba(255, 99, 132, 0.5)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'SOC',
-                    mmavgType: 'min'
-                },
-                {
-                    label: 'SOC Avg (%)',
-                    data: filteredData.map(d => d.soc_avg),
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 1)',
-                    pointRadius: 2,
-                    borderWidth: 2,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'SOC',
-                    mmavgType: 'avg'
-                },
-                {
-                    label: 'SOC Max (%)',
-                    data: filteredData.map(d => d.soc_max),
-                    borderColor: 'rgba(255, 150, 170, 0.5)',
-                    backgroundColor: 'rgba(255, 150, 170, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'SOC',
-                    mmavgType: 'max'
-                },
-                // Battery Current - Blue shades
-                {
-                    label: 'Batt Curr Min (A)',
-                    data: filteredData.map(d => d.batt_curr_min),
-                    borderColor: 'rgba(54, 162, 235, 0.5)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'Bcur',
-                    mmavgType: 'min'
-                },
-                {
-                    label: 'Batt Curr Avg (A)',
-                    data: filteredData.map(d => d.batt_curr_avg),
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    backgroundColor: 'rgba(54, 162, 235, 1)',
-                    pointRadius: 2,
-                    borderWidth: 2,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'Bcur',
-                    mmavgType: 'avg'
-                },
-                {
-                    label: 'Batt Curr Max (A)',
-                    data: filteredData.map(d => d.batt_curr_max),
-                    borderColor: 'rgba(120, 200, 255, 0.5)',
-                    backgroundColor: 'rgba(120, 200, 255, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'Bcur',
-                    mmavgType: 'max'
-                },
-                // Solar Current - Yellow shades
-                {
-                    label: 'Solar Curr Min (A)',
-                    data: filteredData.map(d => d.victron_curr_min),
-                    borderColor: 'rgba(255, 206, 86, 0.5)',
-                    backgroundColor: 'rgba(255, 206, 86, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'VictronCurrent',
-                    mmavgType: 'min'
-                },
-                {
-                    label: 'Solar Curr Avg (A)',
-                    data: filteredData.map(d => d.victron_curr_avg),
-                    borderColor: 'rgba(255, 206, 86, 1)',
-                    backgroundColor: 'rgba(255, 206, 86, 1)',
-                    pointRadius: 2,
-                    borderWidth: 2,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'VictronCurrent',
-                    mmavgType: 'avg'
-                },
-                {
-                    label: 'Solar Curr Max (A)',
-                    data: filteredData.map(d => d.victron_curr_max),
-                    borderColor: 'rgba(255, 230, 150, 0.5)',
-                    backgroundColor: 'rgba(255, 230, 150, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'VictronCurrent',
-                    mmavgType: 'max'
-                },
-                // Alternator Current - Teal shades
-                {
-                    label: 'Alt Curr Min (A)',
-                    data: filteredData.map(d => d.alt_curr_min),
-                    borderColor: 'rgba(75, 192, 192, 0.5)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: false,
-                    seriesGroup: 'MeasuredAmps',
-                    mmavgType: 'min'
-                },
-                {
-                    label: 'Alt Curr Avg (A)',
-                    data: filteredData.map(d => d.alt_curr_avg),
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 1)',
-                    pointRadius: 2,
-                    borderWidth: 2,
-                    fill: false,
-                    hidden: false,
-                    seriesGroup: 'MeasuredAmps',
-                    mmavgType: 'avg'
-                },
-                {
-                    label: 'Alt Curr Max (A)',
-                    data: filteredData.map(d => d.alt_curr_max),
-                    borderColor: 'rgba(140, 230, 230, 0.5)',
-                    backgroundColor: 'rgba(140, 230, 230, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: false,
-                    seriesGroup: 'MeasuredAmps',
-                    mmavgType: 'max'
-                },
-                // Battery Voltage - Purple shades
-                {
-                    label: 'Batt Volt Min (V)',
-                    data: filteredData.map(d => d.batt_volt_min),
-                    borderColor: 'rgba(153, 102, 255, 0.5)',
-                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'batteryVoltage',
-                    mmavgType: 'min'
-                },
-                {
-                    label: 'Batt Volt Avg (V)',
-                    data: filteredData.map(d => d.batt_volt_avg),
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    backgroundColor: 'rgba(153, 102, 255, 1)',
-                    pointRadius: 2,
-                    borderWidth: 2,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'batteryVoltage',
-                    mmavgType: 'avg'
-                },
-                {
-                    label: 'Batt Volt Max (V)',
-                    data: filteredData.map(d => d.batt_volt_max),
-                    borderColor: 'rgba(200, 170, 255, 0.5)',
-                    backgroundColor: 'rgba(200, 170, 255, 0.5)',
-                    pointRadius: 2,
-                    borderWidth: 1.5,
-                    fill: false,
-                    hidden: true,
-                    seriesGroup: 'batteryVoltage',
-                    mmavgType: 'max'
-                }
-            ];
+        function createChart(data) {
+            const ctx = document.getElementById('batteryChart').getContext('2d');
+            const timestamps = data.map(d => new Date(d.timestamp));
 
-            if (charts.plot1) {
-                charts.plot1.destroy();
+            // Get checked variables
+            const checkedVars = new Set();
+            document.querySelectorAll('.variable-toggle:checked').forEach(cb => {
+                checkedVars.add(cb.dataset.group);
+            });
+
+            const datasets = [];
+
+            // SOC - Red
+            if (checkedVars.has('SOC')) {
+                datasets.push(
+                    {
+                        label: 'SOC Min',
+                        data: data.map(d => d.soc_min),
+                        borderColor: 'rgba(255, 99, 132, 0.3)',
+                        backgroundColor: 'rgba(255, 99, 132, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'SOC Max',
+                        data: data.map(d => d.soc_max),
+                        borderColor: 'rgba(255, 99, 132, 0.3)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2
+                    },
+                    {
+                        label: 'SOC Avg (%)',
+                        data: data.map(d => d.soc_avg),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1
+                    }
+                );
             }
 
-            charts.plot1 = new Chart(ctx, {
+            // Battery Current - Blue
+            if (checkedVars.has('Bcur')) {
+                datasets.push(
+                    {
+                        label: 'Batt Curr Min',
+                        data: data.map(d => d.batt_curr_min),
+                        borderColor: 'rgba(54, 162, 235, 0.3)',
+                        backgroundColor: 'rgba(54, 162, 235, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Batt Curr Max',
+                        data: data.map(d => d.batt_curr_max),
+                        borderColor: 'rgba(54, 162, 235, 0.3)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2
+                    },
+                    {
+                        label: 'Batt Curr Avg (A)',
+                        data: data.map(d => d.batt_curr_avg),
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1
+                    }
+                );
+            }
+
+            // Solar Current - Yellow
+            if (checkedVars.has('VictronCurrent')) {
+                datasets.push(
+                    {
+                        label: 'Solar Curr Min',
+                        data: data.map(d => d.victron_curr_min),
+                        borderColor: 'rgba(255, 206, 86, 0.3)',
+                        backgroundColor: 'rgba(255, 206, 86, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Solar Curr Max',
+                        data: data.map(d => d.victron_curr_max),
+                        borderColor: 'rgba(255, 206, 86, 0.3)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2
+                    },
+                    {
+                        label: 'Solar Curr Avg (A)',
+                        data: data.map(d => d.victron_curr_avg),
+                        borderColor: 'rgba(255, 206, 86, 1)',
+                        backgroundColor: 'rgba(255, 206, 86, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1
+                    }
+                );
+            }
+
+            // Alternator Current - Teal
+            if (checkedVars.has('MeasuredAmps')) {
+                datasets.push(
+                    {
+                        label: 'Alt Curr Min',
+                        data: data.map(d => d.alt_curr_min),
+                        borderColor: 'rgba(75, 192, 192, 0.3)',
+                        backgroundColor: 'rgba(75, 192, 192, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Alt Curr Max',
+                        data: data.map(d => d.alt_curr_max),
+                        borderColor: 'rgba(75, 192, 192, 0.3)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2
+                    },
+                    {
+                        label: 'Alt Curr Avg (A)',
+                        data: data.map(d => d.alt_curr_avg),
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1
+                    }
+                );
+            }
+
+            // Battery Voltage - Purple
+            if (checkedVars.has('batteryVoltage')) {
+                datasets.push(
+                    {
+                        label: 'Batt Volt Min',
+                        data: data.map(d => d.batt_volt_min),
+                        borderColor: 'rgba(153, 102, 255, 0.3)',
+                        backgroundColor: 'rgba(153, 102, 255, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Batt Volt Max',
+                        data: data.map(d => d.batt_volt_max),
+                        borderColor: 'rgba(153, 102, 255, 0.3)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2
+                    },
+                    {
+                        label: 'Batt Volt Avg (V)',
+                        data: data.map(d => d.batt_volt_avg),
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1
+                    }
+                );
+            }
+
+            if (chart) chart.destroy();
+
+            chart = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: timestamps,
-                    datasets: datasets
-                },
+                data: { labels: timestamps, datasets: datasets },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
+                    maintainAspectRatio: false,
+                    aspectRatio: 2,
                     plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'nearest',
+                            intersect: false,
+                            callbacks: {
+                                title: function(items) {
+                                    return new Date(items[0].parsed.x).toLocaleString();
+                                }
+                            }
+                        },
                         legend: {
                             position: 'top',
                             labels: {
-                                usePointStyle: true,  
+                                usePointStyle: true,
                                 pointStyle: 'circle',
-                                padding: 10,
-                                font: { size: 11 }
+                                pointStyleWidth: 6,
+                                padding: 8,
+                                font: { size: 10 },
+                                filter: function(item, chart) {
+                                    // Only show "Avg" lines in legend, hide min/max bands
+                                    return item.text.includes('Avg');
+                                }
                             }
                         },
                         title: {
                             display: true,
-                            text: 'Battery Metrics (Single Y-Axis: Amps/Volts/%)'
+                            text: 'Battery Metrics',
+                            font: { size: 16 }
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: {
+                                    enabled: true   // trackpad/mouse scroll to zoom
+                                },
+                                pinch: {
+                                    enabled: true   // mobile pinch to zoom
+                                },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,      // click and drag to pan left/right
+                                mode: 'x',
+                                modifierKey: null,  // no modifier key required
+                                threshold: 0        // respond immediately to drag
+                            },
+                            limits: {
+                                x: { min: 'original', max: 'original' }
+                            }
                         }
                     },
                     scales: {
@@ -405,74 +674,87 @@
                             type: 'time',
                             time: {
                                 unit: 'hour',
-                                displayFormats: {
-                                    hour: 'MMM d, HH:mm'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Time'
+                                displayFormats: { hour: 'MMM d, HH:mm' }
                             }
                         },
                         y: {
-                            title: {
-                                display: true,
-                                text: 'Value'
-                            },
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
                             beginAtZero: false
                         }
                     }
                 }
             });
 
-            document.getElementById('plot1-container').style.display = 'block';
+            // Hide loading, show chart
+            document.getElementById('loadingChart').style.display = 'none';
+            document.getElementById('batteryChart').style.display = 'block';
         }
 
-        // Handle toggle controls
-        function setupToggleControls() {
-            // Series toggles (SOC, Battery Current, etc.)
-            document.querySelectorAll('.series-toggle').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const chartId = this.dataset.chart;
-                    const seriesGroup = this.dataset.series;
-                    const chart = charts[chartId];
-                    
-                    if (!chart) return;
-
-                    chart.data.datasets.forEach((dataset, index) => {
-                        if (dataset.seriesGroup === seriesGroup) {
-                            chart.setDatasetVisibility(index, this.checked);
-                        }
-                    });
-                    chart.update();
-                });
-            });
-
-            // Min/Max/Avg toggles
-            document.querySelectorAll('.minmaxavg-toggle').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const chartId = this.dataset.chart;
-                    const mmavgType = this.dataset.type;
-                    const chart = charts[chartId];
-                    
-                    if (!chart) return;
-
-                    chart.data.datasets.forEach((dataset, index) => {
-                        if (dataset.mmavgType === mmavgType) {
-                            chart.setDatasetVisibility(index, this.checked);
-                        }
-                    });
-                    chart.update();
-                });
-            });
-
-            // Time range selector
-            document.getElementById('timeRange1')?.addEventListener('change', function() {
-                if (sensorDataCache) {
-                    createPlot1(sensorDataCache);
-                }
-            });
+        function updateChart() {
+            const timeValue = parseInt(document.getElementById('timeValue').value);
+            const activeUnit = document.querySelector('.time-unit-box.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
+            createChart(filteredData);
         }
+
+        // Event listeners
+        document.getElementById('applyTimeRange').addEventListener('click', () => {
+            updateChart();
+            saveSettings();
+        });
+
+        // Time unit box selection
+        document.querySelectorAll('.time-unit-box').forEach(box => {
+            box.addEventListener('click', function() {
+                document.querySelectorAll('.time-unit-box').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                saveSettings();
+            });
+        });
+
+        // Y-axis controls
+        document.getElementById('yAxisAutoScale').addEventListener('change', function() {
+            const isAuto = this.checked;
+            document.getElementById('yAxisMin').disabled = isAuto;
+            document.getElementById('yAxisMax').disabled = isAuto;
+            document.getElementById('applyYAxis').disabled = isAuto;
+            if (isAuto && chart) {
+                chart.options.scales.y.min = undefined;
+                chart.options.scales.y.max = undefined;
+                chart.update('none');
+            }
+            saveSettings();
+        });
+
+        document.getElementById('applyYAxis').addEventListener('click', function() {
+            if (!chart) return;
+            const min = parseFloat(document.getElementById('yAxisMin').value);
+            const max = parseFloat(document.getElementById('yAxisMax').value);
+            if (!isNaN(min)) chart.options.scales.y.min = min;
+            if (!isNaN(max)) chart.options.scales.y.max = max;
+            chart.update('none');
+            saveSettings();
+        });
+
+        // Pan controls
+        document.getElementById('panLeft').addEventListener('click', function() {
+            if (chart) chart.pan({x: -100}, undefined, 'default');
+        });
+
+        document.getElementById('panRight').addEventListener('click', function() {
+            if (chart) chart.pan({x: 100}, undefined, 'default');
+        });
+
+        // Variable toggle - recreates chart with selected variables
+        document.querySelectorAll('.variable-toggle').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateChart();
+                saveSettings();
+            });
+        });
 
         // Main initialization
         async function init() {
@@ -495,17 +777,14 @@
                     return;
                 }
 
-                // Cache data for time range filtering
-                sensorDataCache = sensorData;
+                // Store full data
+                fullData = sensorData;
 
-                // Create chart
-                createPlot1(sensorData);
+                // Load saved settings
+                loadSettings();
 
-                // Setup toggle controls
-                setupToggleControls();
-
-                // Hide loading message
-                document.getElementById('loading-message').style.display = 'none';
+                // Create initial chart
+                updateChart();
 
             } catch (error) {
                 showError(error.message);
