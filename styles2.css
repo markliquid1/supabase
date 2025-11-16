@@ -22,7 +22,7 @@
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1000px;
             /* wider on large screens */
             width: 100%;
             /* responsive */
@@ -221,14 +221,20 @@
         }
 
 
-        /* Below here is unique to the Vercel code */
 
         .control-group-label {
-            border-top: 3px solid #bbb;
-            margin: 22px 12px 12px 12px;
-            padding-top: 10px;
             font-weight: 600;
-            font-size: 13px;
+            color: var(--text-dark);
+            margin-top: 10px;
+            margin-bottom: 5px;
+            padding: 6px 8px;
+            background: rgba(0, 161, 154, 0.1);
+            border-radius: var(--radius);
+            font-size: 12px;
+            border-left: 3px solid var(--accent);
         }
+
+          /* Below here is unique to the Vercel code */
+
         
  
