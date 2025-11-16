@@ -1302,6 +1302,24 @@ input:checked+.slider:before {
   color: #aaa;
 }
 
+/* My History iframe styling */
+.history-container {
+  padding: 0;
+}
+
+#history-iframe {
+  width: 100%;
+  min-height: 800px;
+  height: calc(100vh - 250px);
+  border: none;
+  display: none;
+}
+
+#history-status {
+  margin: 15px;
+  color: #666;
+}
+
 
 /* XREG_END */
 
