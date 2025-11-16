@@ -37,10 +37,10 @@
         <div style="margin: 5px 0 10px 0; text-align: left;">
             <!-- BUTTON COLOR CHANGE -->
             <button id="toggleTools1"
-            style="padding: 3px 8px; background: var(--accent); color: #fff; border: 1px solid #444; border-radius: 3px; cursor: pointer; font-size: 11px;">
-            ▼ Show Plot Editing Tools
-        </button>
-        
+                style="padding: 3px 8px; background: var(--accent); color: #fff; border: 1px solid #444; border-radius: 3px; cursor: pointer; font-size: 11px;">
+                ▼ Show Plot Editing Tools
+            </button>
+
         </div>
 
         <div id="plotTools1" style="display: none;">
@@ -112,94 +112,95 @@
             </div>
         </div>
 
-         <!-- ===== END PLOT 1 UI ===== -->
+        <!-- ===== END PLOT 1 UI ===== -->
 
         <!-- ============================================
              PLOT 2: Battery Voltage & SOC - CHART AREA
              ============================================ -->
-             <div class="chart-section">
-                <div id="loadingChart2" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
-                    Loading chart...
-                </div>
-                <canvas id="chart2" style="display: none;"></canvas>
+        <div class="chart-section">
+            <div id="loadingChart2"
+                style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
+                Loading chart...
             </div>
-    
-            <!-- ============================================
+            <canvas id="chart2" style="display: none;"></canvas>
+        </div>
+
+        <!-- ============================================
                  PLOT 2: Battery Voltage & SOC - TOOLS / CONTROLS
                  ============================================ -->
-            <div style="margin: 5px 0 10px 0; text-align: left;">
-                <button id="toggleTools2"
-                    style="padding: 3px 8px; background: var(--accent); color: #fff; border: 1px solid #444; border-radius: 3px; cursor: pointer; font-size: 11px;">
-                    ▼ Show Plot Editing Tools
-                </button>
+        <div style="margin: 5px 0 10px 0; text-align: left;">
+            <button id="toggleTools2"
+                style="padding: 3px 8px; background: var(--accent); color: #fff; border: 1px solid #444; border-radius: 3px; cursor: pointer; font-size: 11px;">
+                ▼ Show Plot Editing Tools
+            </button>
+        </div>
+
+        <div id="plotTools2" style="display: none;">
+            <div class="control-group-label">Time Range Controls</div>
+
+            <!-- Time Range Controls -->
+            <div class="time-range-section">
+                <label>Show last:</label>
+                <input type="number" id="timeValue2" value="24" min="1">
+                <div class="time-unit-box plot2-unit" data-unit="seconds">sec</div>
+                <div class="time-unit-box plot2-unit" data-unit="minutes">min</div>
+                <div class="time-unit-box plot2-unit active" data-unit="hours">hrs</div>
+                <div class="time-unit-box plot2-unit" data-unit="days">days</div>
+                <button id="applyTimeRange2">Apply</button>
+                <button id="panLeft2" class="secondary">◀</button>
+                <button id="panRight2" class="secondary">▶</button>
             </div>
-    
-            <div id="plotTools2" style="display: none;">
-                <div class="control-group-label">Time Range Controls</div>
-    
-                <!-- Time Range Controls -->
-                <div class="time-range-section">
-                    <label>Show last:</label>
-                    <input type="number" id="timeValue2" value="24" min="1">
-                    <div class="time-unit-box plot2-unit" data-unit="seconds">sec</div>
-                    <div class="time-unit-box plot2-unit" data-unit="minutes">min</div>
-                    <div class="time-unit-box plot2-unit active" data-unit="hours">hrs</div>
-                    <div class="time-unit-box plot2-unit" data-unit="days">days</div>
-                    <button id="applyTimeRange2">Apply</button>
-                    <button id="panLeft2" class="secondary">◀</button>
-                    <button id="panRight2" class="secondary">▶</button>
-                </div>
-    
-                <!-- Quick Presets -->
-                <div class="time-range-section">
-                    <label>Quick:</label>
-                    <button class="preset-btn preset2" data-value="1" data-unit="hours">Last Hour</button>
-                    <button class="preset-btn preset2" data-value="24" data-unit="hours">Last Day</button>
-                    <button class="preset-btn preset2" data-value="7" data-unit="days">Last Week</button>
-                    <button class="preset-btn preset2" data-value="30" data-unit="days">Last Month</button>
-                </div>
-    
-                <div class="control-group-label">Y-Axis Controls (Left = Voltage, Right = SOC)</div>
-    
-                <!-- Y-Axis Adjustment -->
-                <div class="time-range-section">
-                    <label style="font-weight: 500;">Y-axis:</label>
-                    <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
-                        <input type="checkbox" id="yAxisAutoScale2" checked> Auto scale
+
+            <!-- Quick Presets -->
+            <div class="time-range-section">
+                <label>Quick:</label>
+                <button class="preset-btn preset2" data-value="1" data-unit="hours">Last Hour</button>
+                <button class="preset-btn preset2" data-value="24" data-unit="hours">Last Day</button>
+                <button class="preset-btn preset2" data-value="7" data-unit="days">Last Week</button>
+                <button class="preset-btn preset2" data-value="30" data-unit="days">Last Month</button>
+            </div>
+
+            <div class="control-group-label">Y-Axis Controls (Left = Voltage, Right = SOC)</div>
+
+            <!-- Y-Axis Adjustment -->
+            <div class="time-range-section">
+                <label style="font-weight: 500;">Y-axis:</label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
+                    <input type="checkbox" id="yAxisAutoScale2" checked> Auto scale
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
+                    Min: <input type="number" id="yAxisMin2" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    Max: <input type="number" id="yAxisMax2" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <button id="applyYAxis2" style="margin-left: 5px;" disabled>Apply</button>
+            </div>
+
+            <div class="control-group-label">Variables</div>
+
+            <!-- Variable Controls -->
+            <div class="variable-controls">
+                <div class="variable-row" style="border-left-color: #0072B2;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle2" data-group="BattVolt" checked>
+                        <strong>Battery Voltage</strong>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
-                        Min: <input type="number" id="yAxisMin2" style="width: 70px;" placeholder="auto" disabled>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 5px;">
-                        Max: <input type="number" id="yAxisMax2" style="width: 70px;" placeholder="auto" disabled>
-                    </label>
-                    <button id="applyYAxis2" style="margin-left: 5px;" disabled>Apply</button>
                 </div>
-    
-                <div class="control-group-label">Variables</div>
-    
-                <!-- Variable Controls -->
-                <div class="variable-controls">
-                    <div class="variable-row" style="border-left-color: #0072B2;">
-                        <label class="variable-master">
-                            <input type="checkbox" class="variable-toggle2" data-group="BattVolt" checked>
-                            <strong>Battery Voltage</strong>
-                        </label>
-                    </div>
-    
-                    <div class="variable-row" style="border-left-color: #E69F00;">
-                        <label class="variable-master">
-                            <input type="checkbox" class="variable-toggle2" data-group="SOC" checked>
-                            <strong>SOC</strong>
-                        </label>
-                    </div>
+
+                <div class="variable-row" style="border-left-color: #E69F00;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle2" data-group="SOC" checked>
+                        <strong>SOC</strong>
+                    </label>
                 </div>
             </div>
-    
-            <!-- ===== END PLOT 2 UI ===== -->
-    
-            <!-- FUTURE PLOTS 3+ : Add their HTML blocks above this comment -->
-    
+        </div>
+
+        <!-- ===== END PLOT 2 UI ===== -->
+
+        <!-- FUTURE PLOTS 3+ : Add their HTML blocks above this comment -->
+
 
     </div>
 
@@ -272,21 +273,18 @@
         async function fetchSensorHistory(deviceUid) {
             try {
                 const { data, error } = await supabase
-            .from('sensor_history')
-            .select(`
+                    .from('sensor_history')
+                    .select(`
                 timestamp,
-
-                -- Plot 1: Currents
                 batt_curr_min, batt_curr_max, batt_curr_avg,
                 alt_curr_min, alt_curr_max, alt_curr_avg,
                 victron_curr_min, victron_curr_max, victron_curr_avg,
-
-                -- Plot 2: Battery Voltage & SOC
                 batt_volt_min, batt_volt_max, batt_volt_avg,
                 soc_min, soc_max, soc_avg
             `)
-            .eq('device_uid', deviceUid)
-            .order('timestamp', { ascending: true });
+                    .eq('device_uid', deviceUid)
+                    .order('timestamp', { ascending: true });
+
                 if (error) throw error;
 
                 const minDate = new Date('2020-01-01').getTime();
@@ -1060,4 +1058,3 @@
 </body>
 
 </html>
-
