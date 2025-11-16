@@ -27,15 +27,20 @@
             line-height: 1.4;
             font-size: 14px;
         }
+
         .container {
-            max-width: 1600px;   /* wider on large screens */
-            width: 100%;         /* responsive */
-            margin: 0 auto;      /* centered */
+            max-width: 1600px;
+            /* wider on large screens */
+            width: 100%;
+            /* responsive */
+            margin: 0 auto;
+            /* centered */
             background: var(--card-light);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .time-range-section {
             margin: 15px 0;
             padding: 10px;
@@ -48,10 +53,12 @@
             font-size: 13px;
             color: #666;
         }
+
         .time-range-section label {
             font-weight: normal;
             margin-right: 5px;
         }
+
         .time-range-section input[type="number"] {
             width: 60px;
             padding: 4px 6px;
@@ -61,11 +68,13 @@
             background: var(--card-light);
             color: var(--text-dark);
         }
+
         .time-range-section input[type="number"]:focus {
             outline: none;
             border-color: var(--accent);
             box-shadow: 0 0 0 2px rgba(0, 161, 154, 0.2);
         }
+
         .time-unit-box {
             padding: 4px 10px;
             border: 1px solid var(--border);
@@ -76,15 +85,18 @@
             transition: all 0.2s;
             color: var(--text-dark);
         }
+
         .time-unit-box:hover {
             background: #e3f2fd;
             border-color: #90caf9;
         }
+
         .time-unit-box.active {
             background: var(--accent);
             color: white;
             border-color: var(--accent);
         }
+
         .time-range-section button {
             padding: 4px 10px;
             background: #555555;
@@ -98,15 +110,18 @@
             height: 26px;
             transition: all 0.3s ease;
         }
+
         .time-range-section button:hover {
             background: var(--accent);
             transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
+
         .time-range-section button:active {
             transform: translateY(0);
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
+
         .time-range-section button.secondary {
             background: #e0e0e0;
             color: #333;
@@ -118,12 +133,14 @@
             font-size: 11px;
             transition: all 0.3s ease;
         }
+
         .time-range-section button.secondary:hover {
             background: #d0d0d0;
             border-color: var(--accent);
             color: var(--accent);
             transform: translateY(-1px);
         }
+
         .time-range-section button.secondary:active {
             background: #c0c0c0;
             border-color: var(--accent);
@@ -131,6 +148,7 @@
             transform: translateY(0);
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .preset-btn {
             padding: 4px 10px;
             background: #f5f5f5;
@@ -142,22 +160,26 @@
             height: 26px;
             transition: all 0.2s;
         }
+
         .preset-btn:hover {
             background: #e0e0e0;
             border-color: var(--accent);
         }
+
         .preset-btn.active {
             background: var(--accent);
             color: white;
             border-color: var(--accent);
             font-weight: bold;
         }
+
         .variable-controls {
             margin: 15px 0;
             padding: 15px;
             background: #fafafa;
             border-radius: 6px;
         }
+
         .variable-row {
             display: flex;
             align-items: center;
@@ -169,9 +191,11 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+
         .variable-row:hover {
             background: #f5f5f5;
         }
+
         .variable-master {
             min-width: 160px;
             font-weight: 500;
@@ -181,12 +205,14 @@
             gap: 8px;
             cursor: pointer;
         }
+
         @media (max-width: 768px) {
             .variable-master {
                 min-width: 120px;
                 font-size: 13px;
             }
         }
+
         .chart-section {
             margin: 10px 0 20px 0;
             padding-bottom: 10px;
@@ -194,11 +220,13 @@
             height: 500px;
             position: relative;
         }
+
         @media (max-width: 768px) {
             .chart-section {
                 height: 400px;
             }
         }
+
         .control-group-label {
             font-weight: 600;
             color: var(--text-dark);
@@ -219,7 +247,9 @@
 
 <body>
     <div class="container">
-        <div id="error-message" style="display:none; color:#f44336; margin:10px 0; padding:10px; background:#ffebee; border-radius:4px;"></div>
+        <div id="error-message"
+            style="display:none; color:#f44336; margin:10px 0; padding:10px; background:#ffebee; border-radius:4px;">
+        </div>
 
         <!-- Chart -->
         <div class="chart-section">
@@ -231,14 +261,16 @@
 
         <!-- Collapsible Plot Tools -->
         <div style="margin: 5px 0 10px 0; text-align: left;">
-            <button id="toggleTools1" style="padding: 3px 8px; background: #1976d2; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">
+            <!-- BUTTON COLOR CHANGE -->
+            <button id="toggleTools1"
+                style="padding: 3px 8px; background: var(--accent); color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">
                 ▼ Show Plot Editing Tools
             </button>
         </div>
 
         <div id="plotTools1" style="display: none;">
             <div class="control-group-label">Time Range Controls</div>
-            
+
             <!-- Time Range Controls -->
             <div class="time-range-section">
                 <label>Show last:</label>
@@ -313,7 +345,7 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
+
         let fullData = [];
         let chart1 = null;
 
@@ -409,19 +441,19 @@
                 document.querySelectorAll('.variable-toggle1').forEach(cb => cb.checked = true);
                 return;
             }
-            
+
             try {
                 const settings = JSON.parse(saved);
-                
+
                 document.getElementById('timeValue1').value = settings.timeValue || 24;
                 document.querySelectorAll('.plot1-unit').forEach(box => {
                     box.classList.toggle('active', box.dataset.unit === settings.timeUnit);
                 });
-                
+
                 document.getElementById('yAxisAutoScale1').checked = settings.yAxisAuto !== false;
                 if (settings.yAxisMin) document.getElementById('yAxisMin1').value = settings.yAxisMin;
                 if (settings.yAxisMax) document.getElementById('yAxisMax1').value = settings.yAxisMax;
-                
+
                 if (settings.checkedVariables && settings.checkedVariables.length > 0) {
                     document.querySelectorAll('.variable-toggle1').forEach(cb => {
                         cb.checked = settings.checkedVariables.includes(cb.dataset.group);
@@ -443,17 +475,17 @@
 
         function filterDataByTime(data, value, unit) {
             if (!value || value <= 0 || data.length === 0) return data;
-            
+
             const now = new Date(data[data.length - 1].timestamp);
             let milliseconds = 0;
-            
-            switch(unit) {
+
+            switch (unit) {
                 case 'seconds': milliseconds = value * 1000; break;
                 case 'minutes': milliseconds = value * 60 * 1000; break;
                 case 'hours': milliseconds = value * 60 * 60 * 1000; break;
                 case 'days': milliseconds = value * 24 * 60 * 60 * 1000; break;
             }
-            
+
             const cutoff = new Date(now - milliseconds);
             return data.filter(d => new Date(d.timestamp) >= cutoff);
         }
@@ -494,7 +526,7 @@
                         order: 2
                     },
                     {
-                        label: 'Batt Curr Avg',
+                        label: 'Batt Curr',
                         data: data.map(d => d.batt_curr_avg),
                         borderColor: 'rgba(0, 114, 178, 1)',
                         backgroundColor: 'rgba(0, 114, 178, 1)',
@@ -530,7 +562,7 @@
                         order: 2
                     },
                     {
-                        label: 'Solar Curr Avg',
+                        label: 'Solar Curr',
                         data: data.map(d => d.victron_curr_avg),
                         borderColor: 'rgba(230, 159, 0, 1)',
                         backgroundColor: 'rgba(230, 159, 0, 1)',
@@ -566,7 +598,7 @@
                         order: 2
                     },
                     {
-                        label: 'Alt Curr Avg',
+                        label: 'Alt Curr',
                         data: data.map(d => d.alt_curr_avg),
                         borderColor: 'rgba(0, 158, 115, 1)',
                         backgroundColor: 'rgba(0, 158, 115, 1)',
@@ -592,7 +624,7 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: function(items) {
+                                title: function (items) {
                                     return new Date(items[0].parsed.x).toLocaleString();
                                 }
                             }
@@ -605,7 +637,7 @@
                                 pointStyleWidth: 6,
                                 padding: 8,
                                 font: { size: 10 },
-                                filter: function(item, chart) {
+                                filter: function (item, chart) {
                                     return item.text.includes('Avg');
                                 }
                             }
@@ -671,7 +703,7 @@
             document.querySelectorAll('.preset1').forEach(btn => {
                 const btnValue = parseInt(btn.dataset.value);
                 const btnUnit = btn.dataset.unit;
-                
+
                 if (btnValue === timeValue && btnUnit === timeUnit) {
                     btn.classList.add('active');
                 } else {
@@ -681,7 +713,7 @@
         }
 
         // Toggle controls
-        document.getElementById('toggleTools1').addEventListener('click', function() {
+        document.getElementById('toggleTools1').addEventListener('click', function () {
             const tools = document.getElementById('plotTools1');
             const isHidden = tools.style.display === 'none';
             tools.style.display = isHidden ? 'block' : 'none';
@@ -690,7 +722,7 @@
 
         // Preset buttons
         document.querySelectorAll('.preset1').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 document.getElementById('timeValue1').value = this.dataset.value;
                 document.querySelectorAll('.plot1-unit').forEach(box => {
                     box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
@@ -702,7 +734,7 @@
 
         // Time unit boxes
         document.querySelectorAll('.plot1-unit').forEach(box => {
-            box.addEventListener('click', function() {
+            box.addEventListener('click', function () {
                 document.querySelectorAll('.plot1-unit').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 updateActivePresetButton();
@@ -717,23 +749,23 @@
         });
 
         // Pan buttons
-        document.getElementById('panLeft1').addEventListener('click', () => { 
-            if (chart1) chart1.pan({x: -100}, undefined, 'default'); 
+        document.getElementById('panLeft1').addEventListener('click', () => {
+            if (chart1) chart1.pan({ x: -100 }, undefined, 'default');
         });
-        document.getElementById('panRight1').addEventListener('click', () => { 
-            if (chart1) chart1.pan({x: 100}, undefined, 'default'); 
+        document.getElementById('panRight1').addEventListener('click', () => {
+            if (chart1) chart1.pan({ x: 100 }, undefined, 'default');
         });
 
         // Variable toggles
         document.querySelectorAll('.variable-toggle1').forEach(cb => {
-            cb.addEventListener('change', function() {
+            cb.addEventListener('change', function () {
                 updateChart1();
                 saveSettings();
             });
         });
 
         // Y-axis controls
-        document.getElementById('yAxisAutoScale1').addEventListener('change', function() {
+        document.getElementById('yAxisAutoScale1').addEventListener('change', function () {
             const isAuto = this.checked;
             document.getElementById('yAxisMin1').disabled = isAuto;
             document.getElementById('yAxisMax1').disabled = isAuto;
@@ -746,7 +778,7 @@
             saveSettings();
         });
 
-        document.getElementById('applyYAxis1').addEventListener('click', function() {
+        document.getElementById('applyYAxis1').addEventListener('click', function () {
             if (!chart1) return;
             const min = parseFloat(document.getElementById('yAxisMin1').value);
             const max = parseFloat(document.getElementById('yAxisMax1').value);
@@ -775,7 +807,7 @@
                 }
 
                 fullData = sensorData;
-                
+
                 loadSettings();
                 updateChart1();
 
