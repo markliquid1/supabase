@@ -109,12 +109,10 @@
         </div>
 
         <!-- ===== END PLOT 1 UI ===== -->
-        <div style="width: calc(100% - 40px); height:6px; background:#009E73; margin:22px auto; border-radius:3px;">
-        </div>
+<!--         <div style="width: calc(100% - 40px); height:6px; background:#009E73; margin:22px auto; border-radius:3px;">
+        </div> -->
+        <br><br><br>
 
-        <!-- ============================================
-             PLOT 2: Battery Voltage & SOC - CHART AREA
-             ============================================ -->
         <!-- ============================================
      PLOT 2: Battery Voltage & SOC - CHART AREA + TOOLS
      ============================================ -->
@@ -206,30 +204,24 @@
 
     <script>
         // ============================================
-        // SHARED CONFIG & HELPERS (used by all plots)
         // ============================================
+        // SHARED: CONFIG & STATE (used by all plots)
+        // ============================================
+        // ============================================
+        
         // Supabase configuration
         const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
-
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Shared data store (all plots use this)
         let fullData = [];
 
         // ============================================
-        // END SHARED SECTION
         // ============================================
-
+        // SHARED: UTILITY FUNCTIONS (used by all plots)
         // ============================================
-        // PLOT 1: Currents (A) - STATE & LOGIC
         // ============================================
-        let chart1 = null;
-
-        // ============================================
-        // PLOT 2: Battery Voltage & SOC - STATE
-        // ============================================
-        let chart2 = null;
-
 
         // Parse token from URL
         function getTokenFromUrl() {
@@ -269,7 +261,7 @@
             }
         }
 
-        // Fetch sensor history (shared; currently only currents for Plot 1)
+        // Fetch sensor history 
         async function fetchSensorHistory(deviceUid) {
             try {
                 const { data, error } = await supabase
@@ -320,8 +312,27 @@
             return data.filter(d => new Date(d.timestamp) >= cutoff);
         }
 
-        // PLOT 1 - settings persistence (localStorage)
-        // LocalStorage functions
+        // ============================================
+        // ============================================
+        // END SHARED SECTION
+        // ============================================
+        // ============================================
+
+
+        // ============================================
+        // ============================================
+        // PLOT 1: Currents (A) - STATE
+        // ============================================
+        // ============================================
+        
+        let chart1 = null;
+
+        // ============================================
+        // ============================================
+        // PLOT 1: Currents (A) - SETTINGS PERSISTENCE
+        // ============================================
+        // ============================================
+
         function saveSettings1() {
             const settings = {
                 checkedVariables: Array.from(document.querySelectorAll('.variable-toggle1:checked')).map(cb => cb.dataset.group),
@@ -376,67 +387,12 @@
             }
         }
 
+        // ============================================
+        // ============================================
+        // PLOT 1: Currents (A) - CHART CREATION
+        // ============================================
+        // ============================================
 
-        // PLOT 2 - settings persistence (localStorage)
-        function saveSettings2() {
-            const settings = {
-                checkedVariables: Array.from(document.querySelectorAll('.variable-toggle2:checked')).map(cb => cb.dataset.group),
-                timeValue: document.getElementById('timeValue2').value,
-                timeUnit: document.querySelector('.plot2-unit.active')?.dataset.unit || 'hours',
-                yAxisAuto: document.getElementById('yAxisAutoScale2').checked,
-                yAxisMin: document.getElementById('yAxisMin2').value,
-                yAxisMax: document.getElementById('yAxisMax2').value
-            };
-            localStorage.setItem('chartSettings_plot2', JSON.stringify(settings));
-        }
-
-        function loadSettings2() {
-            const saved = localStorage.getItem('chartSettings_plot2');
-            if (!saved) {
-                document.getElementById('timeValue2').value = 24;
-                document.querySelectorAll('.plot2-unit').forEach(box => {
-                    box.classList.toggle('active', box.dataset.unit === 'hours');
-                });
-                document.querySelectorAll('.variable-toggle2').forEach(cb => cb.checked = true);
-                return;
-            }
-
-            try {
-                const settings = JSON.parse(saved);
-
-                document.getElementById('timeValue2').value = settings.timeValue || 24;
-                document.querySelectorAll('.plot2-unit').forEach(box => {
-                    box.classList.toggle('active', box.dataset.unit === settings.timeUnit);
-                });
-
-                document.getElementById('yAxisAutoScale2').checked = settings.yAxisAuto !== false;
-                if (settings.yAxisMin) document.getElementById('yAxisMin2').value = settings.yAxisMin;
-                if (settings.yAxisMax) document.getElementById('yAxisMax2').value = settings.yAxisMax;
-
-                if (settings.checkedVariables && settings.checkedVariables.length > 0) {
-                    document.querySelectorAll('.variable-toggle2').forEach(cb => {
-                        cb.checked = settings.checkedVariables.includes(cb.dataset.group);
-                    });
-                } else {
-                    document.querySelectorAll('.variable-toggle2').forEach(cb => cb.checked = true);
-                }
-
-                updateActivePresetButton2();
-            } catch (e) {
-                console.error('Failed to load settings for plot 2:', e);
-                document.getElementById('timeValue2').value = 24;
-                document.querySelectorAll('.plot2-unit').forEach(box => {
-                    box.classList.toggle('active', box.dataset.unit === 'hours');
-                });
-                document.querySelectorAll('.variable-toggle2').forEach(cb => cb.checked = true);
-            }
-        }
-
-
-
-
-
-        // PLOT 1 - chart creation & rendering
         function createChart1(data) {
             const ctx = document.getElementById('chart1').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
@@ -633,7 +589,13 @@
             document.getElementById('chart1').style.display = 'block';
         }
 
-        // PLOT 1 - apply time window & rebuild chart
+        // ============================================
+        // ============================================
+        // PLOT 1: Currents (A) - UPDATE & HELPERS
+        // ============================================
+        // ============================================
+
+        // Apply time window & rebuild chart
         function updateChart1() {
             const timeValue = parseInt(document.getElementById('timeValue1').value);
             const activeUnit = document.querySelector('.plot1-unit.active');
@@ -660,35 +622,169 @@
             });
         }
 
-        // PLOT 2 - time preset highlight
-        function updateActivePresetButton2() {
-            const timeValue = parseInt(document.getElementById('timeValue2').value);
-            const activeUnit = document.querySelector('.plot2-unit.active');
-            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+        // ============================================
+        // ============================================
+        // PLOT 1: Currents (A) - EVENT LISTENERS
+        // ============================================
+        // ============================================
 
-            document.querySelectorAll('.preset2').forEach(btn => {
-                const btnValue = parseInt(btn.dataset.value);
-                const btnUnit = btn.dataset.unit;
+        // Toggle controls
+        document.getElementById('toggleTools1').addEventListener('click', function () {
+            const tools = document.getElementById('plotTools1');
+            const isHidden = tools.style.display === 'none';
+            tools.style.display = isHidden ? 'block' : 'none';
+            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
+        });
 
-                if (btnValue === timeValue && btnUnit === timeUnit) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+        // Preset buttons
+        document.querySelectorAll('.preset1').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.getElementById('timeValue1').value = this.dataset.value;
+                document.querySelectorAll('.plot1-unit').forEach(box => {
+                    box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
+                });
+                updateChart1();
+                saveSettings1();
             });
+        });
+
+        // Time unit boxes
+        document.querySelectorAll('.plot1-unit').forEach(box => {
+            box.addEventListener('click', function () {
+                document.querySelectorAll('.plot1-unit').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                updateActivePresetButton1();
+                saveSettings1();
+            });
+        });
+
+        // Apply time manually
+        document.getElementById('applyTimeRange1').addEventListener('click', function () {
+            updateChart1();
+            saveSettings1();
+        });
+
+        // Pan buttons
+        document.getElementById('panLeft1').addEventListener('click', () => {
+            if (chart1) chart1.pan({ x: -100 }, undefined, 'default');
+        });
+        document.getElementById('panRight1').addEventListener('click', () => {
+            if (chart1) chart1.pan({ x: 100 }, undefined, 'default');
+        });
+
+        // Variable toggles
+        document.querySelectorAll('.variable-toggle1').forEach(cb => {
+            cb.addEventListener('change', function () {
+                updateChart1();
+                saveSettings1();
+            });
+        });
+
+        // Y-axis controls
+        document.getElementById('yAxisAutoScale1').addEventListener('change', function () {
+            const isAuto = this.checked;
+            document.getElementById('yAxisMin1').disabled = isAuto;
+            document.getElementById('yAxisMax1').disabled = isAuto;
+            document.getElementById('applyYAxis1').disabled = isAuto;
+            if (isAuto && chart1) {
+                chart1.options.scales.y.min = undefined;
+                chart1.options.scales.y.max = undefined;
+                chart1.update('none');
+            }
+            saveSettings1();
+        });
+
+        document.getElementById('applyYAxis1').addEventListener('click', function () {
+            if (!chart1) return;
+            const min = parseFloat(document.getElementById('yAxisMin1').value);
+            const max = parseFloat(document.getElementById('yAxisMax1').value);
+            if (!isNaN(min)) chart1.options.scales.y.min = min;
+            if (!isNaN(max)) chart1.options.scales.y.max = max;
+            chart1.update('none');
+            saveSettings1();
+        });
+
+        // ============================================
+        // ============================================
+        // END PLOT 1
+        // ============================================
+        // ============================================
+
+
+        // ============================================
+        // ============================================
+        // PLOT 2: Battery Voltage & SOC - STATE
+        // ============================================
+        // ============================================
+        
+        let chart2 = null;
+
+        // ============================================
+        // ============================================
+        // PLOT 2: Battery Voltage & SOC - SETTINGS PERSISTENCE
+        // ============================================
+        // ============================================
+
+        function saveSettings2() {
+            const settings = {
+                checkedVariables: Array.from(document.querySelectorAll('.variable-toggle2:checked')).map(cb => cb.dataset.group),
+                timeValue: document.getElementById('timeValue2').value,
+                timeUnit: document.querySelector('.plot2-unit.active')?.dataset.unit || 'hours',
+                yAxisAuto: document.getElementById('yAxisAutoScale2').checked,
+                yAxisMin: document.getElementById('yAxisMin2').value,
+                yAxisMax: document.getElementById('yAxisMax2').value
+            };
+            localStorage.setItem('chartSettings_plot2', JSON.stringify(settings));
         }
 
-        // PLOT 2 - apply time filter & rebuild chart
-        function updateChart2() {
-            const timeValue = parseInt(document.getElementById('timeValue2').value);
-            const activeUnit = document.querySelector('.plot2-unit.active');
-            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart2(filteredData);
-            updateActivePresetButton2();
+        function loadSettings2() {
+            const saved = localStorage.getItem('chartSettings_plot2');
+            if (!saved) {
+                document.getElementById('timeValue2').value = 24;
+                document.querySelectorAll('.plot2-unit').forEach(box => {
+                    box.classList.toggle('active', box.dataset.unit === 'hours');
+                });
+                document.querySelectorAll('.variable-toggle2').forEach(cb => cb.checked = true);
+                return;
+            }
+
+            try {
+                const settings = JSON.parse(saved);
+
+                document.getElementById('timeValue2').value = settings.timeValue || 24;
+                document.querySelectorAll('.plot2-unit').forEach(box => {
+                    box.classList.toggle('active', box.dataset.unit === settings.timeUnit);
+                });
+
+                document.getElementById('yAxisAutoScale2').checked = settings.yAxisAuto !== false;
+                if (settings.yAxisMin) document.getElementById('yAxisMin2').value = settings.yAxisMin;
+                if (settings.yAxisMax) document.getElementById('yAxisMax2').value = settings.yAxisMax;
+
+                if (settings.checkedVariables && settings.checkedVariables.length > 0) {
+                    document.querySelectorAll('.variable-toggle2').forEach(cb => {
+                        cb.checked = settings.checkedVariables.includes(cb.dataset.group);
+                    });
+                } else {
+                    document.querySelectorAll('.variable-toggle2').forEach(cb => cb.checked = true);
+                }
+
+                updateActivePresetButton2();
+            } catch (e) {
+                console.error('Failed to load settings for plot 2:', e);
+                document.getElementById('timeValue2').value = 24;
+                document.querySelectorAll('.plot2-unit').forEach(box => {
+                    box.classList.toggle('active', box.dataset.unit === 'hours');
+                });
+                document.querySelectorAll('.variable-toggle2').forEach(cb => cb.checked = true);
+            }
         }
 
-        // PLOT 2 - chart creation
+        // ============================================
+        // ============================================
+        // PLOT 2: Battery Voltage & SOC - CHART CREATION
+        // ============================================
+        // ============================================
+
         function createChart2(data) {
             const canvas = document.getElementById('chart2');
             const ctx = canvas.getContext('2d');
@@ -857,87 +953,46 @@
             canvas.style.display = 'block';
         }
 
+        // ============================================
+        // ============================================
+        // PLOT 2: Battery Voltage & SOC - UPDATE & HELPERS
+        // ============================================
+        // ============================================
 
-        // Toggle controls
-        document.getElementById('toggleTools1').addEventListener('click', function () {
-            const tools = document.getElementById('plotTools1');
-            const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
-        });
+        // Apply time filter & rebuild chart
+        function updateChart2() {
+            const timeValue = parseInt(document.getElementById('timeValue2').value);
+            const activeUnit = document.querySelector('.plot2-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
+            createChart2(filteredData);
+            updateActivePresetButton2();
+        }
 
-        // Preset buttons
-        document.querySelectorAll('.preset1').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('timeValue1').value = this.dataset.value;
-                document.querySelectorAll('.plot1-unit').forEach(box => {
-                    box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
-                });
-                updateChart1();
-                saveSettings1();
+        // Time preset highlight
+        function updateActivePresetButton2() {
+            const timeValue = parseInt(document.getElementById('timeValue2').value);
+            const activeUnit = document.querySelector('.plot2-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+
+            document.querySelectorAll('.preset2').forEach(btn => {
+                const btnValue = parseInt(btn.dataset.value);
+                const btnUnit = btn.dataset.unit;
+
+                if (btnValue === timeValue && btnUnit === timeUnit) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
             });
-        });
-
-        // Time unit boxes
-        document.querySelectorAll('.plot1-unit').forEach(box => {
-            box.addEventListener('click', function () {
-                document.querySelectorAll('.plot1-unit').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                updateActivePresetButton1();
-                saveSettings1();
-            });
-        });
-
-        // Apply time manually
-        document.getElementById('applyTimeRange1').addEventListener('click', function () {
-            updateChart1();
-            saveSettings1();
-        });
-
-        // Pan buttons
-        document.getElementById('panLeft1').addEventListener('click', () => {
-            if (chart1) chart1.pan({ x: -100 }, undefined, 'default');
-        });
-        document.getElementById('panRight1').addEventListener('click', () => {
-            if (chart1) chart1.pan({ x: 100 }, undefined, 'default');
-        });
-
-        // Variable toggles
-        document.querySelectorAll('.variable-toggle1').forEach(cb => {
-            cb.addEventListener('change', function () {
-                updateChart1();
-                saveSettings1();
-            });
-        });
-
-        // Y-axis controls
-        document.getElementById('yAxisAutoScale1').addEventListener('change', function () {
-            const isAuto = this.checked;
-            document.getElementById('yAxisMin1').disabled = isAuto;
-            document.getElementById('yAxisMax1').disabled = isAuto;
-            document.getElementById('applyYAxis1').disabled = isAuto;
-            if (isAuto && chart1) {
-                chart1.options.scales.y.min = undefined;
-                chart1.options.scales.y.max = undefined;
-                chart1.update('none');
-            }
-            saveSettings1();
-        });
-
-        document.getElementById('applyYAxis1').addEventListener('click', function () {
-            if (!chart1) return;
-            const min = parseFloat(document.getElementById('yAxisMin1').value);
-            const max = parseFloat(document.getElementById('yAxisMax1').value);
-            if (!isNaN(min)) chart1.options.scales.y.min = min;
-            if (!isNaN(max)) chart1.options.scales.y.max = max;
-            chart1.update('none');
-            saveSettings1();
-        });
-
+        }
 
         // ============================================
-        // PLOT 2: Battery Voltage & SOC - LISTENERS
         // ============================================
+        // PLOT 2: Battery Voltage & SOC - EVENT LISTENERS
+        // ============================================
+        // ============================================
+
         // Toggle controls
         document.getElementById('toggleTools2').addEventListener('click', function () {
             const tools = document.getElementById('plotTools2');
@@ -1014,12 +1069,19 @@
             saveSettings2();
         });
 
+        // ============================================
+        // ============================================
+        // END PLOT 2
+        // ============================================
+        // ============================================
 
 
+        // ============================================
+        // ============================================
+        // SHARED: MAIN INITIALIZATION
+        // ============================================
+        // ============================================
 
-
-
-        // Main initialization / shared entry point
         async function init() {
             const token = getTokenFromUrl();
 
@@ -1052,8 +1114,13 @@
             }
         }
 
-
         window.addEventListener('DOMContentLoaded', init);
+
+        // ============================================
+        // ============================================
+        // END SHARED: MAIN INITIALIZATION
+        // ============================================
+        // ============================================
     </script>
 </body>
 
