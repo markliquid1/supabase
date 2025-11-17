@@ -700,11 +700,34 @@
                     .from('sensor_history')
                     .select(`
                 timestamp,
+                
                 batt_curr_min, batt_curr_max, batt_curr_avg,
                 alt_curr_min, alt_curr_max, alt_curr_avg,
                 victron_curr_min, victron_curr_max, victron_curr_avg,
                 batt_volt_min, batt_volt_max, batt_volt_avg,
-                soc_min, soc_max, soc_avg
+                soc_min, soc_max, soc_avg,
+                
+                alt_temp_min, alt_temp_max, alt_temp_avg,
+                temp_therm_min, temp_therm_max, temp_therm_avg,
+                amb_temp_min, amb_temp_max, amb_temp_avg,
+                baro_min, baro_max, baro_avg,
+                
+                rpm_min, rpm_max, rpm_avg,
+                duty_cycle_min, duty_cycle_max, duty_cycle_avg,
+                ign_duty, eng_duty,
+                
+                sog_min, sog_max, sog_avg,
+                aws_min, aws_max, aws_avg,
+                tws_min, tws_max, tws_avg,
+                vmg_min, vmg_max, vmg_avg,
+                
+                cog_min, cog_max, cog_avg,
+                heading_min, heading_max, heading_avg,
+                awa_min, awa_max, awa_avg,
+                twa_min, twa_max, twa_avg,
+                leeway_min, leeway_max, leeway_avg,
+                
+                alt_zero_min, alt_zero_max, alt_zero_avg
             `)
                     .eq('device_uid', deviceUid)
                     .order('timestamp', { ascending: true });
@@ -1219,7 +1242,6 @@
 
         function createChart2(data) {
             const canvas = document.getElementById('chart2');
-            const ctx = canvas.getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
             const checkedVars = new Set();
@@ -1382,7 +1404,7 @@
             });
 
             document.getElementById('loadingChart2').style.display = 'none';
-            canvas.style.display = 'block';
+            document.getElementById('chart2').style.display = 'block';
         }
 
         // ============================================
@@ -1511,25 +1533,15 @@
         let chart3 = null;
 
         function createChart3(data) {
-            console.log('Plot 3: createChart3 called with', data.length, 'records');
-            const canvas = document.getElementById('chart3');
-            const ctx = canvas.getContext('2d');
+            const ctx = document.getElementById('chart3').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
             const checkedVars = new Set();
             document.querySelectorAll('.variable-toggle3:checked').forEach(cb => {
-                console.log('Plot 3: Checked variable:', cb.dataset.group);
                 checkedVars.add(cb.dataset.group);
             });
 
             const datasets = [];
-            console.log('Plot 3: Sample data point:', {
-                alt_temp_min: data[0]?.alt_temp_min,
-                alt_temp_max: data[0]?.alt_temp_max,
-                alt_temp_avg: data[0]?.alt_temp_avg,
-                amb_temp_min: data[0]?.amb_temp_min,
-                baro_min: data[0]?.baro_min
-            });
 
             // Alternator Temperature (left axis, °F) - blue
             if (checkedVars.has('AltTemp')) {
@@ -1568,12 +1580,6 @@
             }
 
             if (chart3) chart3.destroy();
-
-            console.log('Plot 3: Creating chart with', datasets.length, 'datasets');
-            if (datasets.length > 0) {
-                console.log('Plot 3: First dataset:', datasets[0].label, 'has', datasets[0].data.length, 'points');
-                console.log('Plot 3: First 3 values:', datasets[0].data.slice(0, 3));
-            }
 
             chart3 = new Chart(ctx, {
                 type: 'line',
@@ -1647,7 +1653,7 @@
             });
 
             document.getElementById('loadingChart3').style.display = 'none';
-            canvas.style.display = 'block';
+            document.getElementById('chart3').style.display = 'block';
         }
 
         function updateChart3() {
@@ -1777,8 +1783,7 @@
         let chart4 = null;
 
         function createChart4(data) {
-            const canvas = document.getElementById('chart4');
-            const ctx = canvas.getContext('2d');
+            const ctx = document.getElementById('chart4').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
             const checkedVars = new Set();
@@ -1894,7 +1899,7 @@
             });
 
             document.getElementById('loadingChart4').style.display = 'none';
-            canvas.style.display = 'block';
+            document.getElementById('chart4').style.display = 'block';
         }
 
         function updateChart4() {
@@ -2024,8 +2029,7 @@
         let chart5 = null;
 
         function createChart5(data) {
-            const canvas = document.getElementById('chart5');
-            const ctx = canvas.getContext('2d');
+            const ctx = document.getElementById('chart5').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
             const checkedVars = new Set();
@@ -2138,7 +2142,7 @@
             });
 
             document.getElementById('loadingChart5').style.display = 'none';
-            canvas.style.display = 'block';
+            document.getElementById('chart5').style.display = 'block';
         }
 
         function updateChart5() {
@@ -2220,8 +2224,7 @@
         let chart6 = null;
 
         function createChart6(data) {
-            const canvas = document.getElementById('chart6');
-            const ctx = canvas.getContext('2d');
+            const ctx = document.getElementById('chart6').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
             const checkedVars = new Set();
@@ -2343,7 +2346,7 @@
             });
 
             document.getElementById('loadingChart6').style.display = 'none';
-            canvas.style.display = 'block';
+            document.getElementById('chart5').style.display = 'block';
         }
 
         function updateChart6() {
@@ -2425,8 +2428,7 @@
         let chart7 = null;
 
         function createChart7(data) {
-            const canvas = document.getElementById('chart7');
-            const ctx = canvas.getContext('2d');
+            const ctx = document.getElementById('chart7').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
             const checkedVars = new Set();
@@ -2512,7 +2514,7 @@
             });
 
             document.getElementById('loadingChart7').style.display = 'none';
-            canvas.style.display = 'block';
+            document.getElementById('chart5').style.display = 'block';
         }
 
         function updateChart7() {
