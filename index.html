@@ -698,79 +698,49 @@
             }
         }
 
-// ============================================
-// Columns used for sensor history
-// ============================================
-// Columns used for sensor history (Plots 1 & 2 only)
-const HISTORY_COLUMNS = 'timestamp,' +
-  'batt_curr_min,batt_curr_max,batt_curr_avg,' +
-  'alt_curr_min,alt_curr_max,alt_curr_avg,' +
-  'victron_curr_min,victron_curr_max,victron_curr_avg,' +
-  'batt_volt_min,batt_volt_max,batt_volt_avg,' +
-  'soc_min,soc_max,soc_avg';
+        // ============================================
+        // Columns used for sensor history
+        // ============================================
+        // Columns used for sensor history (Plots 1, 2, and 3 only)
+        const HISTORY_COLUMNS =
+            'timestamp,' +
+            // Plot 1 currents
+            'batt_curr_min,batt_curr_max,batt_curr_avg,' +
+            'alt_curr_min,alt_curr_max,alt_curr_avg,' +
+            'victron_curr_min,victron_curr_max,victron_curr_avg,' +
+            // Plot 2 battery voltage + SOC
+            'batt_volt_min,batt_volt_max,batt_volt_avg,' +
+            'soc_min,soc_max,soc_avg,' +
+            // Plot 3 temperatures
+            'alt_temp_min,alt_temp_max,alt_temp_avg,' +
+            'temp_therm_min,temp_therm_max,temp_therm_avg,' +
+            'amb_temp_min,amb_temp_max,amb_temp_avg';
 
-// Fetch sensor history
-async function fetchSensorHistory(deviceUid) {
-  try {
-    const { data, error } = await supabase
-      .from('sensor_history')
-      .select(HISTORY_COLUMNS)
-      .eq('device_uid', deviceUid)
-      .order('timestamp', { ascending: true });
+        // Fetch sensor history
+        async function fetchSensorHistory(deviceUid) {
+            try {
+                const { data, error } = await supabase
+                    .from('sensor_history')
+                    .select(HISTORY_COLUMNS)
+                    .eq('device_uid', deviceUid)
+                    .order('timestamp', { ascending: true });
 
-    if (error) throw error;
+                if (error) throw error;
 
-    const minDate = new Date('2020-01-01').getTime();
-    const maxDate = new Date('2100-01-01').getTime();
+                const minDate = new Date('2020-01-01').getTime();
+                const maxDate = new Date('2100-01-01').getTime();
 
-    return data.filter(d => {
-      const ts = new Date(d.timestamp).getTime();
-      return ts >= minDate && ts <= maxDate;
-    });
-  } catch (error) {
-    console.error('Data fetch error:', error);
-    throw new Error('Failed to fetch sensor data');
-  }
-}
+                return data.filter(d => {
+                    const ts = new Date(d.timestamp).getTime();
+                    return ts >= minDate && ts <= maxDate;
+                });
 
+            } catch (error) {
+                console.error('Data fetch error:', error);
+                throw new Error('Failed to fetch sensor data');
+            }
+        }
 
-// ============================================
-// Fetch sensor history
-// ============================================
-async function fetchSensorHistory(deviceUid) {
-    try {
-        const { data, error } = await supabase
-            .from('sensor_history')
-            .select(HISTORY_COLUMNS)
-            .eq('device_uid', deviceUid)
-            .order('timestamp', { ascending: true });
-
-        if (error) throw error;
-
-        const minDate = new Date('2020-01-01').getTime();
-        const maxDate = new Date('2100-01-01').getTime();
-
-        return data.filter(d => {
-            const ts = new Date(d.timestamp).getTime();
-            return ts >= minDate && ts <= maxDate;
-        });
-
-    } catch (error) {
-        console.error('Data fetch error:', error);
-
-        // Debug overlay (safe for iframe, no console needed)
-        const dbg = document.getElementById("debug_box") || (() => {
-            const div = document.createElement("pre");
-            div.id = "debug_box";
-            div.style = "position:fixed; bottom:0; left:0; right:0; max-height:160px; overflow:auto; background:#111; color:#0f0; font:11px monospace; z-index:999999; padding:6px;";
-            document.body.appendChild(div);
-            return div;
-        })();
-        dbg.textContent += `\n${(error?.message || error)}`;
-
-        throw new Error('Failed to fetch sensor data');
-    }
-}
 
 
         // Shared helper: apply time window
