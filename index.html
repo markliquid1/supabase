@@ -1507,90 +1507,126 @@
         // ============================================
         // ============================================
 
-
-        // ============================================
-        // ============================================
-        // PLOT 3: Temperatures & Barometric Pressure
-        // ============================================
-        // ============================================
-
+        // ========== PLOT 3: Temperatures & Barometric Pressure ==========
         let chart3 = null;
 
         function createChart3(data) {
             const canvas = document.getElementById('chart3');
             const ctx = canvas.getContext('2d');
+            const timestamps = data.map(d => new Date(d.timestamp));
+
+            const checkedVars = new Set();
+            document.querySelectorAll('.variable-toggle3:checked').forEach(cb => {
+                checkedVars.add(cb.dataset.group);
+            });
 
             const datasets = [];
-            const colors = ['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#56B4E9', '#D55E00'];
-            let colorIndex = 0;
 
-            const toggles = {
-                AltTemp: document.querySelector('.variable-toggle3[data-group="AltTemp"]')?.checked,
-                ThermTemp: document.querySelector('.variable-toggle3[data-group="ThermTemp"]')?.checked,
-                AmbTemp: document.querySelector('.variable-toggle3[data-group="AmbTemp"]')?.checked,
-                BaroPressure: document.querySelector('.variable-toggle3[data-group="BaroPressure"]')?.checked
-            };
-
-            if (toggles.AltTemp) {
+            // Alternator Temperature (left axis, °F) - blue
+            if (checkedVars.has('AltTemp')) {
                 datasets.push(
-                    { label: 'Alt Temp Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.alt_temp_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y' },
-                    { label: 'Alt Temp Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.alt_temp_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0, yAxisID: 'y' },
-                    { label: 'Alt Temp Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.alt_temp_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y' }
+                    { label: 'Alt Temp Min', data: data.map(d => d.alt_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'Alt Temp Max', data: data.map(d => d.alt_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'Alt Temp', data: data.map(d => d.alt_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
                 );
-                colorIndex++;
             }
 
-            if (toggles.ThermTemp) {
+            // Thermistor Temperature (left axis, °F) - orange
+            if (checkedVars.has('ThermTemp')) {
                 datasets.push(
-                    { label: 'Therm Temp Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.temp_therm_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y' },
-                    { label: 'Therm Temp Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.temp_therm_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0, yAxisID: 'y' },
-                    { label: 'Therm Temp Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.temp_therm_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y' }
+                    { label: 'Therm Temp Min', data: data.map(d => d.temp_therm_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'Therm Temp Max', data: data.map(d => d.temp_therm_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'Therm Temp', data: data.map(d => d.temp_therm_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
                 );
-                colorIndex++;
             }
 
-            if (toggles.AmbTemp) {
+            // Ambient Temperature (left axis, °F) - green
+            if (checkedVars.has('AmbTemp')) {
                 datasets.push(
-                    { label: 'Amb Temp Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.amb_temp_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y' },
-                    { label: 'Amb Temp Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.amb_temp_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0, yAxisID: 'y' },
-                    { label: 'Amb Temp Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.amb_temp_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y' }
+                    { label: 'Amb Temp Min', data: data.map(d => d.amb_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'Amb Temp Max', data: data.map(d => d.amb_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'Amb Temp', data: data.map(d => d.amb_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
                 );
-                colorIndex++;
             }
 
-            if (toggles.BaroPressure) {
+            // Barometric Pressure (right axis) - pink
+            if (checkedVars.has('BaroPressure')) {
                 datasets.push(
-                    { label: 'Baro Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.baro_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y1' },
-                    { label: 'Baro Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.baro_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0, yAxisID: 'y1' },
-                    { label: 'Baro Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.baro_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y1' }
+                    { label: 'Baro Min', data: data.map(d => d.baro_min), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'Baro Max', data: data.map(d => d.baro_max), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'Baro', data: data.map(d => d.baro_avg), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
                 );
             }
 
             if (chart3) chart3.destroy();
 
-            const autoScale = document.getElementById('yAxisAutoScale3').checked;
-            const yMin = autoScale ? undefined : parseFloat(document.getElementById('yAxisMin3').value) || undefined;
-            const yMax = autoScale ? undefined : parseFloat(document.getElementById('yAxisMax3').value) || undefined;
-
             chart3 = new Chart(ctx, {
                 type: 'line',
-                data: { datasets },
+                data: { labels: timestamps, datasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: { display: true, position: 'top' },
-                        title: { display: true, text: 'Plot 3 — Temperatures (°F) & Barometric Pressure', font: { size: 16 } },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'nearest',
+                            intersect: false,
+                            callbacks: {
+                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                pointStyleWidth: 6,
+                                padding: 8,
+                                font: { size: 10 },
+                                filter: item => !/Min$|Max$/.test(item.text)
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Plot 3 — Temperatures (°F) & Barometric Pressure',
+                            font: { size: 16 }
+                        },
                         zoom: {
-                            pan: { enabled: true, mode: 'x' },
-                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                threshold: 0
+                            },
+                            limits: {
+                                x: { min: 'original', max: 'original' }
+                            }
                         }
                     },
                     scales: {
-                        x: { type: 'time', time: { unit: 'minute' }, title: { display: true, text: 'Time' } },
-                        y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Temperature (°F)' }, min: yMin, max: yMax },
-                        y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Pressure' }, grid: { drawOnChartArea: false } }
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour',
+                                displayFormats: { hour: 'MMM d, HH:mm' }
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Temperature (°F)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Pressure' },
+                            grid: { drawOnChartArea: false }
+                        }
                     }
                 }
             });
@@ -1627,9 +1663,6 @@
             const settings = {
                 timeValue: document.getElementById('timeValue3').value,
                 timeUnit: document.querySelector('.plot3-unit.active')?.dataset.unit || 'hours',
-                yAxisAutoScale: document.getElementById('yAxisAutoScale3').checked,
-                yAxisMin: document.getElementById('yAxisMin3').value,
-                yAxisMax: document.getElementById('yAxisMax3').value,
                 variables: {}
             };
             document.querySelectorAll('.variable-toggle3').forEach(cb => {
@@ -1646,13 +1679,6 @@
             document.querySelectorAll('.plot3-unit').forEach(box => {
                 box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
             });
-            document.getElementById('yAxisAutoScale3').checked = settings.yAxisAutoScale !== false;
-            document.getElementById('yAxisMin3').value = settings.yAxisMin || '';
-            document.getElementById('yAxisMax3').value = settings.yAxisMax || '';
-            const isAuto = document.getElementById('yAxisAutoScale3').checked;
-            document.getElementById('yAxisMin3').disabled = isAuto;
-            document.getElementById('yAxisMax3').disabled = isAuto;
-            document.getElementById('applyYAxis3').disabled = isAuto;
             if (settings.variables) {
                 document.querySelectorAll('.variable-toggle3').forEach(cb => {
                     if (settings.variables.hasOwnProperty(cb.dataset.group)) {
@@ -1731,243 +1757,824 @@
             saveSettings3();
         });
 
-        // ========== PLOT 4 ==========
-        let chart4 = null;
-        function createChart4(data) {
-            const canvas = document.getElementById('chart4'), ctx = canvas.getContext('2d'), datasets = [], colors = ['#0072B2', '#E69F00', '#009E73', '#CC79A7'];
-            let colorIndex = 0;
-            const t = { RPM: document.querySelector('.variable-toggle4[data-group="RPM"]')?.checked, DutyCycle: document.querySelector('.variable-toggle4[data-group="DutyCycle"]')?.checked,
-                IgnDuty: document.querySelector('.variable-toggle4[data-group="IgnDuty"]')?.checked, EngDuty: document.querySelector('.variable-toggle4[data-group="EngDuty"]')?.checked };
-            if (t.RPM) { datasets.push({ label: 'RPM Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.rpm_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y' },
-                { label: 'RPM Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.rpm_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0, yAxisID: 'y' },
-                { label: 'RPM Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.rpm_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y' }); colorIndex++; }
-            if (t.DutyCycle) { datasets.push({ label: 'Alt Duty Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.duty_cycle_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y1' },
-                { label: 'Alt Duty Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.duty_cycle_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0, yAxisID: 'y1' },
-                { label: 'Alt Duty Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.duty_cycle_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0, yAxisID: 'y1' }); colorIndex++; }
-            if (t.IgnDuty) { datasets.push({ label: 'Ign Duty', data: data.map(d => ({ x: new Date(d.timestamp), y: d.ign_duty })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0, yAxisID: 'y1' }); colorIndex++; }
-            if (t.EngDuty) { datasets.push({ label: 'Eng Duty', data: data.map(d => ({ x: new Date(d.timestamp), y: d.eng_duty })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0, yAxisID: 'y1' }); }
-            if (chart4) chart4.destroy();
-            const autoScale = document.getElementById('yAxisAutoScale4').checked, yMin = autoScale ? undefined : parseFloat(document.getElementById('yAxisMin4').value) || undefined,
-                yMax = autoScale ? undefined : parseFloat(document.getElementById('yAxisMax4').value) || undefined;
-            chart4 = new Chart(ctx, { type: 'line', data: { datasets }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Plot 4 — Engine & Alternator Duty', font: { size: 16 } },
-                    zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } } },
-                scales: { x: { type: 'time', time: { unit: 'minute' }, title: { display: true, text: 'Time' } },
-                    y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'RPM' }, min: yMin, max: yMax },
-                    y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Duty Cycle (%)' }, grid: { drawOnChartArea: false } } } } });
-            document.getElementById('loadingChart4').style.display = 'none'; canvas.style.display = 'block';
-        }
-        function updateChart4() { const timeValue = parseInt(document.getElementById('timeValue4').value), activeUnit = document.querySelector('.plot4-unit.active'),
-            timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours', filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart4(filteredData); updateActivePresetButton4(); }
-        function updateActivePresetButton4() { const timeValue = parseInt(document.getElementById('timeValue4').value), activeUnit = document.querySelector('.plot4-unit.active'),
-            timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            document.querySelectorAll('.preset4').forEach(btn => { if (parseInt(btn.dataset.value) === timeValue && btn.dataset.unit === timeUnit) btn.classList.add('active'); else btn.classList.remove('active'); }); }
-        function saveSettings4() { const settings = { timeValue: document.getElementById('timeValue4').value, timeUnit: document.querySelector('.plot4-unit.active')?.dataset.unit || 'hours',
-            yAxisAutoScale: document.getElementById('yAxisAutoScale4').checked, yAxisMin: document.getElementById('yAxisMin4').value, yAxisMax: document.getElementById('yAxisMax4').value, variables: {} };
-            document.querySelectorAll('.variable-toggle4').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; }); localStorage.setItem('plot4Settings', JSON.stringify(settings)); }
-        function loadSettings4() { const saved = localStorage.getItem('plot4Settings'); if (!saved) return; const settings = JSON.parse(saved);
-            document.getElementById('timeValue4').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot4-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            document.getElementById('yAxisAutoScale4').checked = settings.yAxisAutoScale !== false; document.getElementById('yAxisMin4').value = settings.yAxisMin || '';
-            document.getElementById('yAxisMax4').value = settings.yAxisMax || ''; const isAuto = document.getElementById('yAxisAutoScale4').checked;
-            document.getElementById('yAxisMin4').disabled = isAuto; document.getElementById('yAxisMax4').disabled = isAuto; document.getElementById('applyYAxis4').disabled = isAuto;
-            if (settings.variables) { document.querySelectorAll('.variable-toggle4').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); } }
-        document.getElementById('toggleTools4').addEventListener('click', function () { const tools = document.getElementById('plotTools4'); const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none'; this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below'; });
-        document.querySelectorAll('.preset4').forEach(btn => { btn.addEventListener('click', function () { document.getElementById('timeValue4').value = this.dataset.value;
-            document.querySelectorAll('.plot4-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); }); updateChart4(); saveSettings4(); }); });
-        document.querySelectorAll('.plot4-unit').forEach(box => { box.addEventListener('click', function () { document.querySelectorAll('.plot4-unit').forEach(b => b.classList.remove('active'));
-            this.classList.add('active'); updateActivePresetButton4(); saveSettings4(); }); });
-        document.getElementById('applyTimeRange4').addEventListener('click', function () { updateChart4(); saveSettings4(); });
-        document.getElementById('panLeft4').addEventListener('click', () => { if (chart4) chart4.pan({ x: -100 }, undefined, 'default'); });
-        document.getElementById('panRight4').addEventListener('click', () => { if (chart4) chart4.pan({ x: 100 }, undefined, 'default'); });
-        document.querySelectorAll('.variable-toggle4').forEach(cb => { cb.addEventListener('change', function () { updateChart4(); saveSettings4(); }); });
-        document.getElementById('yAxisAutoScale4').addEventListener('change', function () { const isAuto = this.checked; document.getElementById('yAxisMin4').disabled = isAuto;
-            document.getElementById('yAxisMax4').disabled = isAuto; document.getElementById('applyYAxis4').disabled = isAuto;
-            if (isAuto && chart4) { chart4.options.scales.y.min = undefined; chart4.options.scales.y.max = undefined; chart4.update('none'); } saveSettings4(); });
-        document.getElementById('applyYAxis4').addEventListener('click', function () { if (!chart4) return; const min = parseFloat(document.getElementById('yAxisMin4').value);
-            const max = parseFloat(document.getElementById('yAxisMax4').value); if (!isNaN(min)) chart4.options.scales.y.min = min; if (!isNaN(max)) chart4.options.scales.y.max = max;
-            chart4.update('none'); saveSettings4(); });
 
-        // ========== PLOT 5 ==========
+        // ========== PLOT 4: Engine & Alternator Duty ==========
+        let chart4 = null;
+
+        function createChart4(data) {
+            const canvas = document.getElementById('chart4');
+            const ctx = canvas.getContext('2d');
+            const timestamps = data.map(d => new Date(d.timestamp));
+
+            const checkedVars = new Set();
+            document.querySelectorAll('.variable-toggle4:checked').forEach(cb => {
+                checkedVars.add(cb.dataset.group);
+            });
+
+            const datasets = [];
+
+            // RPM (left axis) - blue
+            if (checkedVars.has('RPM')) {
+                datasets.push(
+                    { label: 'RPM Min', data: data.map(d => d.rpm_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'RPM Max', data: data.map(d => d.rpm_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'RPM', data: data.map(d => d.rpm_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // Alternator Duty Cycle (right axis) - orange
+            if (checkedVars.has('DutyCycle')) {
+                datasets.push(
+                    { label: 'Alt Duty Min', data: data.map(d => d.duty_cycle_min), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'Alt Duty Max', data: data.map(d => d.duty_cycle_max), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'Alt Duty', data: data.map(d => d.duty_cycle_avg), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // Ignition Duty (right axis, instantaneous) - green
+            if (checkedVars.has('IgnDuty')) {
+                datasets.push(
+                    { label: 'Ign Duty', data: data.map(d => d.ign_duty), yAxisID: 'y1', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // Engine Running Duty (right axis, instantaneous) - pink
+            if (checkedVars.has('EngDuty')) {
+                datasets.push(
+                    { label: 'Eng Duty', data: data.map(d => d.eng_duty), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            if (chart4) chart4.destroy();
+
+            chart4 = new Chart(ctx, {
+                type: 'line',
+                data: { labels: timestamps, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'nearest',
+                            intersect: false,
+                            callbacks: {
+                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                pointStyleWidth: 6,
+                                padding: 8,
+                                font: { size: 10 },
+                                filter: item => !/Min$|Max$/.test(item.text)
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Plot 4 — Engine & Alternator Duty',
+                            font: { size: 16 }
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                threshold: 0
+                            },
+                            limits: {
+                                x: { min: 'original', max: 'original' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour',
+                                displayFormats: { hour: 'MMM d, HH:mm' }
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'RPM' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Duty Cycle (%)' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('loadingChart4').style.display = 'none';
+            canvas.style.display = 'block';
+        }
+
+        function updateChart4() {
+            const timeValue = parseInt(document.getElementById('timeValue4').value);
+            const activeUnit = document.querySelector('.plot4-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
+            createChart4(filteredData);
+            updateActivePresetButton4();
+        }
+
+        function updateActivePresetButton4() {
+            const timeValue = parseInt(document.getElementById('timeValue4').value);
+            const activeUnit = document.querySelector('.plot4-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            document.querySelectorAll('.preset4').forEach(btn => {
+                const btnValue = parseInt(btn.dataset.value);
+                const btnUnit = btn.dataset.unit;
+                if (btnValue === timeValue && btnUnit === timeUnit) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        function saveSettings4() {
+            const settings = {
+                timeValue: document.getElementById('timeValue4').value,
+                timeUnit: document.querySelector('.plot4-unit.active')?.dataset.unit || 'hours',
+                variables: {}
+            };
+            document.querySelectorAll('.variable-toggle4').forEach(cb => {
+                settings.variables[cb.dataset.group] = cb.checked;
+            });
+            localStorage.setItem('plot4Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings4() {
+            const saved = localStorage.getItem('plot4Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
+            document.getElementById('timeValue4').value = settings.timeValue || 24;
+            document.querySelectorAll('.plot4-unit').forEach(box => {
+                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
+            });
+            if (settings.variables) {
+                document.querySelectorAll('.variable-toggle4').forEach(cb => {
+                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
+                        cb.checked = settings.variables[cb.dataset.group];
+                    }
+                });
+            }
+        }
+
+        document.getElementById('toggleTools4').addEventListener('click', function () {
+            const tools = document.getElementById('plotTools4');
+            const isHidden = tools.style.display === 'none';
+            tools.style.display = isHidden ? 'block' : 'none';
+            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
+        });
+
+        document.querySelectorAll('.preset4').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.getElementById('timeValue4').value = this.dataset.value;
+                document.querySelectorAll('.plot4-unit').forEach(box => {
+                    box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
+                });
+                updateChart4();
+                saveSettings4();
+            });
+        });
+
+        document.querySelectorAll('.plot4-unit').forEach(box => {
+            box.addEventListener('click', function () {
+                document.querySelectorAll('.plot4-unit').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                updateActivePresetButton4();
+                saveSettings4();
+            });
+        });
+
+        document.getElementById('applyTimeRange4').addEventListener('click', function () {
+            updateChart4();
+            saveSettings4();
+        });
+
+        document.getElementById('panLeft4').addEventListener('click', () => {
+            if (chart4) chart4.pan({ x: -100 }, undefined, 'default');
+        });
+        document.getElementById('panRight4').addEventListener('click', () => {
+            if (chart4) chart4.pan({ x: 100 }, undefined, 'default');
+        });
+
+        document.querySelectorAll('.variable-toggle4').forEach(cb => {
+            cb.addEventListener('change', function () {
+                updateChart4();
+                saveSettings4();
+            });
+        });
+
+        document.getElementById('yAxisAutoScale4').addEventListener('change', function () {
+            const isAuto = this.checked;
+            document.getElementById('yAxisMin4').disabled = isAuto;
+            document.getElementById('yAxisMax4').disabled = isAuto;
+            document.getElementById('applyYAxis4').disabled = isAuto;
+            if (isAuto && chart4) {
+                chart4.options.scales.y.min = undefined;
+                chart4.options.scales.y.max = undefined;
+                chart4.update('none');
+            }
+            saveSettings4();
+        });
+
+        document.getElementById('applyYAxis4').addEventListener('click', function () {
+            if (!chart4) return;
+            const min = parseFloat(document.getElementById('yAxisMin4').value);
+            const max = parseFloat(document.getElementById('yAxisMax4').value);
+            if (!isNaN(min)) chart4.options.scales.y.min = min;
+            if (!isNaN(max)) chart4.options.scales.y.max = max;
+            chart4.update('none');
+            saveSettings4();
+        });
+
+
+        // ========== PLOT 5: Speeds ==========
         let chart5 = null;
-        function createChart5(data) { const canvas = document.getElementById('chart5'), ctx = canvas.getContext('2d'), datasets = [], colors = ['#0072B2', '#E69F00', '#009E73', '#CC79A7'];
-            let colorIndex = 0;
-            const t = { SOG: document.querySelector('.variable-toggle5[data-group="SOG"]')?.checked, AWS: document.querySelector('.variable-toggle5[data-group="AWS"]')?.checked,
-                TWS: document.querySelector('.variable-toggle5[data-group="TWS"]')?.checked, VMG: document.querySelector('.variable-toggle5[data-group="VMG"]')?.checked };
-            if (t.SOG) { datasets.push({ label: 'SOG Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.sog_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'SOG Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.sog_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'SOG Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.sog_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); colorIndex++; }
-            if (t.AWS) { datasets.push({ label: 'AWS Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.aws_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'AWS Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.aws_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'AWS Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.aws_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); colorIndex++; }
-            if (t.TWS) { datasets.push({ label: 'TWS Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.tws_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'TWS Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.tws_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'TWS Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.tws_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); colorIndex++; }
-            if (t.VMG) { datasets.push({ label: 'VMG Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.vmg_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'VMG Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.vmg_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'VMG Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.vmg_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); }
+
+        function createChart5(data) {
+            const canvas = document.getElementById('chart5');
+            const ctx = canvas.getContext('2d');
+            const timestamps = data.map(d => new Date(d.timestamp));
+
+            const checkedVars = new Set();
+            document.querySelectorAll('.variable-toggle5:checked').forEach(cb => {
+                checkedVars.add(cb.dataset.group);
+            });
+
+            const datasets = [];
+
+            // SOG - blue
+            if (checkedVars.has('SOG')) {
+                datasets.push(
+                    { label: 'SOG Min', data: data.map(d => d.sog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'SOG Max', data: data.map(d => d.sog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'SOG', data: data.map(d => d.sog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // AWS - orange
+            if (checkedVars.has('AWS')) {
+                datasets.push(
+                    { label: 'AWS Min', data: data.map(d => d.aws_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'AWS Max', data: data.map(d => d.aws_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'AWS', data: data.map(d => d.aws_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // TWS - green
+            if (checkedVars.has('TWS')) {
+                datasets.push(
+                    { label: 'TWS Min', data: data.map(d => d.tws_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'TWS Max', data: data.map(d => d.tws_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'TWS', data: data.map(d => d.tws_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // VMG - pink
+            if (checkedVars.has('VMG')) {
+                datasets.push(
+                    { label: 'VMG Min', data: data.map(d => d.vmg_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'VMG Max', data: data.map(d => d.vmg_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'VMG', data: data.map(d => d.vmg_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
             if (chart5) chart5.destroy();
-            const autoScale = document.getElementById('yAxisAutoScale5').checked, yMin = autoScale ? undefined : parseFloat(document.getElementById('yAxisMin5').value) || undefined,
-                yMax = autoScale ? undefined : parseFloat(document.getElementById('yAxisMax5').value) || undefined;
-            chart5 = new Chart(ctx, { type: 'line', data: { datasets }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Plot 5 — Speeds (Knots)', font: { size: 16 } },
-                    zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } } },
-                scales: { x: { type: 'time', time: { unit: 'minute' }, title: { display: true, text: 'Time' } },
-                    y: { type: 'linear', display: true, title: { display: true, text: 'Speed (Knots)' }, min: yMin, max: yMax } } } });
-            document.getElementById('loadingChart5').style.display = 'none'; canvas.style.display = 'block'; }
-        function updateChart5() { const timeValue = parseInt(document.getElementById('timeValue5').value), activeUnit = document.querySelector('.plot5-unit.active'),
-            timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours', filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart5(filteredData); updateActivePresetButton5(); }
-        function updateActivePresetButton5() { const timeValue = parseInt(document.getElementById('timeValue5').value), activeUnit = document.querySelector('.plot5-unit.active'),
-            timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            document.querySelectorAll('.preset5').forEach(btn => { if (parseInt(btn.dataset.value) === timeValue && btn.dataset.unit === timeUnit) btn.classList.add('active'); else btn.classList.remove('active'); }); }
-        function saveSettings5() { const settings = { timeValue: document.getElementById('timeValue5').value, timeUnit: document.querySelector('.plot5-unit.active')?.dataset.unit || 'hours',
-            yAxisAutoScale: document.getElementById('yAxisAutoScale5').checked, yAxisMin: document.getElementById('yAxisMin5').value, yAxisMax: document.getElementById('yAxisMax5').value, variables: {} };
-            document.querySelectorAll('.variable-toggle5').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; }); localStorage.setItem('plot5Settings', JSON.stringify(settings)); }
-        function loadSettings5() { const saved = localStorage.getItem('plot5Settings'); if (!saved) return; const settings = JSON.parse(saved);
+
+            chart5 = new Chart(ctx, {
+                type: 'line',
+                data: { labels: timestamps, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'nearest',
+                            intersect: false,
+                            callbacks: {
+                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                pointStyleWidth: 6,
+                                padding: 8,
+                                font: { size: 10 },
+                                filter: item => !/Min$|Max$/.test(item.text)
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Plot 5 — Speeds (Knots)',
+                            font: { size: 16 }
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                threshold: 0
+                            },
+                            limits: {
+                                x: { min: 'original', max: 'original' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour',
+                                displayFormats: { hour: 'MMM d, HH:mm' }
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            title: { display: true, text: 'Speed (Knots)' }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('loadingChart5').style.display = 'none';
+            canvas.style.display = 'block';
+        }
+
+        function updateChart5() {
+            const timeValue = parseInt(document.getElementById('timeValue5').value);
+            const activeUnit = document.querySelector('.plot5-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
+            createChart5(filteredData);
+            updateActivePresetButton5();
+        }
+
+        function updateActivePresetButton5() {
+            const timeValue = parseInt(document.getElementById('timeValue5').value);
+            const activeUnit = document.querySelector('.plot5-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            document.querySelectorAll('.preset5').forEach(btn => {
+                if (parseInt(btn.dataset.value) === timeValue && btn.dataset.unit === timeUnit) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        function saveSettings5() {
+            const settings = { timeValue: document.getElementById('timeValue5').value, timeUnit: document.querySelector('.plot5-unit.active')?.dataset.unit || 'hours', variables: {} };
+            document.querySelectorAll('.variable-toggle5').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
+            localStorage.setItem('plot5Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings5() {
+            const saved = localStorage.getItem('plot5Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
             document.getElementById('timeValue5').value = settings.timeValue || 24;
             document.querySelectorAll('.plot5-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            document.getElementById('yAxisAutoScale5').checked = settings.yAxisAutoScale !== false; document.getElementById('yAxisMin5').value = settings.yAxisMin || '';
-            document.getElementById('yAxisMax5').value = settings.yAxisMax || ''; const isAuto = document.getElementById('yAxisAutoScale5').checked;
-            document.getElementById('yAxisMin5').disabled = isAuto; document.getElementById('yAxisMax5').disabled = isAuto; document.getElementById('applyYAxis5').disabled = isAuto;
-            if (settings.variables) { document.querySelectorAll('.variable-toggle5').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); } }
-        document.getElementById('toggleTools5').addEventListener('click', function () { const tools = document.getElementById('plotTools5'); const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none'; this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below'; });
-        document.querySelectorAll('.preset5').forEach(btn => { btn.addEventListener('click', function () { document.getElementById('timeValue5').value = this.dataset.value;
-            document.querySelectorAll('.plot5-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); }); updateChart5(); saveSettings5(); }); });
-        document.querySelectorAll('.plot5-unit').forEach(box => { box.addEventListener('click', function () { document.querySelectorAll('.plot5-unit').forEach(b => b.classList.remove('active'));
-            this.classList.add('active'); updateActivePresetButton5(); saveSettings5(); }); });
-        document.getElementById('applyTimeRange5').addEventListener('click', function () { updateChart5(); saveSettings5(); });
+            if (settings.variables) { document.querySelectorAll('.variable-toggle5').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
+        }
+
+        document.getElementById('toggleTools5').addEventListener('click', function () {
+            const tools = document.getElementById('plotTools5');
+            tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
+            this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
+        });
+
+        document.querySelectorAll('.preset5').forEach(btn => { btn.addEventListener('click', function () {
+            document.getElementById('timeValue5').value = this.dataset.value;
+            document.querySelectorAll('.plot5-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
+            updateChart5(); saveSettings5();
+        }); });
+
+        document.querySelectorAll('.plot5-unit').forEach(box => { box.addEventListener('click', function () {
+            document.querySelectorAll('.plot5-unit').forEach(b => b.classList.remove('active'));
+            this.classList.add('active'); updateActivePresetButton5(); saveSettings5();
+        }); });
+
+        document.getElementById('applyTimeRange5').addEventListener('click', () => { updateChart5(); saveSettings5(); });
         document.getElementById('panLeft5').addEventListener('click', () => { if (chart5) chart5.pan({ x: -100 }, undefined, 'default'); });
         document.getElementById('panRight5').addEventListener('click', () => { if (chart5) chart5.pan({ x: 100 }, undefined, 'default'); });
-        document.querySelectorAll('.variable-toggle5').forEach(cb => { cb.addEventListener('change', function () { updateChart5(); saveSettings5(); }); });
-        document.getElementById('yAxisAutoScale5').addEventListener('change', function () { const isAuto = this.checked; document.getElementById('yAxisMin5').disabled = isAuto;
-            document.getElementById('yAxisMax5').disabled = isAuto; document.getElementById('applyYAxis5').disabled = isAuto;
-            if (isAuto && chart5) { chart5.options.scales.y.min = undefined; chart5.options.scales.y.max = undefined; chart5.update('none'); } saveSettings5(); });
-        document.getElementById('applyYAxis5').addEventListener('click', function () { if (!chart5) return; const min = parseFloat(document.getElementById('yAxisMin5').value);
-            const max = parseFloat(document.getElementById('yAxisMax5').value); if (!isNaN(min)) chart5.options.scales.y.min = min; if (!isNaN(max)) chart5.options.scales.y.max = max;
-            chart5.update('none'); saveSettings5(); });
+        document.querySelectorAll('.variable-toggle5').forEach(cb => { cb.addEventListener('change', () => { updateChart5(); saveSettings5(); }); });
 
-        // ========== PLOT 6 ==========
+        document.getElementById('yAxisAutoScale5').addEventListener('change', function () {
+            const isAuto = this.checked;
+            document.getElementById('yAxisMin5').disabled = isAuto;
+            document.getElementById('yAxisMax5').disabled = isAuto;
+            document.getElementById('applyYAxis5').disabled = isAuto;
+            if (isAuto && chart5) { chart5.options.scales.y.min = undefined; chart5.options.scales.y.max = undefined; chart5.update('none'); }
+            saveSettings5();
+        });
+
+        document.getElementById('applyYAxis5').addEventListener('click', function () {
+            if (!chart5) return;
+            const min = parseFloat(document.getElementById('yAxisMin5').value);
+            const max = parseFloat(document.getElementById('yAxisMax5').value);
+            if (!isNaN(min)) chart5.options.scales.y.min = min;
+            if (!isNaN(max)) chart5.options.scales.y.max = max;
+            chart5.update('none'); saveSettings5();
+        });
+
+
+        // ========== PLOT 6: Angles ==========
         let chart6 = null;
-        function createChart6(data) { const canvas = document.getElementById('chart6'), ctx = canvas.getContext('2d'), datasets = [], colors = ['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#56B4E9'];
-            let colorIndex = 0;
-            const t = { COG: document.querySelector('.variable-toggle6[data-group="COG"]')?.checked, Heading: document.querySelector('.variable-toggle6[data-group="Heading"]')?.checked,
-                AWA: document.querySelector('.variable-toggle6[data-group="AWA"]')?.checked, TWA: document.querySelector('.variable-toggle6[data-group="TWA"]')?.checked,
-                Leeway: document.querySelector('.variable-toggle6[data-group="Leeway"]')?.checked };
-            if (t.COG) { datasets.push({ label: 'COG Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.cog_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'COG Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.cog_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'COG Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.cog_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); colorIndex++; }
-            if (t.Heading) { datasets.push({ label: 'Heading Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.heading_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'Heading Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.heading_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'Heading Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.heading_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); colorIndex++; }
-            if (t.AWA) { datasets.push({ label: 'AWA Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.awa_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'AWA Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.awa_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'AWA Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.awa_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); colorIndex++; }
-            if (t.TWA) { datasets.push({ label: 'TWA Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.twa_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'TWA Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.twa_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'TWA Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.twa_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); colorIndex++; }
-            if (t.Leeway) { datasets.push({ label: 'Leeway Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.leeway_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'Leeway Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.leeway_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'Leeway Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.leeway_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); }
+
+        function createChart6(data) {
+            const canvas = document.getElementById('chart6');
+            const ctx = canvas.getContext('2d');
+            const timestamps = data.map(d => new Date(d.timestamp));
+
+            const checkedVars = new Set();
+            document.querySelectorAll('.variable-toggle6:checked').forEach(cb => {
+                checkedVars.add(cb.dataset.group);
+            });
+
+            const datasets = [];
+
+            // COG - blue
+            if (checkedVars.has('COG')) {
+                datasets.push(
+                    { label: 'COG Min', data: data.map(d => d.cog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'COG Max', data: data.map(d => d.cog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'COG', data: data.map(d => d.cog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // Heading - orange
+            if (checkedVars.has('Heading')) {
+                datasets.push(
+                    { label: 'Heading Min', data: data.map(d => d.heading_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'Heading Max', data: data.map(d => d.heading_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'Heading', data: data.map(d => d.heading_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // AWA - green
+            if (checkedVars.has('AWA')) {
+                datasets.push(
+                    { label: 'AWA Min', data: data.map(d => d.awa_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'AWA Max', data: data.map(d => d.awa_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'AWA', data: data.map(d => d.awa_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // TWA - pink
+            if (checkedVars.has('TWA')) {
+                datasets.push(
+                    { label: 'TWA Min', data: data.map(d => d.twa_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'TWA Max', data: data.map(d => d.twa_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'TWA', data: data.map(d => d.twa_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
+            // Leeway - sky blue
+            if (checkedVars.has('Leeway')) {
+                datasets.push(
+                    { label: 'Leeway Min', data: data.map(d => d.leeway_min), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'Leeway Max', data: data.map(d => d.leeway_max), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'Leeway', data: data.map(d => d.leeway_avg), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 1)', backgroundColor: 'rgba(86, 180, 233, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
             if (chart6) chart6.destroy();
-            const autoScale = document.getElementById('yAxisAutoScale6').checked, yMin = autoScale ? undefined : parseFloat(document.getElementById('yAxisMin6').value) || undefined,
-                yMax = autoScale ? undefined : parseFloat(document.getElementById('yAxisMax6').value) || undefined;
-            chart6 = new Chart(ctx, { type: 'line', data: { datasets }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Plot 6 — Angles (Degrees)', font: { size: 16 } },
-                    zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } } },
-                scales: { x: { type: 'time', time: { unit: 'minute' }, title: { display: true, text: 'Time' } },
-                    y: { type: 'linear', display: true, title: { display: true, text: 'Angle (Degrees)' }, min: yMin, max: yMax } } } });
-            document.getElementById('loadingChart6').style.display = 'none'; canvas.style.display = 'block'; }
-        function updateChart6() { const timeValue = parseInt(document.getElementById('timeValue6').value), activeUnit = document.querySelector('.plot6-unit.active'),
-            timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours', filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart6(filteredData); updateActivePresetButton6(); }
-        function updateActivePresetButton6() { const timeValue = parseInt(document.getElementById('timeValue6').value), activeUnit = document.querySelector('.plot6-unit.active'),
-            timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            document.querySelectorAll('.preset6').forEach(btn => { if (parseInt(btn.dataset.value) === timeValue && btn.dataset.unit === timeUnit) btn.classList.add('active'); else btn.classList.remove('active'); }); }
-        function saveSettings6() { const settings = { timeValue: document.getElementById('timeValue6').value, timeUnit: document.querySelector('.plot6-unit.active')?.dataset.unit || 'hours',
-            yAxisAutoScale: document.getElementById('yAxisAutoScale6').checked, yAxisMin: document.getElementById('yAxisMin6').value, yAxisMax: document.getElementById('yAxisMax6').value, variables: {} };
-            document.querySelectorAll('.variable-toggle6').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; }); localStorage.setItem('plot6Settings', JSON.stringify(settings)); }
-        function loadSettings6() { const saved = localStorage.getItem('plot6Settings'); if (!saved) return; const settings = JSON.parse(saved);
+
+            chart6 = new Chart(ctx, {
+                type: 'line',
+                data: { labels: timestamps, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'nearest',
+                            intersect: false,
+                            callbacks: {
+                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                pointStyleWidth: 6,
+                                padding: 8,
+                                font: { size: 10 },
+                                filter: item => !/Min$|Max$/.test(item.text)
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Plot 6 — Angles (Degrees)',
+                            font: { size: 16 }
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                threshold: 0
+                            },
+                            limits: {
+                                x: { min: 'original', max: 'original' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour',
+                                displayFormats: { hour: 'MMM d, HH:mm' }
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            title: { display: true, text: 'Angle (Degrees)' }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('loadingChart6').style.display = 'none';
+            canvas.style.display = 'block';
+        }
+
+        function updateChart6() {
+            const timeValue = parseInt(document.getElementById('timeValue6').value);
+            const activeUnit = document.querySelector('.plot6-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
+            createChart6(filteredData);
+            updateActivePresetButton6();
+        }
+
+        function updateActivePresetButton6() {
+            const timeValue = parseInt(document.getElementById('timeValue6').value);
+            const activeUnit = document.querySelector('.plot6-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            document.querySelectorAll('.preset6').forEach(btn => {
+                if (parseInt(btn.dataset.value) === timeValue && btn.dataset.unit === timeUnit) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        function saveSettings6() {
+            const settings = { timeValue: document.getElementById('timeValue6').value, timeUnit: document.querySelector('.plot6-unit.active')?.dataset.unit || 'hours', variables: {} };
+            document.querySelectorAll('.variable-toggle6').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
+            localStorage.setItem('plot6Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings6() {
+            const saved = localStorage.getItem('plot6Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
             document.getElementById('timeValue6').value = settings.timeValue || 24;
             document.querySelectorAll('.plot6-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            document.getElementById('yAxisAutoScale6').checked = settings.yAxisAutoScale !== false; document.getElementById('yAxisMin6').value = settings.yAxisMin || '';
-            document.getElementById('yAxisMax6').value = settings.yAxisMax || ''; const isAuto = document.getElementById('yAxisAutoScale6').checked;
-            document.getElementById('yAxisMin6').disabled = isAuto; document.getElementById('yAxisMax6').disabled = isAuto; document.getElementById('applyYAxis6').disabled = isAuto;
-            if (settings.variables) { document.querySelectorAll('.variable-toggle6').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); } }
-        document.getElementById('toggleTools6').addEventListener('click', function () { const tools = document.getElementById('plotTools6'); const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none'; this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below'; });
-        document.querySelectorAll('.preset6').forEach(btn => { btn.addEventListener('click', function () { document.getElementById('timeValue6').value = this.dataset.value;
-            document.querySelectorAll('.plot6-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); }); updateChart6(); saveSettings6(); }); });
-        document.querySelectorAll('.plot6-unit').forEach(box => { box.addEventListener('click', function () { document.querySelectorAll('.plot6-unit').forEach(b => b.classList.remove('active'));
-            this.classList.add('active'); updateActivePresetButton6(); saveSettings6(); }); });
-        document.getElementById('applyTimeRange6').addEventListener('click', function () { updateChart6(); saveSettings6(); });
+            if (settings.variables) { document.querySelectorAll('.variable-toggle6').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
+        }
+
+        document.getElementById('toggleTools6').addEventListener('click', function () {
+            const tools = document.getElementById('plotTools6');
+            tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
+            this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
+        });
+
+        document.querySelectorAll('.preset6').forEach(btn => { btn.addEventListener('click', function () {
+            document.getElementById('timeValue6').value = this.dataset.value;
+            document.querySelectorAll('.plot6-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
+            updateChart6(); saveSettings6();
+        }); });
+
+        document.querySelectorAll('.plot6-unit').forEach(box => { box.addEventListener('click', function () {
+            document.querySelectorAll('.plot6-unit').forEach(b => b.classList.remove('active'));
+            this.classList.add('active'); updateActivePresetButton6(); saveSettings6();
+        }); });
+
+        document.getElementById('applyTimeRange6').addEventListener('click', () => { updateChart6(); saveSettings6(); });
         document.getElementById('panLeft6').addEventListener('click', () => { if (chart6) chart6.pan({ x: -100 }, undefined, 'default'); });
         document.getElementById('panRight6').addEventListener('click', () => { if (chart6) chart6.pan({ x: 100 }, undefined, 'default'); });
-        document.querySelectorAll('.variable-toggle6').forEach(cb => { cb.addEventListener('change', function () { updateChart6(); saveSettings6(); }); });
-        document.getElementById('yAxisAutoScale6').addEventListener('change', function () { const isAuto = this.checked; document.getElementById('yAxisMin6').disabled = isAuto;
-            document.getElementById('yAxisMax6').disabled = isAuto; document.getElementById('applyYAxis6').disabled = isAuto;
-            if (isAuto && chart6) { chart6.options.scales.y.min = undefined; chart6.options.scales.y.max = undefined; chart6.update('none'); } saveSettings6(); });
-        document.getElementById('applyYAxis6').addEventListener('click', function () { if (!chart6) return; const min = parseFloat(document.getElementById('yAxisMin6').value);
-            const max = parseFloat(document.getElementById('yAxisMax6').value); if (!isNaN(min)) chart6.options.scales.y.min = min; if (!isNaN(max)) chart6.options.scales.y.max = max;
-            chart6.update('none'); saveSettings6(); });
+        document.querySelectorAll('.variable-toggle6').forEach(cb => { cb.addEventListener('change', () => { updateChart6(); saveSettings6(); }); });
 
-        // ========== PLOT 7 ==========
+        document.getElementById('yAxisAutoScale6').addEventListener('change', function () {
+            const isAuto = this.checked;
+            document.getElementById('yAxisMin6').disabled = isAuto;
+            document.getElementById('yAxisMax6').disabled = isAuto;
+            document.getElementById('applyYAxis6').disabled = isAuto;
+            if (isAuto && chart6) { chart6.options.scales.y.min = undefined; chart6.options.scales.y.max = undefined; chart6.update('none'); }
+            saveSettings6();
+        });
+
+        document.getElementById('applyYAxis6').addEventListener('click', function () {
+            if (!chart6) return;
+            const min = parseFloat(document.getElementById('yAxisMin6').value);
+            const max = parseFloat(document.getElementById('yAxisMax6').value);
+            if (!isNaN(min)) chart6.options.scales.y.min = min;
+            if (!isNaN(max)) chart6.options.scales.y.max = max;
+            chart6.update('none'); saveSettings6();
+        });
+
+
+        // ========== PLOT 7: Alternator Zero Offset ==========
         let chart7 = null;
-        function createChart7(data) { const canvas = document.getElementById('chart7'), ctx = canvas.getContext('2d'), datasets = [], colors = ['#0072B2'];
-            let colorIndex = 0;
-            const t = { AltZero: document.querySelector('.variable-toggle7[data-group="AltZero"]')?.checked };
-            if (t.AltZero) { datasets.push({ label: 'Alt Zero Min', data: data.map(d => ({ x: new Date(d.timestamp), y: d.alt_zero_min })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 },
-                { label: 'Alt Zero Avg', data: data.map(d => ({ x: new Date(d.timestamp), y: d.alt_zero_avg })), borderColor: colors[colorIndex], borderWidth: 2, pointRadius: 0 },
-                { label: 'Alt Zero Max', data: data.map(d => ({ x: new Date(d.timestamp), y: d.alt_zero_max })), borderColor: colors[colorIndex], borderWidth: 1, pointRadius: 0 }); }
+
+        function createChart7(data) {
+            const canvas = document.getElementById('chart7');
+            const ctx = canvas.getContext('2d');
+            const timestamps = data.map(d => new Date(d.timestamp));
+
+            const checkedVars = new Set();
+            document.querySelectorAll('.variable-toggle7:checked').forEach(cb => {
+                checkedVars.add(cb.dataset.group);
+            });
+
+            const datasets = [];
+
+            // Alt Zero - blue
+            if (checkedVars.has('AltZero')) {
+                datasets.push(
+                    { label: 'Alt Zero Min', data: data.map(d => d.alt_zero_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
+                    { label: 'Alt Zero Max', data: data.map(d => d.alt_zero_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
+                    { label: 'Alt Zero', data: data.map(d => d.alt_zero_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                );
+            }
+
             if (chart7) chart7.destroy();
-            const autoScale = document.getElementById('yAxisAutoScale7').checked, yMin = autoScale ? undefined : parseFloat(document.getElementById('yAxisMin7').value) || undefined,
-                yMax = autoScale ? undefined : parseFloat(document.getElementById('yAxisMax7').value) || undefined;
-            chart7 = new Chart(ctx, { type: 'line', data: { datasets }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: true, position: 'top' }, title: { display: true, text: 'Plot 7 — Alternator Zero Offset', font: { size: 16 } },
-                    zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } } },
-                scales: { x: { type: 'time', time: { unit: 'minute' }, title: { display: true, text: 'Time' } },
-                    y: { type: 'linear', display: true, title: { display: true, text: 'Offset' }, min: yMin, max: yMax } } } });
-            document.getElementById('loadingChart7').style.display = 'none'; canvas.style.display = 'block'; }
-        function updateChart7() { const timeValue = parseInt(document.getElementById('timeValue7').value), activeUnit = document.querySelector('.plot7-unit.active'),
-            timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours', filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart7(filteredData); updateActivePresetButton7(); }
-        function updateActivePresetButton7() { const timeValue = parseInt(document.getElementById('timeValue7').value), activeUnit = document.querySelector('.plot7-unit.active'),
-            timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            document.querySelectorAll('.preset7').forEach(btn => { if (parseInt(btn.dataset.value) === timeValue && btn.dataset.unit === timeUnit) btn.classList.add('active'); else btn.classList.remove('active'); }); }
-        function saveSettings7() { const settings = { timeValue: document.getElementById('timeValue7').value, timeUnit: document.querySelector('.plot7-unit.active')?.dataset.unit || 'hours',
-            yAxisAutoScale: document.getElementById('yAxisAutoScale7').checked, yAxisMin: document.getElementById('yAxisMin7').value, yAxisMax: document.getElementById('yAxisMax7').value, variables: {} };
-            document.querySelectorAll('.variable-toggle7').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; }); localStorage.setItem('plot7Settings', JSON.stringify(settings)); }
-        function loadSettings7() { const saved = localStorage.getItem('plot7Settings'); if (!saved) return; const settings = JSON.parse(saved);
+
+            chart7 = new Chart(ctx, {
+                type: 'line',
+                data: { labels: timestamps, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'nearest',
+                            intersect: false,
+                            callbacks: {
+                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                pointStyleWidth: 6,
+                                padding: 8,
+                                font: { size: 10 },
+                                filter: item => !/Min$|Max$/.test(item.text)
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Plot 7 — Alternator Zero Offset',
+                            font: { size: 16 }
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                threshold: 0
+                            },
+                            limits: {
+                                x: { min: 'original', max: 'original' }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'hour',
+                                displayFormats: { hour: 'MMM d, HH:mm' }
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            title: { display: true, text: 'Offset' }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('loadingChart7').style.display = 'none';
+            canvas.style.display = 'block';
+        }
+
+        function updateChart7() {
+            const timeValue = parseInt(document.getElementById('timeValue7').value);
+            const activeUnit = document.querySelector('.plot7-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
+            createChart7(filteredData);
+            updateActivePresetButton7();
+        }
+
+        function updateActivePresetButton7() {
+            const timeValue = parseInt(document.getElementById('timeValue7').value);
+            const activeUnit = document.querySelector('.plot7-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+            document.querySelectorAll('.preset7').forEach(btn => {
+                if (parseInt(btn.dataset.value) === timeValue && btn.dataset.unit === timeUnit) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        function saveSettings7() {
+            const settings = { timeValue: document.getElementById('timeValue7').value, timeUnit: document.querySelector('.plot7-unit.active')?.dataset.unit || 'hours', variables: {} };
+            document.querySelectorAll('.variable-toggle7').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
+            localStorage.setItem('plot7Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings7() {
+            const saved = localStorage.getItem('plot7Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
             document.getElementById('timeValue7').value = settings.timeValue || 24;
             document.querySelectorAll('.plot7-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            document.getElementById('yAxisAutoScale7').checked = settings.yAxisAutoScale !== false; document.getElementById('yAxisMin7').value = settings.yAxisMin || '';
-            document.getElementById('yAxisMax7').value = settings.yAxisMax || ''; const isAuto = document.getElementById('yAxisAutoScale7').checked;
-            document.getElementById('yAxisMin7').disabled = isAuto; document.getElementById('yAxisMax7').disabled = isAuto; document.getElementById('applyYAxis7').disabled = isAuto;
-            if (settings.variables) { document.querySelectorAll('.variable-toggle7').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); } }
-        document.getElementById('toggleTools7').addEventListener('click', function () { const tools = document.getElementById('plotTools7'); const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none'; this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below'; });
-        document.querySelectorAll('.preset7').forEach(btn => { btn.addEventListener('click', function () { document.getElementById('timeValue7').value = this.dataset.value;
-            document.querySelectorAll('.plot7-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); }); updateChart7(); saveSettings7(); }); });
-        document.querySelectorAll('.plot7-unit').forEach(box => { box.addEventListener('click', function () { document.querySelectorAll('.plot7-unit').forEach(b => b.classList.remove('active'));
-            this.classList.add('active'); updateActivePresetButton7(); saveSettings7(); }); });
-        document.getElementById('applyTimeRange7').addEventListener('click', function () { updateChart7(); saveSettings7(); });
+            if (settings.variables) { document.querySelectorAll('.variable-toggle7').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
+        }
+
+        document.getElementById('toggleTools7').addEventListener('click', function () {
+            const tools = document.getElementById('plotTools7');
+            tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
+            this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
+        });
+
+        document.querySelectorAll('.preset7').forEach(btn => { btn.addEventListener('click', function () {
+            document.getElementById('timeValue7').value = this.dataset.value;
+            document.querySelectorAll('.plot7-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
+            updateChart7(); saveSettings7();
+        }); });
+
+        document.querySelectorAll('.plot7-unit').forEach(box => { box.addEventListener('click', function () {
+            document.querySelectorAll('.plot7-unit').forEach(b => b.classList.remove('active'));
+            this.classList.add('active'); updateActivePresetButton7(); saveSettings7();
+        }); });
+
+        document.getElementById('applyTimeRange7').addEventListener('click', () => { updateChart7(); saveSettings7(); });
         document.getElementById('panLeft7').addEventListener('click', () => { if (chart7) chart7.pan({ x: -100 }, undefined, 'default'); });
         document.getElementById('panRight7').addEventListener('click', () => { if (chart7) chart7.pan({ x: 100 }, undefined, 'default'); });
-        document.querySelectorAll('.variable-toggle7').forEach(cb => { cb.addEventListener('change', function () { updateChart7(); saveSettings7(); }); });
-        document.getElementById('yAxisAutoScale7').addEventListener('change', function () { const isAuto = this.checked; document.getElementById('yAxisMin7').disabled = isAuto;
-            document.getElementById('yAxisMax7').disabled = isAuto; document.getElementById('applyYAxis7').disabled = isAuto;
-            if (isAuto && chart7) { chart7.options.scales.y.min = undefined; chart7.options.scales.y.max = undefined; chart7.update('none'); } saveSettings7(); });
-        document.getElementById('applyYAxis7').addEventListener('click', function () { if (!chart7) return; const min = parseFloat(document.getElementById('yAxisMin7').value);
-            const max = parseFloat(document.getElementById('yAxisMax7').value); if (!isNaN(min)) chart7.options.scales.y.min = min; if (!isNaN(max)) chart7.options.scales.y.max = max;
-            chart7.update('none'); saveSettings7(); });
+        document.querySelectorAll('.variable-toggle7').forEach(cb => { cb.addEventListener('change', () => { updateChart7(); saveSettings7(); }); });
+
+        document.getElementById('yAxisAutoScale7').addEventListener('change', function () {
+            const isAuto = this.checked;
+            document.getElementById('yAxisMin7').disabled = isAuto;
+            document.getElementById('yAxisMax7').disabled = isAuto;
+            document.getElementById('applyYAxis7').disabled = isAuto;
+            if (isAuto && chart7) { chart7.options.scales.y.min = undefined; chart7.options.scales.y.max = undefined; chart7.update('none'); }
+            saveSettings7();
+        });
+
+        document.getElementById('applyYAxis7').addEventListener('click', function () {
+            if (!chart7) return;
+            const min = parseFloat(document.getElementById('yAxisMin7').value);
+            const max = parseFloat(document.getElementById('yAxisMax7').value);
+            if (!isNaN(min)) chart7.options.scales.y.min = min;
+            if (!isNaN(max)) chart7.options.scales.y.max = max;
+            chart7.update('none'); saveSettings7();
+        });
 
 
-
-        // ============================================
-        // ============================================
         // SHARED: MAIN INITIALIZATION
         // ============================================
         // ============================================
