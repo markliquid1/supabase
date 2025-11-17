@@ -874,6 +874,7 @@
         // ============================================
 
         let chart1 = null;
+        let chart1SourceData = [];
 
         // ============================================
         // ============================================
@@ -945,10 +946,6 @@
             const ctx = document.getElementById('chart1').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
-            // NEW: binned view for averages (max ~120 points)
-            const binned = applyBinning(data, MAX_BINS_PER_PLOT);
-
-
             const checkedVars = new Set();
             document.querySelectorAll('.variable-toggle1:checked').forEach(cb => {
                 checkedVars.add(cb.dataset.group);
@@ -981,18 +978,13 @@
                     },
                     {
                         label: 'Batt Curr',
-                        // binned series, explicit x/y so it’s independent of labels[]
-                        data: binned
-                            .filter(d => typeof d.batt_curr_avg === 'number' && !Number.isNaN(d.batt_curr_avg))
-                            .map(d => ({ x: d.timestamp, y: d.batt_curr_avg })),
-                        borderColor: OKABE_ITO.blue,
-                        backgroundColor: OKABE_ITO.blue,
-                        pointRadius: 0,          // line only
-                        pointHitRadius: 0,
+                        data: data.map(d => d.batt_curr_avg),
+                        borderColor: 'rgba(0, 114, 178, 1)',
+                        backgroundColor: 'rgba(0, 114, 178, 1)',
+                        pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
-                        order: 1,
-                        decimation: { enabled: false } // do NOT decimate the avg line
+                        order: 1
                     }
                 );
             }
@@ -1022,19 +1014,14 @@
                     },
                     {
                         label: 'Solar Curr',
-                        data: binned
-                            .filter(d => typeof d.victron_curr_avg === 'number' && !Number.isNaN(d.victron_curr_avg))
-                            .map(d => ({ x: d.timestamp, y: d.victron_curr_avg })),
-                        borderColor: OKABE_ITO.orange,
-                        backgroundColor: OKABE_ITO.orange,
-                        pointRadius: 0,
-                        pointHitRadius: 0,
+                        data: data.map(d => d.victron_curr_avg),
+                        borderColor: 'rgba(230, 159, 0, 1)',
+                        backgroundColor: 'rgba(230, 159, 0, 1)',
+                        pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
-                        order: 1,
-                        decimation: { enabled: false }
+                        order: 1
                     }
-
                 );
             }
 
@@ -1063,19 +1050,14 @@
                     },
                     {
                         label: 'Alt Curr',
-                        data: binned
-                            .filter(d => typeof d.alt_curr_avg === 'number' && !Number.isNaN(d.alt_curr_avg))
-                            .map(d => ({ x: d.timestamp, y: d.alt_curr_avg })),
-                        borderColor: OKABE_ITO.green,
-                        backgroundColor: OKABE_ITO.green,
-                        pointRadius: 0,
-                        pointHitRadius: 0,
+                        data: data.map(d => d.alt_curr_avg),
+                        borderColor: 'rgba(0, 158, 115, 1)',
+                        backgroundColor: 'rgba(0, 158, 115, 1)',
+                        pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
-                        order: 1,
-                        decimation: { enabled: false }
+                        order: 1
                     }
-
                 );
             }
 
@@ -1121,24 +1103,25 @@
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
-                                mode: 'x'
+                                mode: 'x',
+                                onZoomComplete({ chart }) {
+                                    rebinChart1ToVisibleRange(chart);
+                                }
                             },
                             pan: {
                                 enabled: true,
                                 mode: 'x',
                                 modifierKey: null,
-                                threshold: 0
+                                threshold: 0,
+                                onPanComplete({ chart }) {
+                                    rebinChart1ToVisibleRange(chart);
+                                }
                             },
                             limits: {
                                 x: { min: 'original', max: 'original' }
                             }
-                        },
-                        // Let Chart.js decimate min/max datasets
-                        decimation: {
-                            enabled: true,
-                            algorithm: 'min-max',
-                            threshold: 1000   // tweak if needed
                         }
+
                     },
                     scales: {
                         x: {
@@ -1159,6 +1142,7 @@
                                 major: { enabled: true }
                             }
                         },
+
                         y: {
                             type: 'linear',
                             display: true,
@@ -1169,9 +1153,8 @@
                 }
             });
 
-
-        document.getElementById('loadingChart1').style.display = 'none';
-        document.getElementById('chart1').style.display = 'block';
+            document.getElementById('loadingChart1').style.display = 'none';
+            document.getElementById('chart1').style.display = 'block';
         }
 
         // ============================================
@@ -1186,13 +1169,46 @@
             const activeUnit = document.querySelector('.plot1-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
-            const filteredData = timeValue > 0
+            // Raw, unbinned data for Plot 1 (respecting Show Last / quick buttons)
+            chart1SourceData = timeValue > 0
                 ? filterDataByTime(fullData, timeValue, timeUnit)
                 : fullData;
 
-            createChart1(filteredData);
+            // Initial binning for current visible range
+            const initialBinned = applyBinning(chart1SourceData);
+            createChart1(initialBinned);
+
             updateActivePresetButton1();
         }
+        function rebinChart1ToVisibleRange(chart) {
+            if (!chart1SourceData || chart1SourceData.length === 0) return;
+            const xScale = chart.scales.x;
+            if (!xScale) return;
+
+            const min = xScale.min;
+            const max = xScale.max;
+            if (min == null || max == null) return;
+
+            // Filter raw data to the current visible x-window
+            const visibleRaw = chart1SourceData.filter(row => {
+                const t = new Date(row.timestamp).getTime();
+                return t >= min && t <= max;
+            });
+
+            if (!visibleRaw.length) return;
+
+            const reBinned = applyBinning(visibleRaw);
+
+            // Rebuild chart1 with re-binned data, then restore zoom window
+            createChart1(reBinned);
+
+            if (chart1 && chart1.options && chart1.options.scales && chart1.options.scales.x) {
+                chart1.options.scales.x.min = min;
+                chart1.options.scales.x.max = max;
+                chart1.update('none');
+            }
+        }
+
 
 
         function updateActivePresetButton1() {
