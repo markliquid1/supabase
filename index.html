@@ -1162,117 +1162,117 @@
         // ============================================
         // ============================================
 
-// Apply time window & rebuild chart
-function updateChart1() {
-    const timeValue = parseInt(document.getElementById('timeValue1').value);
-    const activeUnit = document.querySelector('.plot1-unit.active');
-    const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+        // Apply time window & rebuild chart
+        function updateChart1() {
+            const timeValue = parseInt(document.getElementById('timeValue1').value);
+            const activeUnit = document.querySelector('.plot1-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
-    // Keep unbinned full history for zoom/pan expansion
-    chart1SourceData = fullData;
+            // Keep unbinned full history for zoom/pan expansion
+            chart1SourceData = fullData;
 
-    // Initial visible window respects "Show last" controls
-    const filteredData = timeValue > 0
-        ? filterDataByTime(fullData, timeValue, timeUnit)
-        : fullData;
+            // Initial visible window respects "Show last" controls
+            const filteredData = timeValue > 0
+                ? filterDataByTime(fullData, timeValue, timeUnit)
+                : fullData;
 
-    const initialBinned = applyBinning(filteredData);
-    createChart1(initialBinned);
-    updateActivePresetButton1();
-}
-
-        
-function rebinChart1ToVisibleRange(chart) {
-    if (!chart1SourceData || chart1SourceData.length === 0) return;
-
-    const xScale = chart.scales.x;
-    if (!xScale) return;
-
-    let min = xScale.min;
-    let max = xScale.max;
-    if (min == null || max == null) return;
-
-    // Clamp requested window to data range to avoid panning into empty space
-    const dataMin = new Date(chart1SourceData[0].timestamp).getTime();
-    const dataMax = new Date(
-        chart1SourceData[chart1SourceData.length - 1].timestamp
-    ).getTime();
-
-    const clampedMin = Math.max(min, dataMin);
-    const clampedMax = Math.min(max, dataMax);
-
-    // If user pans completely off data, snap back to full data range
-    if (clampedMin >= clampedMax) {
-        chart.options.scales.x.min = dataMin;
-        chart.options.scales.x.max = dataMax;
-        chart.update('none');
-        return;
-    }
-
-    // Filter raw data to the current visible x-window (clamped)
-    const visibleRaw = chart1SourceData.filter(row => {
-        const t = new Date(row.timestamp).getTime();
-        return t >= clampedMin && t <= clampedMax;
-    });
-
-    if (!visibleRaw.length) return;
-
-    const reBinned = applyBinning(visibleRaw);
-
-    // Update labels to the rebinned timestamps
-    chart.data.labels = reBinned.map(row => new Date(row.timestamp));
-
-    // Update each dataset based on its label
-    chart.data.datasets.forEach(ds => {
-        let key = null;
-
-        switch (ds.label) {
-            case 'Batt Curr Min':
-                key = 'batt_curr_min';
-                break;
-            case 'Batt Curr Max':
-                key = 'batt_curr_max';
-                break;
-            case 'Batt Curr':
-                key = 'batt_curr_avg';
-                break;
-
-            case 'Solar Curr Min':
-                key = 'victron_curr_min';
-                break;
-            case 'Solar Curr Max':
-                key = 'victron_curr_max';
-                break;
-            case 'Solar Curr':
-                key = 'victron_curr_avg';
-                break;
-
-            case 'Alt Curr Min':
-                key = 'alt_curr_min';
-                break;
-            case 'Alt Curr Max':
-                key = 'alt_curr_max';
-                break;
-            case 'Alt Curr':
-                key = 'alt_curr_avg';
-                break;
-
-            default:
-                key = null; // leave any other datasets alone
+            const initialBinned = applyBinning(filteredData);
+            createChart1(initialBinned);
+            updateActivePresetButton1();
         }
 
-        if (key) {
-            ds.data = reBinned.map(row => row[key]);
+
+        function rebinChart1ToVisibleRange(chart) {
+            if (!chart1SourceData || chart1SourceData.length === 0) return;
+
+            const xScale = chart.scales.x;
+            if (!xScale) return;
+
+            let min = xScale.min;
+            let max = xScale.max;
+            if (min == null || max == null) return;
+
+            // Clamp requested window to data range to avoid panning into empty space
+            const dataMin = new Date(chart1SourceData[0].timestamp).getTime();
+            const dataMax = new Date(
+                chart1SourceData[chart1SourceData.length - 1].timestamp
+            ).getTime();
+
+            const clampedMin = Math.max(min, dataMin);
+            const clampedMax = Math.min(max, dataMax);
+
+            // If user pans completely off data, snap back to full data range
+            if (clampedMin >= clampedMax) {
+                chart.options.scales.x.min = dataMin;
+                chart.options.scales.x.max = dataMax;
+                chart.update('none');
+                return;
+            }
+
+            // Filter raw data to the current visible x-window (clamped)
+            const visibleRaw = chart1SourceData.filter(row => {
+                const t = new Date(row.timestamp).getTime();
+                return t >= clampedMin && t <= clampedMax;
+            });
+
+            if (!visibleRaw.length) return;
+
+            const reBinned = applyBinning(visibleRaw);
+
+            // Update labels to the rebinned timestamps
+            chart.data.labels = reBinned.map(row => new Date(row.timestamp));
+
+            // Update each dataset based on its label
+            chart.data.datasets.forEach(ds => {
+                let key = null;
+
+                switch (ds.label) {
+                    case 'Batt Curr Min':
+                        key = 'batt_curr_min';
+                        break;
+                    case 'Batt Curr Max':
+                        key = 'batt_curr_max';
+                        break;
+                    case 'Batt Curr':
+                        key = 'batt_curr_avg';
+                        break;
+
+                    case 'Solar Curr Min':
+                        key = 'victron_curr_min';
+                        break;
+                    case 'Solar Curr Max':
+                        key = 'victron_curr_max';
+                        break;
+                    case 'Solar Curr':
+                        key = 'victron_curr_avg';
+                        break;
+
+                    case 'Alt Curr Min':
+                        key = 'alt_curr_min';
+                        break;
+                    case 'Alt Curr Max':
+                        key = 'alt_curr_max';
+                        break;
+                    case 'Alt Curr':
+                        key = 'alt_curr_avg';
+                        break;
+
+                    default:
+                        key = null; // leave any other datasets alone
+                }
+
+                if (key) {
+                    ds.data = reBinned.map(row => row[key]);
+                }
+            });
+
+            // Keep the clamped window as the active view
+            chart.options.scales.x.min = clampedMin;
+            chart.options.scales.x.max = clampedMax;
+
+            // Re-render with new data but keep current zoom/pan window
+            chart.update('none');
         }
-    });
-
-    // Keep the clamped window as the active view
-    chart.options.scales.x.min = clampedMin;
-    chart.options.scales.x.max = clampedMax;
-
-    // Re-render with new data but keep current zoom/pan window
-    chart.update('none');
-}
 
 
 
@@ -1335,13 +1335,59 @@ function rebinChart1ToVisibleRange(chart) {
             saveSettings1();
         });
 
-        // Pan buttons
+        // Pan buttons (manual pan to keep within data range + rebin)
+        function panChart1(direction) {
+            if (!chart1 || !chart1.scales || !chart1.scales.x || !chart1SourceData || !chart1SourceData.length) return;
+
+            const xScale = chart1.scales.x;
+            let min = xScale.min;
+            let max = xScale.max;
+
+            // Full data range from raw history
+            const dataMin = new Date(chart1SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart1SourceData[chart1SourceData.length - 1].timestamp).getTime();
+
+            // Fallback if min/max aren't set yet
+            if (min == null || max == null) {
+                min = dataMin;
+                max = dataMax;
+            }
+
+            const range = max - min;
+            if (range <= 0) return;
+
+            // Pan by 50% of current window
+            const shift = range * 0.5;
+
+            let newMin = direction === 'left' ? min - shift : min + shift;
+            let newMax = direction === 'left' ? max - shift : max + shift;
+
+            // Clamp to data range so we never pan into empty space
+            if (newMin < dataMin) {
+                newMin = dataMin;
+                newMax = dataMin + range;
+                if (newMax > dataMax) newMax = dataMax;
+            } else if (newMax > dataMax) {
+                newMax = dataMax;
+                newMin = dataMax - range;
+                if (newMin < dataMin) newMin = dataMin;
+            }
+
+            chart1.options.scales.x.min = newMin;
+            chart1.options.scales.x.max = newMax;
+
+            // Re-bin and redraw for the new window
+            rebinChart1ToVisibleRange(chart1);
+        }
+
         document.getElementById('panLeft1').addEventListener('click', () => {
-            if (chart1) chart1.pan({ x: -100 }, undefined, 'default');
+            panChart1('left');
         });
+
         document.getElementById('panRight1').addEventListener('click', () => {
-            if (chart1) chart1.pan({ x: 100 }, undefined, 'default');
+            panChart1('right');
         });
+
 
         // Variable toggles
         document.querySelectorAll('.variable-toggle1').forEach(cb => {
