@@ -758,46 +758,47 @@
 
 
 
-        async function fetchSensorHistory(deviceUid) {
-            try {
-                const { data, error } = await supabase
-                    .from('sensor_history')
-                    .select(HISTORY_COLUMNS)
-                    .eq('device_uid', deviceUid)
-                    .order('timestamp', { ascending: true });
+            async function fetchSensorHistory(deviceUid) {
+    try {
+        const { data, error } = await supabase
+            .from('sensor_history')
+            .select(HISTORY_COLUMNS)
+            .eq('device_uid', deviceUid)
+            .order('timestamp', { ascending: true });
 
-                if (error) {
-                    debugLog('fetchSensorHistory ERROR:', error.message || JSON.stringify(error));
-                    throw error;
-                }
-
-                const minDate = new Date('2020-01-01').getTime();
-                const maxDate = new Date('2100-01-01').getTime();
-
-                const filtered = (data || []).filter(d => {
-                    const ts = new Date(d.timestamp).getTime();
-                    return ts >= minDate && ts <= maxDate;
-                });
-
-                debugLog('rows:', filtered.length);
-
-                if (filtered.length > 0) {
-                    const f = filtered[0];
-                    debugLog('keys:', Object.keys(f).join(','));
-                    debugLog('temps:', {
-                        alt_temp_min: f.alt_temp_min,
-                        temp_therm_min: f.temp_therm_min,
-                        amb_temp_min: f.amb_temp_min
-                    });
-                }
-
-                return filtered;
-            } catch (error) {
-                debugLog('fetchSensorHistory THROWN:', error.message || error);
-                console.error('Data fetch error:', error);
-                throw new Error('Failed to fetch sensor data');
-            }
+        if (error) {
+            // debugLog('fetchSensorHistory ERROR:', error.message || JSON.stringify(error));
+            throw error;
         }
+
+        const minDate = new Date('2020-01-01').getTime();
+        const maxDate = new Date('2100-01-01').getTime();
+
+        const filtered = (data || []).filter(d => {
+            const ts = new Date(d.timestamp).getTime();
+            return ts >= minDate && ts <= maxDate;
+        });
+
+        // debugLog('rows:', filtered.length);
+
+        if (filtered.length > 0) {
+            const f = filtered[0];
+            // debugLog('keys:', Object.keys(f).join(','));
+            // debugLog('temps:', {
+            //     alt_temp_min: f.alt_temp_min,
+            //     temp_therm_min: f.temp_therm_min,
+            //     amb_temp_min: f.amb_temp_min
+            // });
+        }
+
+        return filtered;
+    } catch (error) {
+        // debugLog('fetchSensorHistory THROWN:', error.message || error);
+        console.error('Data fetch error:', error);
+        throw new Error('Failed to fetch sensor data');
+    }
+}
+
 
 
         // Shared helper: apply time window
