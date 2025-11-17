@@ -746,7 +746,11 @@
             'soc_min,soc_max,soc_avg,' +
             'alt_temp_min,alt_temp_max,alt_temp_avg,' +
             'temp_therm_min,temp_therm_max,temp_therm_avg,' +
-            'amb_temp_min,amb_temp_max,amb_temp_avg';
+            'amb_temp_min,amb_temp_max,amb_temp_avg,' +
+            'rpm_min,rpm_max,rpm_avg,' +
+            'duty_cycle_min,duty_cycle_max,duty_cycle_avg,' +
+            'ign_duty,eng_duty';
+
 
         async function fetchSensorHistory(deviceUid) {
             try {
