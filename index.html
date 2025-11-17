@@ -1162,16 +1162,16 @@
         // ============================================
         // ============================================
 
-        // Apply time window & rebuild chart
-        function updateChart1() {
+// Apply time window & rebuild chart
+function updateChart1() {
     const timeValue = parseInt(document.getElementById('timeValue1').value);
     const activeUnit = document.querySelector('.plot1-unit.active');
     const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
-    // Full raw data always remains available for zoom/pan expansion
+    // Keep unbinned full history for zoom/pan expansion
     chart1SourceData = fullData;
 
-    // Initial visible window is filtered; re-binning happens after zooming/panning
+    // Initial visible window respects "Show last" controls
     const filteredData = timeValue > 0
         ? filterDataByTime(fullData, timeValue, timeUnit)
         : fullData;
@@ -1181,94 +1181,98 @@
     updateActivePresetButton1();
 }
 
-
-            const timeValue = parseInt(document.getElementById('timeValue1').value);
-            const activeUnit = document.querySelector('.plot1-unit.active');
-            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-
-            // Raw, unbinned data for Plot 1 (respecting Show Last / quick buttons)
-            chart1SourceData = timeValue > 0
-                ? filterDataByTime(fullData, timeValue, timeUnit)
-                : fullData;
-
-            // Initial binning for current visible range
-            const initialBinned = applyBinning(chart1SourceData);
-            createChart1(initialBinned);
-
-            updateActivePresetButton1();
         
-        function rebinChart1ToVisibleRange(chart) {
-            if (!chart1SourceData || chart1SourceData.length === 0) return;
+function rebinChart1ToVisibleRange(chart) {
+    if (!chart1SourceData || chart1SourceData.length === 0) return;
 
-            const xScale = chart.scales.x;
-            if (!xScale) return;
+    const xScale = chart.scales.x;
+    if (!xScale) return;
 
-            const min = xScale.min;
-            const max = xScale.max;
-            if (min == null || max == null) return;
+    let min = xScale.min;
+    let max = xScale.max;
+    if (min == null || max == null) return;
 
-            // Filter raw data to the current visible x-window
-            const visibleRaw = chart1SourceData.filter(row => {
-                const t = new Date(row.timestamp).getTime();
-                return t >= min && t <= max;
-            });
+    // Clamp requested window to data range to avoid panning into empty space
+    const dataMin = new Date(chart1SourceData[0].timestamp).getTime();
+    const dataMax = new Date(
+        chart1SourceData[chart1SourceData.length - 1].timestamp
+    ).getTime();
 
-            if (!visibleRaw.length) return;
+    const clampedMin = Math.max(min, dataMin);
+    const clampedMax = Math.min(max, dataMax);
 
-            const reBinned = applyBinning(visibleRaw);
+    // If user pans completely off data, snap back to full data range
+    if (clampedMin >= clampedMax) {
+        chart.options.scales.x.min = dataMin;
+        chart.options.scales.x.max = dataMax;
+        chart.update('none');
+        return;
+    }
 
-            // Update labels to the rebinned timestamps
-            const labels = reBinned.map(row => new Date(row.timestamp));
-            chart.data.labels = labels;
+    // Filter raw data to the current visible x-window (clamped)
+    const visibleRaw = chart1SourceData.filter(row => {
+        const t = new Date(row.timestamp).getTime();
+        return t >= clampedMin && t <= clampedMax;
+    });
 
-            // Update each dataset based on its label
-            chart.data.datasets.forEach(ds => {
-                let key = null;
+    if (!visibleRaw.length) return;
 
-                switch (ds.label) {
-                    case 'Batt Curr Min':
-                        key = 'batt_curr_min';
-                        break;
-                    case 'Batt Curr Max':
-                        key = 'batt_curr_max';
-                        break;
-                    case 'Batt Curr':
-                        key = 'batt_curr_avg';
-                        break;
+    const reBinned = applyBinning(visibleRaw);
 
-                    case 'Solar Curr Min':
-                        key = 'victron_curr_min';
-                        break;
-                    case 'Solar Curr Max':
-                        key = 'victron_curr_max';
-                        break;
-                    case 'Solar Curr':
-                        key = 'victron_curr_avg';
-                        break;
+    // Update labels to the rebinned timestamps
+    chart.data.labels = reBinned.map(row => new Date(row.timestamp));
 
-                    case 'Alt Curr Min':
-                        key = 'alt_curr_min';
-                        break;
-                    case 'Alt Curr Max':
-                        key = 'alt_curr_max';
-                        break;
-                    case 'Alt Curr':
-                        key = 'alt_curr_avg';
-                        break;
+    // Update each dataset based on its label
+    chart.data.datasets.forEach(ds => {
+        let key = null;
 
-                    default:
-                        key = null; // leave any other datasets alone
-                }
+        switch (ds.label) {
+            case 'Batt Curr Min':
+                key = 'batt_curr_min';
+                break;
+            case 'Batt Curr Max':
+                key = 'batt_curr_max';
+                break;
+            case 'Batt Curr':
+                key = 'batt_curr_avg';
+                break;
 
-                if (key) {
-                    ds.data = reBinned.map(row => row[key]);
-                }
-            });
+            case 'Solar Curr Min':
+                key = 'victron_curr_min';
+                break;
+            case 'Solar Curr Max':
+                key = 'victron_curr_max';
+                break;
+            case 'Solar Curr':
+                key = 'victron_curr_avg';
+                break;
 
-            // Re-render with new data but keep current zoom/pan window
-            chart.update('none');
+            case 'Alt Curr Min':
+                key = 'alt_curr_min';
+                break;
+            case 'Alt Curr Max':
+                key = 'alt_curr_max';
+                break;
+            case 'Alt Curr':
+                key = 'alt_curr_avg';
+                break;
+
+            default:
+                key = null; // leave any other datasets alone
         }
 
+        if (key) {
+            ds.data = reBinned.map(row => row[key]);
+        }
+    });
+
+    // Keep the clamped window as the active view
+    chart.options.scales.x.min = clampedMin;
+    chart.options.scales.x.max = clampedMax;
+
+    // Re-render with new data but keep current zoom/pan window
+    chart.update('none');
+}
 
 
 
