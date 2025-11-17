@@ -945,6 +945,10 @@
             const ctx = document.getElementById('chart1').getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
+            // NEW: binned view for averages (max ~120 points)
+            const binned = applyBinning(data, MAX_BINS_PER_PLOT);
+
+
             const checkedVars = new Set();
             document.querySelectorAll('.variable-toggle1:checked').forEach(cb => {
                 checkedVars.add(cb.dataset.group);
@@ -977,13 +981,18 @@
                     },
                     {
                         label: 'Batt Curr',
-                        data: data.map(d => d.batt_curr_avg),
-                        borderColor: 'rgba(0, 114, 178, 1)',
-                        backgroundColor: 'rgba(0, 114, 178, 1)',
-                        pointRadius: 2,
+                        // binned series, explicit x/y so it’s independent of labels[]
+                        data: binned
+                            .filter(d => typeof d.batt_curr_avg === 'number' && !Number.isNaN(d.batt_curr_avg))
+                            .map(d => ({ x: d.timestamp, y: d.batt_curr_avg })),
+                        borderColor: OKABE_ITO.blue,
+                        backgroundColor: OKABE_ITO.blue,
+                        pointRadius: 0,          // line only
+                        pointHitRadius: 0,
                         borderWidth: 2,
                         fill: false,
-                        order: 1
+                        order: 1,
+                        decimation: { enabled: false } // do NOT decimate the avg line
                     }
                 );
             }
@@ -1013,14 +1022,19 @@
                     },
                     {
                         label: 'Solar Curr',
-                        data: data.map(d => d.victron_curr_avg),
-                        borderColor: 'rgba(230, 159, 0, 1)',
-                        backgroundColor: 'rgba(230, 159, 0, 1)',
-                        pointRadius: 2,
+                        data: binned
+                            .filter(d => typeof d.victron_curr_avg === 'number' && !Number.isNaN(d.victron_curr_avg))
+                            .map(d => ({ x: d.timestamp, y: d.victron_curr_avg })),
+                        borderColor: OKABE_ITO.orange,
+                        backgroundColor: OKABE_ITO.orange,
+                        pointRadius: 0,
+                        pointHitRadius: 0,
                         borderWidth: 2,
                         fill: false,
-                        order: 1
+                        order: 1,
+                        decimation: { enabled: false }
                     }
+
                 );
             }
 
@@ -1049,14 +1063,19 @@
                     },
                     {
                         label: 'Alt Curr',
-                        data: data.map(d => d.alt_curr_avg),
-                        borderColor: 'rgba(0, 158, 115, 1)',
-                        backgroundColor: 'rgba(0, 158, 115, 1)',
-                        pointRadius: 2,
+                        data: binned
+                            .filter(d => typeof d.alt_curr_avg === 'number' && !Number.isNaN(d.alt_curr_avg))
+                            .map(d => ({ x: d.timestamp, y: d.alt_curr_avg })),
+                        borderColor: OKABE_ITO.green,
+                        backgroundColor: OKABE_ITO.green,
+                        pointRadius: 0,
+                        pointHitRadius: 0,
                         borderWidth: 2,
                         fill: false,
-                        order: 1
+                        order: 1,
+                        decimation: { enabled: false }
                     }
+
                 );
             }
 
@@ -1068,6 +1087,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+
                     plugins: {
                         tooltip: {
                             enabled: true,
@@ -1113,42 +1133,96 @@
                             limits: {
                                 x: { min: 'original', max: 'original' }
                             }
-                        }
-
-
-                    },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                // Let Chart.js pick the unit based on visible range
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
-                            },
-                            ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
-                                autoSkip: true,
-                                major: { enabled: true }
-                            }
                         },
-
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            beginAtZero: false
+                        // NEW: let Chart.js decimate min/max datasets
+                        decimation: {
+                            enabled: true,
+                            algorithm: 'min-max',
+                            threshold: 1000   // tweak if needed
                         }
                     }
+
+
+                        tooltip: {
+                        enabled: true,
+                        mode: 'nearest',
+                        intersect: false,
+                        callbacks: {
+                            title: function (items) {
+                                return new Date(items[0].parsed.x).toLocaleString();
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            pointStyleWidth: 6,
+                            padding: 8,
+                            font: { size: 10 },
+                            filter: function (item) {
+                                // Only show main average lines in legend
+                                return /Curr$/.test(item.text);
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Currents (A)',
+                        font: { size: 16 }
+                    },
+                    zoom: {
+                        zoom: {
+                            wheel: { enabled: true },
+                            pinch: { enabled: true },
+                            mode: 'x'
+                        },
+                        pan: {
+                            enabled: true,
+                            mode: 'x',
+                            modifierKey: null,
+                            threshold: 0
+                        },
+                        limits: {
+                            x: { min: 'original', max: 'original' }
+                        }
+                    }
+
+
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            // Let Chart.js pick the unit based on visible range
+                            displayFormats: {
+                                minute: 'HH:mm',
+                                hour: 'MMM d, HH:mm',
+                                day: 'MMM d',
+                                week: 'MMM d',
+                                month: 'MMM yyyy'
+                            }
+                        },
+                        ticks: {
+                            maxTicksLimit: 8,      // target ~7–8 labels
+                            autoSkip: true,
+                            major: { enabled: true }
+                        }
+                    },
+
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        beginAtZero: false
+                    }
                 }
+            }
             });
 
-            document.getElementById('loadingChart1').style.display = 'none';
-            document.getElementById('chart1').style.display = 'block';
+        document.getElementById('loadingChart1').style.display = 'none';
+        document.getElementById('chart1').style.display = 'block';
         }
 
         // ============================================
