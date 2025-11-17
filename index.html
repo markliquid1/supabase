@@ -1168,6 +1168,24 @@
             const activeUnit = document.querySelector('.plot1-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
+            // ALWAYS keep full raw data here so pan/zoom can reach everything
+            chart1SourceData = fullData;
+
+            // This controls the INITIAL visible window only
+            const filteredData = timeValue > 0
+                ? filterDataByTime(fullData, timeValue, timeUnit)
+                : fullData;
+
+            const initialBinned = applyBinning(filteredData);
+            createChart1(initialBinned);
+
+            updateActivePresetButton1();
+        }
+
+            const timeValue = parseInt(document.getElementById('timeValue1').value);
+            const activeUnit = document.querySelector('.plot1-unit.active');
+            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+
             // Raw, unbinned data for Plot 1 (respecting Show Last / quick buttons)
             chart1SourceData = timeValue > 0
                 ? filterDataByTime(fullData, timeValue, timeUnit)
