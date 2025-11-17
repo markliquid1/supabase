@@ -1290,8 +1290,8 @@
         // ============================================
         // ============================================
 
-              // Toggle controls
-              document.getElementById('toggleTools1').addEventListener('click', function () {
+        // Toggle controls
+        document.getElementById('toggleTools1').addEventListener('click', function () {
             const tools = document.getElementById('plotTools1');
             const isHidden = tools.style.display === 'none';
             tools.style.display = isHidden ? 'block' : 'none';
@@ -1434,6 +1434,7 @@
         // ============================================
 
         let chart2 = null;
+        let chart2SourceData = [];
 
         // ============================================
         // ============================================
@@ -1629,56 +1630,62 @@
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
-                                mode: 'x'
+                                mode: 'x',
+                                onZoomComplete({ chart }) {
+                                    rebinChart2ToVisibleRange(chart);
+                                }
                             },
                             pan: {
                                 enabled: true,
                                 mode: 'x',
                                 modifierKey: null,
-                                threshold: 0
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
+                                threshold: 0,
+                                onPanComplete({ chart }) {
+                                    rebinChart2ToVisibleRange(chart);
+                                }
                             }
+                            // no limits.x here; clamping is handled in rebinChart2ToVisibleRange
+                        }
+
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            // Let Chart.js pick the unit based on visible range
+                            displayFormats: {
+                                minute: 'HH:mm',
+                                hour: 'MMM d, HH:mm',
+                                day: 'MMM d',
+                                week: 'MMM d',
+                                month: 'MMM yyyy'
+                            }
+                        },
+                        ticks: {
+                            maxTicksLimit: 8,      // target ~7–8 labels
+                            autoSkip: true,
+                            major: { enabled: true }
                         }
                     },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                // Let Chart.js pick the unit based on visible range
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
-                            },
-                            ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
-                                autoSkip: true,
-                                major: { enabled: true }
-                            }
-                        },
 
-                        y: {
-                            type: 'linear',
-                            position: 'left',
-                            title: { display: true, text: 'Battery Voltage (V)' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            position: 'right',
-                            title: { display: true, text: 'SOC (%)' },
-                            grid: { drawOnChartArea: false }
-                        }
+                    y: {
+                        type: 'linear',
+                        position: 'left',
+                        title: { display: true, text: 'Battery Voltage (V)' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        title: { display: true, text: 'SOC (%)' },
+                        grid: { drawOnChartArea: false }
                     }
                 }
+            }
             });
 
-            document.getElementById('loadingChart2').style.display = 'none';
-            canvas.style.display = 'block';
+        document.getElementById('loadingChart2').style.display = 'none';
+        canvas.style.display = 'block';
         }
 
         // ============================================
@@ -1693,15 +1700,88 @@
             const activeUnit = document.querySelector('.plot2-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
+            // Keep unbinned full history for zoom/pan expansion
+            chart2SourceData = fullData;
+
+            // Initial visible window respects "Show last" controls
             const filteredData = timeValue > 0
                 ? filterDataByTime(fullData, timeValue, timeUnit)
                 : fullData;
 
-            const binnedData = applyBinning(filteredData);
+            const initialBinned = applyBinning(filteredData);
 
-            createChart2(binnedData);
+            createChart2(initialBinned);
             updateActivePresetButton2();
         }
+        function rebinChart2ToVisibleRange(chart) {
+            if (!chart2SourceData || chart2SourceData.length === 0) return;
+            if (!chart || !chart.scales || !chart.scales.x) return;
+
+            const xScale = chart.scales.x;
+            const xOpts = chart.options.scales.x || {};
+
+            // Use options.min/max if set (buttons/zoom), otherwise current scale min/max
+            let min = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+            if (min == null || max == null) return;
+
+            // Clamp to data range
+            const dataMin = new Date(chart2SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart2SourceData[chart2SourceData.length - 1].timestamp).getTime();
+
+            const clampedMin = Math.max(min, dataMin);
+            const clampedMax = Math.min(max, dataMax);
+            if (clampedMin >= clampedMax) return;
+
+            // Filter raw data to the current visible x-window
+            const visibleRaw = chart2SourceData.filter(row => {
+                const t = new Date(row.timestamp).getTime();
+                return t >= clampedMin && t <= clampedMax;
+            });
+
+            if (!visibleRaw.length) return;
+
+            const reBinned = applyBinning(visibleRaw);
+
+            // Update labels to the rebinned timestamps
+            const labels = reBinned.map(row => new Date(row.timestamp));
+            chart.data.labels = labels;
+
+            // Update each dataset based on its label
+            chart.data.datasets.forEach(ds => {
+                let key = null;
+
+                switch (ds.label) {
+                    case 'Batt Volt Min':
+                        key = 'batt_volt_min';
+                        break;
+                    case 'Batt Volt Max':
+                        key = 'batt_volt_max';
+                        break;
+                    case 'Batt Volt':
+                        key = 'batt_volt_avg';
+                        break;
+
+                    case 'SOC Min':
+                        key = 'soc_min';
+                        break;
+                    case 'SOC Max':
+                        key = 'soc_max';
+                        break;
+                    case 'SOC':
+                        key = 'soc_avg';
+                        break;
+                }
+
+                if (key) {
+                    ds.data = reBinned.map(row => row[key]);
+                }
+            });
+
+            // Re-render with new data but keep current zoom/pan window
+            chart.update('none');
+        }
+
 
 
 
@@ -1765,13 +1845,66 @@
             saveSettings2();
         });
 
+        function panChart2(direction) {
+            if (!chart2 || !chart2.scales || !chart2.scales.x) return;
+            if (!chart2SourceData || !chart2SourceData.length) return;
+
+            const xScale = chart2.scales.x;
+            const xOpts = chart2.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart2SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart2SourceData[chart2SourceData.length - 1].timestamp).getTime();
+
+            if (currentMin == null || currentMax == null) {
+                currentMin = dataMin;
+                currentMax = dataMax;
+            }
+
+            const range = currentMax - currentMin;
+            if (range <= 0) return;
+
+            // Pan by 50% of current window width
+            const shift = range * 0.5;
+
+            let newMin = direction === 'left' ? currentMin - shift : currentMin + shift;
+            let newMax = direction === 'left' ? currentMax - shift : currentMax + shift;
+
+            // Clamp to data range so we never pan into pure empty space
+            if (newMin < dataMin) {
+                newMin = dataMin;
+                newMax = dataMin + range;
+                if (newMax > dataMax) newMax = dataMax;
+            }
+            if (newMax > dataMax) {
+                newMax = dataMax;
+                newMin = dataMax - range;
+                if (newMin < dataMin) newMin = dataMin;
+            }
+
+            // Write new limits, update scales, then rebin using the new window
+            chart2.options.scales.x.min = newMin;
+            chart2.options.scales.x.max = newMax;
+
+            // First update so chart.scales.x reflects new limits
+            chart2.update('none');
+
+            // Then re-bin into that window
+            rebinChart2ToVisibleRange(chart2);
+        }
+
+
         // Pan buttons
         document.getElementById('panLeft2').addEventListener('click', () => {
-            if (chart2) chart2.pan({ x: -100 }, undefined, 'default');
+            panChart2('left');
         });
         document.getElementById('panRight2').addEventListener('click', () => {
-            if (chart2) chart2.pan({ x: 100 }, undefined, 'default');
+            panChart2('right');
         });
+
 
         // Variable toggles
         document.querySelectorAll('.variable-toggle2').forEach(cb => {
@@ -1907,7 +2040,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Plot 3 — Temperatures (°F) & Barometric Pressure',
+                            text: 'Temperatures (°F) & Barometric Pressure (mBar)',
                             font: { size: 16 }
                         },
                         zoom: {
@@ -2174,7 +2307,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Plot 4 — Engine & Alternator Duty',
+                            text: 'Engine & Alternator Duty Cycle',
                             font: { size: 16 }
                         },
                         zoom: {
@@ -2443,7 +2576,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Plot 5 — Speeds (Knots)',
+                            text: 'Speeds (Knots)',
                             font: { size: 16 }
                         },
                         zoom: {
@@ -2669,7 +2802,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Plot 6 — Angles (Degrees)',
+                            text: 'Angles (Degrees)',
                             font: { size: 16 }
                         },
                         zoom: {
@@ -2860,7 +2993,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Plot 7 — Alternator Zero Offset',
+                            text: 'Alternator Zero Offset (A)',
                             font: { size: 16 }
                         },
                         zoom: {
