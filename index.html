@@ -1644,44 +1644,42 @@
                                     rebinChart2ToVisibleRange(chart);
                                 }
                             }
-                            // no limits.x here; clamping is handled in rebinChart2ToVisibleRange
                         }
+                        ,
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    // Let Chart.js pick the unit based on visible range
+                                    displayFormats: {
+                                        minute: 'HH:mm',
+                                        hour: 'MMM d, HH:mm',
+                                        day: 'MMM d',
+                                        week: 'MMM d',
+                                        month: 'MMM yyyy'
+                                    }
+                                },
+                                ticks: {
+                                    maxTicksLimit: 8,      // target ~7–8 labels
+                                    autoSkip: true,
+                                    major: { enabled: true }
+                                }
+                            },
 
-                    }
-                },
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            // Let Chart.js pick the unit based on visible range
-                            displayFormats: {
-                                minute: 'HH:mm',
-                                hour: 'MMM d, HH:mm',
-                                day: 'MMM d',
-                                week: 'MMM d',
-                                month: 'MMM yyyy'
+                            y: {
+                                type: 'linear',
+                                position: 'left',
+                                title: { display: true, text: 'Battery Voltage (V)' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                position: 'right',
+                                title: { display: true, text: 'SOC (%)' },
+                                grid: { drawOnChartArea: false }
                             }
-                        },
-                        ticks: {
-                            maxTicksLimit: 8,      // target ~7–8 labels
-                            autoSkip: true,
-                            major: { enabled: true }
                         }
-                    },
-
-                    y: {
-                        type: 'linear',
-                        position: 'left',
-                        title: { display: true, text: 'Battery Voltage (V)' }
-                    },
-                    y1: {
-                        type: 'linear',
-                        position: 'right',
-                        title: { display: true, text: 'SOC (%)' },
-                        grid: { drawOnChartArea: false }
                     }
-                }
-            });
+                });
 
             document.getElementById('loadingChart2').style.display = 'none';
             canvas.style.display = 'block';
@@ -1694,6 +1692,7 @@
         // ============================================
 
         // Apply time filter & rebuild chart
+        // Apply time window & rebuild chart
         function updateChart2() {
             const timeValue = parseInt(document.getElementById('timeValue2').value);
             const activeUnit = document.querySelector('.plot2-unit.active');
@@ -1712,11 +1711,13 @@
             createChart2(initialBinned);
             updateActivePresetButton2();
         }
+
         function rebinChart2ToVisibleRange(chart) {
             if (!chart2SourceData || chart2SourceData.length === 0) return;
-            if (!chart || !chart.scales || !chart.scales.x) return;
 
             const xScale = chart.scales.x;
+            if (!xScale) return;
+
             const xOpts = chart.options.scales.x || {};
 
             // Use options.min/max if set (buttons/zoom), otherwise current scale min/max
@@ -1770,6 +1771,9 @@
                     case 'SOC':
                         key = 'soc_avg';
                         break;
+
+                    default:
+                        key = null; // leave any other datasets alone
                 }
 
                 if (key) {
@@ -1781,6 +1785,7 @@
             chart.update('none');
         }
 
+        // Time preset highlight
 
 
 
@@ -1844,6 +1849,7 @@
             saveSettings2();
         });
 
+        // Pan buttons (manual pan to keep within data range + rebin)
         function panChart2(direction) {
             if (!chart2 || !chart2.scales || !chart2.scales.x) return;
             if (!chart2SourceData || !chart2SourceData.length) return;
@@ -1888,18 +1894,14 @@
             chart2.options.scales.x.min = newMin;
             chart2.options.scales.x.max = newMax;
 
-            // First update so chart.scales.x reflects new limits
             chart2.update('none');
-
-            // Then re-bin into that window
             rebinChart2ToVisibleRange(chart2);
         }
 
-
-        // Pan buttons
         document.getElementById('panLeft2').addEventListener('click', () => {
             panChart2('left');
         });
+
         document.getElementById('panRight2').addEventListener('click', () => {
             panChart2('right');
         });
