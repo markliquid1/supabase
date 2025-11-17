@@ -1645,41 +1645,39 @@
                                 }
                             }
                         }
-                        ,
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    // Let Chart.js pick the unit based on visible range
-                                    displayFormats: {
-                                        minute: 'HH:mm',
-                                        hour: 'MMM d, HH:mm',
-                                        day: 'MMM d',
-                                        week: 'MMM d',
-                                        month: 'MMM yyyy'
-                                    }
-                                },
-                                ticks: {
-                                    maxTicksLimit: 8,      // target ~7–8 labels
-                                    autoSkip: true,
-                                    major: { enabled: true }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                displayFormats: {
+                                    minute: 'HH:mm',
+                                    hour: 'MMM d, HH:mm',
+                                    day: 'MMM d',
+                                    week: 'MMM d',
+                                    month: 'MMM yyyy'
                                 }
                             },
-
-                            y: {
-                                type: 'linear',
-                                position: 'left',
-                                title: { display: true, text: 'Battery Voltage (V)' }
-                            },
-                            y1: {
-                                type: 'linear',
-                                position: 'right',
-                                title: { display: true, text: 'SOC (%)' },
-                                grid: { drawOnChartArea: false }
+                            ticks: {
+                                maxTicksLimit: 8,
+                                autoSkip: true,
+                                major: { enabled: true }
                             }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Battery Voltage (V)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'SOC (%)' },
+                            grid: { drawOnChartArea: false }
                         }
                     }
-                });
+                }
+            });
 
             document.getElementById('loadingChart2').style.display = 'none';
             canvas.style.display = 'block';
