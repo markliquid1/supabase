@@ -654,6 +654,28 @@
         // Shared data store (all plots use this)
         let fullData = [];
 
+        const MAX_BINS_PER_PLOT = 120;
+
+        const OKABE_ITO = {
+            blue: 'rgba(0, 114, 178, 1)',
+            blueLight: 'rgba(0, 114, 178, 0.3)',
+            orange: 'rgba(230, 159, 0, 1)',
+            orangeLight: 'rgba(230, 159, 0, 0.3)',
+            green: 'rgba(0, 158, 115, 1)',
+            greenLight: 'rgba(0, 158, 115, 0.3)',
+            red: 'rgba(213, 94, 0, 1)',
+            redLight: 'rgba(213, 94, 0, 0.3)',
+            purple: 'rgba(204, 121, 167, 1)',
+            purpleLight: 'rgba(204, 121, 167, 0.3)',
+            sky: 'rgba(86, 180, 233, 1)',
+            skyLight: 'rgba(86, 180, 233, 0.3)',
+            yellow: 'rgba(240, 228, 66, 1)',
+            yellowLight: 'rgba(240, 228, 66, 0.3)',
+            black: 'rgba(0, 0, 0, 1)',
+            grey: 'rgba(187, 187, 187, 1)'
+        };
+
+
         const HISTORY_COLUMNS =
             'timestamp,' +
             'batt_curr_min,batt_curr_max,batt_curr_avg,' +
@@ -684,6 +706,61 @@
         // SHARED (UNIFIED FOR ALL PLOTS) — UTILITY FUNCTIONS
         // ============================================
         // ============================================
+
+
+        // Shared helper: bin data to a max number of points while preserving min/max/avg
+        function applyBinning(data, maxBins = MAX_BINS_PER_PLOT) {
+            if (!Array.isArray(data) || data.length <= maxBins) return data;
+
+            const result = [];
+            const binSize = Math.ceil(data.length / maxBins);
+            if (binSize <= 1) return data;
+
+            const keys = Object.keys(data[0]).filter(k => k !== 'timestamp');
+
+            for (let i = 0; i < data.length; i += binSize) {
+                const slice = data.slice(i, i + binSize);
+                if (!slice.length) continue;
+
+                const bin = {};
+
+                // Use mid-point timestamp in the bin to keep chronology sane
+                const mid = slice[Math.floor(slice.length / 2)];
+                bin.timestamp = mid.timestamp;
+
+                for (const key of keys) {
+                    const values = slice
+                        .map(row => row[key])
+                        .filter(v => typeof v === 'number' && !Number.isNaN(v));
+
+                    if (!values.length) {
+                        bin[key] = null;
+                        continue;
+                    }
+
+                    if (key.endsWith('_min')) {
+                        // Bin min = min of child mins
+                        bin[key] = Math.min(...values);
+                    } else if (key.endsWith('_max')) {
+                        // Bin max = max of child maxes
+                        bin[key] = Math.max(...values);
+                    } else if (key.endsWith('_avg')) {
+                        // Bin avg = avg of child avgs (approximate but consistent)
+                        bin[key] = values.reduce((a, v) => a + v, 0) / values.length;
+                    } else {
+                        // For plain metrics (duties, angles, etc.) => simple average
+                        bin[key] = values.reduce((a, v) => a + v, 0) / values.length;
+                    }
+                }
+
+                result.push(bin);
+            }
+
+            return result;
+        }
+
+
+
 
         // Parse token from URL
         function getTokenFromUrl() {
@@ -1042,10 +1119,22 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'hour',
-                                displayFormats: { hour: 'MMM d, HH:mm' }
+                                // Let Chart.js pick the unit based on visible range
+                                displayFormats: {
+                                    minute: 'HH:mm',
+                                    hour: 'MMM d, HH:mm',
+                                    day: 'MMM d',
+                                    week: 'MMM d',
+                                    month: 'MMM yyyy'
+                                }
+                            },
+                            ticks: {
+                                maxTicksLimit: 8,      // target ~7–8 labels
+                                autoSkip: true,
+                                major: { enabled: true }
                             }
                         },
+
                         y: {
                             type: 'linear',
                             display: true,
@@ -1071,10 +1160,17 @@
             const timeValue = parseInt(document.getElementById('timeValue1').value);
             const activeUnit = document.querySelector('.plot1-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart1(filteredData);
+
+            const filteredData = timeValue > 0
+                ? filterDataByTime(fullData, timeValue, timeUnit)
+                : fullData;
+
+            const binnedData = applyBinning(filteredData);
+
+            createChart1(binnedData);
             updateActivePresetButton1();
         }
+
 
         function updateActivePresetButton1() {
             const timeValue = parseInt(document.getElementById('timeValue1').value);
@@ -1401,10 +1497,22 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'hour',
-                                displayFormats: { hour: 'MMM d, HH:mm' }
+                                // Let Chart.js pick the unit based on visible range
+                                displayFormats: {
+                                    minute: 'HH:mm',
+                                    hour: 'MMM d, HH:mm',
+                                    day: 'MMM d',
+                                    week: 'MMM d',
+                                    month: 'MMM yyyy'
+                                }
+                            },
+                            ticks: {
+                                maxTicksLimit: 8,      // target ~7–8 labels
+                                autoSkip: true,
+                                major: { enabled: true }
                             }
                         },
+
                         y: {
                             type: 'linear',
                             position: 'left',
@@ -1435,10 +1543,18 @@
             const timeValue = parseInt(document.getElementById('timeValue2').value);
             const activeUnit = document.querySelector('.plot2-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart2(filteredData);
+
+            const filteredData = timeValue > 0
+                ? filterDataByTime(fullData, timeValue, timeUnit)
+                : fullData;
+
+            const binnedData = applyBinning(filteredData);
+
+            createChart2(binnedData);
             updateActivePresetButton2();
         }
+
+
 
         // Time preset highlight
         function updateActivePresetButton2() {
@@ -1666,10 +1782,22 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'hour',
-                                displayFormats: { hour: 'MMM d, HH:mm' }
+                                // Let Chart.js pick the unit based on visible range
+                                displayFormats: {
+                                    minute: 'HH:mm',
+                                    hour: 'MMM d, HH:mm',
+                                    day: 'MMM d',
+                                    week: 'MMM d',
+                                    month: 'MMM yyyy'
+                                }
+                            },
+                            ticks: {
+                                maxTicksLimit: 8,      // target ~7–8 labels
+                                autoSkip: true,
+                                major: { enabled: true }
                             }
                         },
+
                         y: {
                             type: 'linear',
                             position: 'left',
@@ -1689,14 +1817,22 @@
             canvas.style.display = 'block';
         }
 
+        // Apply time filter & rebuild chart
         function updateChart3() {
             const timeValue = parseInt(document.getElementById('timeValue3').value);
             const activeUnit = document.querySelector('.plot3-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart3(filteredData);
+
+            const filteredData = timeValue > 0
+                ? filterDataByTime(fullData, timeValue, timeUnit)
+                : fullData;
+
+            const binnedData = applyBinning(filteredData);
+
+            createChart3(binnedData);
             updateActivePresetButton3();
         }
+
 
         function updateActivePresetButton3() {
             const timeValue = parseInt(document.getElementById('timeValue3').value);
@@ -1913,10 +2049,22 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'hour',
-                                displayFormats: { hour: 'MMM d, HH:mm' }
+                                // Let Chart.js pick the unit based on visible range
+                                displayFormats: {
+                                    minute: 'HH:mm',
+                                    hour: 'MMM d, HH:mm',
+                                    day: 'MMM d',
+                                    week: 'MMM d',
+                                    month: 'MMM yyyy'
+                                }
+                            },
+                            ticks: {
+                                maxTicksLimit: 8,      // target ~7–8 labels
+                                autoSkip: true,
+                                major: { enabled: true }
                             }
                         },
+
                         y: {
                             type: 'linear',
                             position: 'left',
@@ -1940,8 +2088,14 @@
             const timeValue = parseInt(document.getElementById('timeValue4').value);
             const activeUnit = document.querySelector('.plot4-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart4(filteredData);
+
+            const filteredData = timeValue > 0
+                ? filterDataByTime(fullData, timeValue, timeUnit)
+                : fullData;
+
+            const binnedData = applyBinning(filteredData);
+
+            createChart4(binnedData);
             updateActivePresetButton4();
         }
 
@@ -2164,10 +2318,22 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'hour',
-                                displayFormats: { hour: 'MMM d, HH:mm' }
+                                // Let Chart.js pick the unit based on visible range
+                                displayFormats: {
+                                    minute: 'HH:mm',
+                                    hour: 'MMM d, HH:mm',
+                                    day: 'MMM d',
+                                    week: 'MMM d',
+                                    month: 'MMM yyyy'
+                                }
+                            },
+                            ticks: {
+                                maxTicksLimit: 8,      // target ~7–8 labels
+                                autoSkip: true,
+                                major: { enabled: true }
                             }
                         },
+
                         y: {
                             type: 'linear',
                             title: { display: true, text: 'Speed (Knots)' }
@@ -2179,13 +2345,18 @@
             document.getElementById('loadingChart5').style.display = 'none';
             canvas.style.display = 'block';
         }
-
         function updateChart5() {
             const timeValue = parseInt(document.getElementById('timeValue5').value);
             const activeUnit = document.querySelector('.plot5-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart5(filteredData);
+
+            const filteredData = timeValue > 0
+                ? filterDataByTime(fullData, timeValue, timeUnit)
+                : fullData;
+
+            const binnedData = applyBinning(filteredData);
+
+            createChart5(binnedData);
             updateActivePresetButton5();
         }
 
@@ -2373,10 +2544,22 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'hour',
-                                displayFormats: { hour: 'MMM d, HH:mm' }
+                                // Let Chart.js pick the unit based on visible range
+                                displayFormats: {
+                                    minute: 'HH:mm',
+                                    hour: 'MMM d, HH:mm',
+                                    day: 'MMM d',
+                                    week: 'MMM d',
+                                    month: 'MMM yyyy'
+                                }
+                            },
+                            ticks: {
+                                maxTicksLimit: 8,      // target ~7–8 labels
+                                autoSkip: true,
+                                major: { enabled: true }
                             }
                         },
+
                         y: {
                             type: 'linear',
                             title: { display: true, text: 'Angle (Degrees)' }
@@ -2393,8 +2576,14 @@
             const timeValue = parseInt(document.getElementById('timeValue6').value);
             const activeUnit = document.querySelector('.plot6-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart6(filteredData);
+
+            const filteredData = timeValue > 0
+                ? filterDataByTime(fullData, timeValue, timeUnit)
+                : fullData;
+
+            const binnedData = applyBinning(filteredData);
+
+            createChart6(binnedData);
             updateActivePresetButton6();
         }
 
@@ -2546,10 +2735,22 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'hour',
-                                displayFormats: { hour: 'MMM d, HH:mm' }
+                                // Let Chart.js pick the unit based on visible range
+                                displayFormats: {
+                                    minute: 'HH:mm',
+                                    hour: 'MMM d, HH:mm',
+                                    day: 'MMM d',
+                                    week: 'MMM d',
+                                    month: 'MMM yyyy'
+                                }
+                            },
+                            ticks: {
+                                maxTicksLimit: 8,      // target ~7–8 labels
+                                autoSkip: true,
+                                major: { enabled: true }
                             }
                         },
+
                         y: {
                             type: 'linear',
                             title: { display: true, text: 'Offset' }
@@ -2566,8 +2767,14 @@
             const timeValue = parseInt(document.getElementById('timeValue7').value);
             const activeUnit = document.querySelector('.plot7-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            const filteredData = timeValue > 0 ? filterDataByTime(fullData, timeValue, timeUnit) : fullData;
-            createChart7(filteredData);
+
+            const filteredData = timeValue > 0
+                ? filterDataByTime(fullData, timeValue, timeUnit)
+                : fullData;
+
+            const binnedData = applyBinning(filteredData);
+
+            createChart7(binnedData);
             updateActivePresetButton7();
         }
 
