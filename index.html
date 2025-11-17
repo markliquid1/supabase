@@ -2047,13 +2047,20 @@
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
-                                mode: 'x'
+                                mode: 'x',
+                                onZoomComplete({ chart }) {
+                                    rebinChart3ToVisibleRange(chart);
+                                }
                             },
+
                             pan: {
                                 enabled: true,
                                 mode: 'x',
                                 modifierKey: null,
-                                threshold: 0
+                                threshold: 0,
+                                onPanComplete({ chart }) {
+                                    rebinChart3ToVisibleRange(chart);
+                                }
                             },
                             limits: {
                                 x: { min: 'original', max: 'original' }
@@ -2100,8 +2107,8 @@
         }
 
         // Apply time filter & rebuild chart
-              // Apply time filter & rebuild chart
-              function updateChart3() {
+        // Apply time filter & rebuild chart
+        function updateChart3() {
             const timeValue = parseInt(document.getElementById('timeValue3').value);
             const activeUnit = document.querySelector('.plot3-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
