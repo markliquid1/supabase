@@ -1116,11 +1116,10 @@
                                 onPanComplete({ chart }) {
                                     rebinChart1ToVisibleRange(chart);
                                 }
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
                             }
+                            // no limits.x here
                         }
+
 
                     },
                     scales: {
@@ -1182,6 +1181,7 @@
         }
         function rebinChart1ToVisibleRange(chart) {
             if (!chart1SourceData || chart1SourceData.length === 0) return;
+
             const xScale = chart.scales.x;
             if (!xScale) return;
 
@@ -1199,15 +1199,10 @@
 
             const reBinned = applyBinning(visibleRaw);
 
-            // Rebuild chart1 with re-binned data, then restore zoom window
+            // Rebuild chart1 with re-binned data only; do NOT force x.min/x.max
             createChart1(reBinned);
-
-            if (chart1 && chart1.options && chart1.options.scales && chart1.options.scales.x) {
-                chart1.options.scales.x.min = min;
-                chart1.options.scales.x.max = max;
-                chart1.update('none');
-            }
         }
+
 
 
 
