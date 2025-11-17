@@ -1199,8 +1199,56 @@
 
             const reBinned = applyBinning(visibleRaw);
 
-            // Rebuild chart1 with re-binned data only; do NOT force x.min/x.max
-            createChart1(reBinned);
+            // Update labels to the rebinned timestamps
+            const labels = reBinned.map(row => new Date(row.timestamp));
+            chart.data.labels = labels;
+
+            // Update each dataset based on its label
+            chart.data.datasets.forEach(ds => {
+                let key = null;
+
+                switch (ds.label) {
+                    case 'Batt Curr Min':
+                        key = 'batt_curr_min';
+                        break;
+                    case 'Batt Curr Max':
+                        key = 'batt_curr_max';
+                        break;
+                    case 'Batt Curr':
+                        key = 'batt_curr_avg';
+                        break;
+
+                    case 'Solar Curr Min':
+                        key = 'victron_curr_min';
+                        break;
+                    case 'Solar Curr Max':
+                        key = 'victron_curr_max';
+                        break;
+                    case 'Solar Curr':
+                        key = 'victron_curr_avg';
+                        break;
+
+                    case 'Alt Curr Min':
+                        key = 'alt_curr_min';
+                        break;
+                    case 'Alt Curr Max':
+                        key = 'alt_curr_max';
+                        break;
+                    case 'Alt Curr':
+                        key = 'alt_curr_avg';
+                        break;
+
+                    default:
+                        key = null; // leave any other datasets alone
+                }
+
+                if (key) {
+                    ds.data = reBinned.map(row => row[key]);
+                }
+            });
+
+            // Re-render with new data but keep current zoom/pan window
+            chart.update('none');
         }
 
 
