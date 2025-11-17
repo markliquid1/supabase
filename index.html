@@ -1943,73 +1943,180 @@
         // ============================================
         // ============================================
 
-        // PLOT 3 ONLY — Temperatures & Barometric Pressure
+        // PLOT 3 ONLY — Temperatures & Barometric Pressure / STATE
         let chart3 = null;
+        let chart3SourceData = [];
 
+        // Chart creation
         function createChart3(data) {
-            console.log('Plot 3: createChart3 called with', data.length, 'records');
             const canvas = document.getElementById('chart3');
             const ctx = canvas.getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
             const checkedVars = new Set();
             document.querySelectorAll('.variable-toggle3:checked').forEach(cb => {
-                console.log('Plot 3: Checked variable:', cb.dataset.group);
                 checkedVars.add(cb.dataset.group);
             });
 
             const datasets = [];
-            console.log('Plot 3: Sample data point:', {
-                alt_temp_min: data[0]?.alt_temp_min,
-                alt_temp_max: data[0]?.alt_temp_max,
-                alt_temp_avg: data[0]?.alt_temp_avg,
-                amb_temp_min: data[0]?.amb_temp_min,
-                baro_min: data[0]?.baro_min
-            });
 
-            // Alternator Temperature (left axis, °F) - blue
+            // Alternator Temperature (AltTemp) - blue
             if (checkedVars.has('AltTemp')) {
                 datasets.push(
-                    { label: 'Alt Temp Min', data: data.map(d => d.alt_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Alt Temp Max', data: data.map(d => d.alt_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Alt Temp', data: data.map(d => d.alt_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    {
+                        label: 'Alt Temp Min',
+                        data: data.map(d => d.alt_temp_min),
+                        yAxisID: 'y',
+                        borderColor: 'rgba(0, 114, 178, 0.3)',
+                        backgroundColor: 'rgba(0, 114, 178, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Alt Temp Max',
+                        data: data.map(d => d.alt_temp_max),
+                        yAxisID: 'y',
+                        borderColor: 'rgba(0, 114, 178, 0.3)',
+                        backgroundColor: 'rgba(0, 114, 178, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2
+                    },
+                    {
+                        label: 'Alt Temp',
+                        data: data.map(d => d.alt_temp_avg),
+                        yAxisID: 'y',
+                        borderColor: 'rgba(0, 114, 178, 1)',
+                        backgroundColor: 'rgba(0, 114, 178, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1
+                    }
                 );
             }
 
-            // Thermistor Temperature (left axis, °F) - orange
+            // Thermistor Temperature (ThermTemp) - orange
             if (checkedVars.has('ThermTemp')) {
                 datasets.push(
-                    { label: 'Therm Temp Min', data: data.map(d => d.temp_therm_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Therm Temp Max', data: data.map(d => d.temp_therm_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Therm Temp', data: data.map(d => d.temp_therm_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    {
+                        label: 'Therm Temp Min',
+                        data: data.map(d => d.temp_therm_min),
+                        yAxisID: 'y',
+                        borderColor: 'rgba(230, 159, 0, 0.3)',
+                        backgroundColor: 'rgba(230, 159, 0, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Therm Temp Max',
+                        data: data.map(d => d.temp_therm_max),
+                        yAxisID: 'y',
+                        borderColor: 'rgba(230, 159, 0, 0.3)',
+                        backgroundColor: 'rgba(230, 159, 0, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2
+                    },
+                    {
+                        label: 'Therm Temp',
+                        data: data.map(d => d.temp_therm_avg),
+                        yAxisID: 'y',
+                        borderColor: 'rgba(230, 159, 0, 1)',
+                        backgroundColor: 'rgba(230, 159, 0, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1
+                    }
                 );
             }
 
-            // Ambient Temperature (left axis, °F) - green
+            // Ambient Temperature (AmbTemp) - green
             if (checkedVars.has('AmbTemp')) {
                 datasets.push(
-                    { label: 'Amb Temp Min', data: data.map(d => d.amb_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Amb Temp Max', data: data.map(d => d.amb_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Amb Temp', data: data.map(d => d.amb_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    {
+                        label: 'Amb Temp Min',
+                        data: data.map(d => d.amb_temp_min),
+                        yAxisID: 'y',
+                        borderColor: 'rgba(0, 158, 115, 0.3)',
+                        backgroundColor: 'rgba(0, 158, 115, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Amb Temp Max',
+                        data: data.map(d => d.amb_temp_max),
+                        yAxisID: 'y',
+                        borderColor: 'rgba(0, 158, 115, 0.3)',
+                        backgroundColor: 'rgba(0, 158, 115, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2
+                    },
+                    {
+                        label: 'Amb Temp',
+                        data: data.map(d => d.amb_temp_avg),
+                        yAxisID: 'y',
+                        borderColor: 'rgba(0, 158, 115, 1)',
+                        backgroundColor: 'rgba(0, 158, 115, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1
+                    }
                 );
             }
 
-            // Barometric Pressure (right axis) - pink
-            if (checkedVars.has('BaroPressure')) {
+            // Barometric Pressure (Baro) - purple, right axis
+            if (checkedVars.has('Baro')) {
                 datasets.push(
-                    { label: 'Baro Min', data: data.map(d => d.baro_min), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Baro Max', data: data.map(d => d.baro_max), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Baro', data: data.map(d => d.baro_avg), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    {
+                        label: 'Baro Min',
+                        data: data.map(d => d.baro_min),
+                        yAxisID: 'y1',
+                        borderColor: 'rgba(148, 0, 211, 0.3)',
+                        backgroundColor: 'rgba(148, 0, 211, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Baro Max',
+                        data: data.map(d => d.baro_max),
+                        yAxisID: 'y1',
+                        borderColor: 'rgba(148, 0, 211, 0.3)',
+                        backgroundColor: 'rgba(148, 0, 211, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2
+                    },
+                    {
+                        label: 'Baro',
+                        data: data.map(d => d.baro_avg),
+                        yAxisID: 'y1',
+                        borderColor: 'rgba(148, 0, 211, 1)',
+                        backgroundColor: 'rgba(148, 0, 211, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1
+                    }
                 );
             }
 
             if (chart3) chart3.destroy();
-
-            console.log('Plot 3: Creating chart with', datasets.length, 'datasets');
-            if (datasets.length > 0) {
-                console.log('Plot 3: First dataset:', datasets[0].label, 'has', datasets[0].data.length, 'points');
-                console.log('Plot 3: First 3 values:', datasets[0].data.slice(0, 3));
-            }
 
             chart3 = new Chart(ctx, {
                 type: 'line',
@@ -2046,16 +2153,19 @@
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
-                                mode: 'x'
+                                mode: 'x',
+                                onZoomComplete({ chart }) {
+                                    rebinChart3ToVisibleRange(chart);
+                                }
                             },
                             pan: {
                                 enabled: true,
                                 mode: 'x',
                                 modifierKey: null,
-                                threshold: 0
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
+                                threshold: 0,
+                                onPanComplete({ chart }) {
+                                    rebinChart3ToVisibleRange(chart);
+                                }
                             }
                         }
                     },
@@ -2063,7 +2173,6 @@
                         x: {
                             type: 'time',
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -2073,12 +2182,11 @@
                                 }
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
                                 major: { enabled: true }
                             }
                         },
-
                         y: {
                             type: 'linear',
                             position: 'left',
@@ -2087,7 +2195,7 @@
                         y1: {
                             type: 'linear',
                             position: 'right',
-                            title: { display: true, text: 'Pressure' },
+                            title: { display: true, text: 'Barometric Pressure (mBar)' },
                             grid: { drawOnChartArea: false }
                         }
                     }
@@ -2098,11 +2206,108 @@
             canvas.style.display = 'block';
         }
 
+        // Re-bin Plot 3 to current visible X range (like Plot 1)
+        function rebinChart3ToVisibleRange(chart) {
+            if (!chart3SourceData || chart3SourceData.length === 0) return;
+            const xScale = chart.scales.x;
+            if (!xScale) return;
+
+            const xOpts = chart.options.scales.x || {};
+            let min = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+            if (min == null || max == null) return;
+
+            const dataMin = new Date(chart3SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
+            const clampedMin = Math.max(min, dataMin);
+            const clampedMax = Math.min(max, dataMax);
+            if (clampedMin >= clampedMax) return;
+
+            const visibleRaw = chart3SourceData.filter(row => {
+                const t = new Date(row.timestamp).getTime();
+                return t >= clampedMin && t <= clampedMax;
+            });
+            if (!visibleRaw.length) return;
+
+            const reBinned = applyBinning(visibleRaw);
+            const labels = reBinned.map(row => new Date(row.timestamp));
+            chart.data.labels = labels;
+
+            chart.data.datasets.forEach(ds => {
+                let key = null;
+                switch (ds.label) {
+                    case 'Alt Temp Min': key = 'alt_temp_min'; break;
+                    case 'Alt Temp Max': key = 'alt_temp_max'; break;
+                    case 'Alt Temp': key = 'alt_temp_avg'; break;
+
+                    case 'Therm Temp Min': key = 'temp_therm_min'; break;
+                    case 'Therm Temp Max': key = 'temp_therm_max'; break;
+                    case 'Therm Temp': key = 'temp_therm_avg'; break;
+
+                    case 'Amb Temp Min': key = 'amb_temp_min'; break;
+                    case 'Amb Temp Max': key = 'amb_temp_max'; break;
+                    case 'Amb Temp': key = 'amb_temp_avg'; break;
+
+                    case 'Baro Min': key = 'baro_min'; break;
+                    case 'Baro Max': key = 'baro_max'; break;
+                    case 'Baro': key = 'baro_avg'; break;
+
+                    default: key = null;
+                }
+                if (key) ds.data = reBinned.map(row => row[key]);
+            });
+
+            chart.update('none');
+        }
+
+        // Manual pan buttons for Plot 3 (same behavior as Plot 1)
+        function panChart3(direction) {
+            if (!chart3 || !chart3.scales || !chart3.scales.x) return;
+            if (!chart3SourceData || !chart3SourceData.length) return;
+
+            const xScale = chart3.scales.x;
+            const xOpts = chart3.options.scales.x || {};
+
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+            if (currentMin == null || currentMax == null) return;
+
+            const windowSpan = currentMax - currentMin;
+            if (windowSpan <= 0) return;
+
+            const delta = direction === 'left' ? -windowSpan * 0.25 : windowSpan * 0.25;
+
+            const dataMin = new Date(chart3SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
+
+            let newMin = currentMin + delta;
+            let newMax = currentMax + delta;
+
+            if (newMin < dataMin) {
+                const shift = dataMin - newMin;
+                newMin += shift;
+                newMax += shift;
+            }
+            if (newMax > dataMax) {
+                const shift = newMax - dataMax;
+                newMin -= shift;
+                newMax -= shift;
+            }
+
+            chart3.options.scales.x.min = newMin;
+            chart3.options.scales.x.max = newMax;
+
+            rebinChart3ToVisibleRange(chart3);
+        }
+
         // Apply time filter & rebuild chart
         function updateChart3() {
             const timeValue = parseInt(document.getElementById('timeValue3').value);
             const activeUnit = document.querySelector('.plot3-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+
+            // keep unbinned full history for zoom/pan
+            chart3SourceData = fullData;
 
             const filteredData = timeValue > 0
                 ? filterDataByTime(fullData, timeValue, timeUnit)
@@ -2113,7 +2318,6 @@
             createChart3(binnedData);
             updateActivePresetButton3();
         }
-
 
         function updateActivePresetButton3() {
             const timeValue = parseInt(document.getElementById('timeValue3').value);
@@ -2159,6 +2363,7 @@
             }
         }
 
+        // UI wiring for Plot 3
         document.getElementById('toggleTools3').addEventListener('click', function () {
             const tools = document.getElementById('plotTools3');
             const isHidden = tools.style.display === 'none';
@@ -2191,11 +2396,12 @@
             saveSettings3();
         });
 
+        // Pan buttons now use panChart3 (like Plot 1)
         document.getElementById('panLeft3').addEventListener('click', () => {
-            if (chart3) chart3.pan({ x: -100 }, undefined, 'default');
+            panChart3('left');
         });
         document.getElementById('panRight3').addEventListener('click', () => {
-            if (chart3) chart3.pan({ x: 100 }, undefined, 'default');
+            panChart3('right');
         });
 
         document.querySelectorAll('.variable-toggle3').forEach(cb => {
@@ -2229,269 +2435,411 @@
         });
 
 
-        // PLOT 4 ONLY — Engine & Alternator Duty
-        let chart4 = null;
 
-        function createChart4(data) {
-            const canvas = document.getElementById('chart4');
-            const ctx = canvas.getContext('2d');
-            const timestamps = data.map(d => new Date(d.timestamp));
+       // PLOT 4 ONLY — Engine & Alternator Duty
+let chart4 = null;
+let chart4SourceData = [];
 
-            const checkedVars = new Set();
-            document.querySelectorAll('.variable-toggle4:checked').forEach(cb => {
-                checkedVars.add(cb.dataset.group);
-            });
+function createChart4(data) {
+    const canvas = document.getElementById('chart4');
+    const ctx = canvas.getContext('2d');
+    const timestamps = data.map(d => new Date(d.timestamp));
 
-            const datasets = [];
+    const checkedVars = new Set();
+    document.querySelectorAll('.variable-toggle4:checked').forEach(cb => {
+        checkedVars.add(cb.dataset.group);
+    });
 
-            // RPM (left axis) - blue
-            if (checkedVars.has('RPM')) {
-                datasets.push(
-                    { label: 'RPM Min', data: data.map(d => d.rpm_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'RPM Max', data: data.map(d => d.rpm_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'RPM', data: data.map(d => d.rpm_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
-                );
+    const datasets = [];
+
+    // Engine Temp (EngTemp) - blue
+    if (checkedVars.has('EngTemp')) {
+        datasets.push(
+            {
+                label: 'Eng Temp Min',
+                data: data.map(d => d.eng_temp_min),
+                yAxisID: 'y',
+                borderColor: 'rgba(0, 114, 178, 0.3)',
+                backgroundColor: 'rgba(0, 114, 178, 0)',
+                pointRadius: 0,
+                borderWidth: 1,
+                fill: 1,
+                order: 2
+            },
+            {
+                label: 'Eng Temp Max',
+                data: data.map(d => d.eng_temp_max),
+                yAxisID: 'y',
+                borderColor: 'rgba(0, 114, 178, 0.3)',
+                backgroundColor: 'rgba(0, 114, 178, 0.3)',
+                pointRadius: 0,
+                borderWidth: 1,
+                fill: '-1',
+                order: 2
+            },
+            {
+                label: 'Eng Temp',
+                data: data.map(d => d.eng_temp_avg),
+                yAxisID: 'y',
+                borderColor: 'rgba(0, 114, 178, 1)',
+                backgroundColor: 'rgba(0, 114, 178, 1)',
+                pointRadius: 2,
+                borderWidth: 2,
+                fill: false,
+                order: 1
             }
+        );
+    }
 
-            // Alternator Duty Cycle (right axis) - orange
-            if (checkedVars.has('DutyCycle')) {
-                datasets.push(
-                    { label: 'Alt Duty Min', data: data.map(d => d.duty_cycle_min), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Alt Duty Max', data: data.map(d => d.duty_cycle_max), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Alt Duty', data: data.map(d => d.duty_cycle_avg), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
-                );
+    // Alternator Duty (AltDuty) - orange
+    if (checkedVars.has('AltDuty')) {
+        datasets.push(
+            {
+                label: 'Alt Duty Min',
+                data: data.map(d => d.alt_duty_min),
+                yAxisID: 'y1',
+                borderColor: 'rgba(230, 159, 0, 0.3)',
+                backgroundColor: 'rgba(230, 159, 0, 0)',
+                pointRadius: 0,
+                borderWidth: 1,
+                fill: 1,
+                order: 2
+            },
+            {
+                label: 'Alt Duty Max',
+                data: data.map(d => d.alt_duty_max),
+                yAxisID: 'y1',
+                borderColor: 'rgba(230, 159, 0, 0.3)',
+                backgroundColor: 'rgba(230, 159, 0, 0.3)',
+                pointRadius: 0,
+                borderWidth: 1,
+                fill: '-1',
+                order: 2
+            },
+            {
+                label: 'Alt Duty %',
+                data: data.map(d => d.alt_duty_avg),
+                yAxisID: 'y1',
+                borderColor: 'rgba(230, 159, 0, 1)',
+                backgroundColor: 'rgba(230, 159, 0, 1)',
+                pointRadius: 2,
+                borderWidth: 2,
+                fill: false,
+                order: 1
             }
+        );
+    }
 
-            // Ignition Duty (right axis, instantaneous) - green
-            if (checkedVars.has('IgnDuty')) {
-                datasets.push(
-                    { label: 'Ign Duty', data: data.map(d => d.ign_duty), yAxisID: 'y1', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
-                );
-            }
+    if (chart4) chart4.destroy();
 
-            // Engine Running Duty (right axis, instantaneous) - pink
-            if (checkedVars.has('EngDuty')) {
-                datasets.push(
-                    { label: 'Eng Duty', data: data.map(d => d.eng_duty), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
-                );
-            }
-
-            if (chart4) chart4.destroy();
-
-            chart4 = new Chart(ctx, {
-                type: 'line',
-                data: { labels: timestamps, datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: {
-                            enabled: true,
-                            mode: 'nearest',
-                            intersect: false,
-                            callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
-                            }
-                        },
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                pointStyleWidth: 6,
-                                padding: 8,
-                                font: { size: 10 },
-                                filter: item => !/Min$|Max$/.test(item.text)
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Engine & Alternator Duty Cycle',
-                            font: { size: 16 }
-                        },
-                        zoom: {
-                            zoom: {
-                                wheel: { enabled: true },
-                                pinch: { enabled: true },
-                                mode: 'x'
-                            },
-                            pan: {
-                                enabled: true,
-                                mode: 'x',
-                                modifierKey: null,
-                                threshold: 0
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
-                            }
+    chart4 = new Chart(ctx, {
+        type: 'line',
+        data: { labels: timestamps, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    enabled: true,
+                    mode: 'nearest',
+                    intersect: false,
+                    callbacks: {
+                        title: items => new Date(items[0].parsed.x).toLocaleString()
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        pointStyleWidth: 6,
+                        padding: 8,
+                        font: { size: 10 },
+                        filter: item => !/Min$|Max$/.test(item.text)
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Engine Temp (°F) & Alternator Duty (%)',
+                    font: { size: 16 }
+                },
+                zoom: {
+                    zoom: {
+                        wheel: { enabled: true },
+                        pinch: { enabled: true },
+                        mode: 'x',
+                        onZoomComplete({ chart }) {
+                            rebinChart4ToVisibleRange(chart);
                         }
                     },
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                // Let Chart.js pick the unit based on visible range
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
-                            },
-                            ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
-                                autoSkip: true,
-                                major: { enabled: true }
-                            }
-                        },
-
-                        y: {
-                            type: 'linear',
-                            position: 'left',
-                            title: { display: true, text: 'RPM' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            position: 'right',
-                            title: { display: true, text: 'Duty Cycle (%)' },
-                            grid: { drawOnChartArea: false }
+                    pan: {
+                        enabled: true,
+                        mode: 'x',
+                        modifierKey: null,
+                        threshold: 0,
+                        onPanComplete({ chart }) {
+                            rebinChart4ToVisibleRange(chart);
                         }
                     }
                 }
-            });
-
-            document.getElementById('loadingChart4').style.display = 'none';
-            canvas.style.display = 'block';
-        }
-
-        function updateChart4() {
-            const timeValue = parseInt(document.getElementById('timeValue4').value);
-            const activeUnit = document.querySelector('.plot4-unit.active');
-            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-
-            const filteredData = timeValue > 0
-                ? filterDataByTime(fullData, timeValue, timeUnit)
-                : fullData;
-
-            const binnedData = applyBinning(filteredData);
-
-            createChart4(binnedData);
-            updateActivePresetButton4();
-        }
-
-        function updateActivePresetButton4() {
-            const timeValue = parseInt(document.getElementById('timeValue4').value);
-            const activeUnit = document.querySelector('.plot4-unit.active');
-            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
-            document.querySelectorAll('.preset4').forEach(btn => {
-                const btnValue = parseInt(btn.dataset.value);
-                const btnUnit = btn.dataset.unit;
-                if (btnValue === timeValue && btnUnit === timeUnit) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        }
-
-        function saveSettings4() {
-            const settings = {
-                timeValue: document.getElementById('timeValue4').value,
-                timeUnit: document.querySelector('.plot4-unit.active')?.dataset.unit || 'hours',
-                variables: {}
-            };
-            document.querySelectorAll('.variable-toggle4').forEach(cb => {
-                settings.variables[cb.dataset.group] = cb.checked;
-            });
-            localStorage.setItem('plot4Settings', JSON.stringify(settings));
-        }
-
-        function loadSettings4() {
-            const saved = localStorage.getItem('plot4Settings');
-            if (!saved) return;
-            const settings = JSON.parse(saved);
-            document.getElementById('timeValue4').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot4-unit').forEach(box => {
-                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
-            });
-            if (settings.variables) {
-                document.querySelectorAll('.variable-toggle4').forEach(cb => {
-                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
-                        cb.checked = settings.variables[cb.dataset.group];
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            minute: 'HH:mm',
+                            hour: 'MMM d, HH:mm',
+                            day: 'MMM d',
+                            week: 'MMM d',
+                            month: 'MMM yyyy'
+                        }
+                    },
+                    ticks: {
+                        maxTicksLimit: 8,
+                        autoSkip: true,
+                        major: { enabled: true }
                     }
-                });
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: { display: true, text: 'Engine Temp (°F)' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    title: { display: true, text: 'Alt Duty (%)' },
+                    grid: { drawOnChartArea: false }
+                }
             }
         }
+    });
 
-        document.getElementById('toggleTools4').addEventListener('click', function () {
-            const tools = document.getElementById('plotTools4');
-            const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
-        });
+    document.getElementById('loadingChart4').style.display = 'none';
+    canvas.style.display = 'block';
+}
 
-        document.querySelectorAll('.preset4').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('timeValue4').value = this.dataset.value;
-                document.querySelectorAll('.plot4-unit').forEach(box => {
-                    box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
-                });
-                updateChart4();
-                saveSettings4();
-            });
-        });
+// Re-bin Plot 4 to visible range
+function rebinChart4ToVisibleRange(chart) {
+    if (!chart4SourceData || chart4SourceData.length === 0) return;
+    const xScale = chart.scales.x;
+    if (!xScale) return;
 
-        document.querySelectorAll('.plot4-unit').forEach(box => {
-            box.addEventListener('click', function () {
-                document.querySelectorAll('.plot4-unit').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                updateActivePresetButton4();
-                saveSettings4();
-            });
-        });
+    const xOpts = chart.options.scales.x || {};
+    let min = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+    let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+    if (min == null || max == null) return;
 
-        document.getElementById('applyTimeRange4').addEventListener('click', function () {
-            updateChart4();
-            saveSettings4();
-        });
+    const dataMin = new Date(chart4SourceData[0].timestamp).getTime();
+    const dataMax = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
+    const clampedMin = Math.max(min, dataMin);
+    const clampedMax = Math.min(max, dataMax);
+    if (clampedMin >= clampedMax) return;
 
-        document.getElementById('panLeft4').addEventListener('click', () => {
-            if (chart4) chart4.pan({ x: -100 }, undefined, 'default');
-        });
-        document.getElementById('panRight4').addEventListener('click', () => {
-            if (chart4) chart4.pan({ x: 100 }, undefined, 'default');
-        });
+    const visibleRaw = chart4SourceData.filter(row => {
+        const t = new Date(row.timestamp).getTime();
+        return t >= clampedMin && t <= clampedMax;
+    });
+    if (!visibleRaw.length) return;
 
+    const reBinned = applyBinning(visibleRaw);
+    const labels = reBinned.map(row => new Date(row.timestamp));
+    chart.data.labels = labels;
+
+    chart.data.datasets.forEach(ds => {
+        let key = null;
+        switch (ds.label) {
+            case 'Eng Temp Min': key = 'eng_temp_min'; break;
+            case 'Eng Temp Max': key = 'eng_temp_max'; break;
+            case 'Eng Temp':     key = 'eng_temp_avg'; break;
+
+            case 'Alt Duty Min': key = 'alt_duty_min'; break;
+            case 'Alt Duty Max': key = 'alt_duty_max'; break;
+            case 'Alt Duty %':   key = 'alt_duty_avg'; break;
+
+            default: key = null;
+        }
+        if (key) ds.data = reBinned.map(row => row[key]);
+    });
+
+    chart.update('none');
+}
+
+// Manual pan for Plot 4
+function panChart4(direction) {
+    if (!chart4 || !chart4.scales || !chart4.scales.x) return;
+    if (!chart4SourceData || !chart4SourceData.length) return;
+
+    const xScale = chart4.scales.x;
+    const xOpts = chart4.options.scales.x || {};
+
+    let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+    let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+    if (currentMin == null || currentMax == null) return;
+
+    const windowSpan = currentMax - currentMin;
+    if (windowSpan <= 0) return;
+
+    const delta = direction === 'left' ? -windowSpan * 0.25 : windowSpan * 0.25;
+
+    const dataMin = new Date(chart4SourceData[0].timestamp).getTime();
+    const dataMax = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
+
+    let newMin = currentMin + delta;
+    let newMax = currentMax + delta;
+
+    if (newMin < dataMin) {
+        const shift = dataMin - newMin;
+        newMin += shift;
+        newMax += shift;
+    }
+    if (newMax > dataMax) {
+        const shift = newMax - dataMax;
+        newMin -= shift;
+        newMax -= shift;
+    }
+
+    chart4.options.scales.x.min = newMin;
+    chart4.options.scales.x.max = newMax;
+
+    rebinChart4ToVisibleRange(chart4);
+}
+
+// Apply time filter & rebuild chart
+function updateChart4() {
+    const timeValue = parseInt(document.getElementById('timeValue4').value);
+    const activeUnit = document.querySelector('.plot4-unit.active');
+    const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+
+    // keep unbinned full history for zoom/pan
+    chart4SourceData = fullData;
+
+    const filteredData = timeValue > 0
+        ? filterDataByTime(fullData, timeValue, timeUnit)
+        : fullData;
+
+    const binnedData = applyBinning(filteredData);
+
+    createChart4(binnedData);
+    updateActivePresetButton4();
+}
+
+function updateActivePresetButton4() {
+    const timeValue = parseInt(document.getElementById('timeValue4').value);
+    const activeUnit = document.querySelector('.plot4-unit.active');
+    const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+    document.querySelectorAll('.preset4').forEach(btn => {
+        const btnValue = parseInt(btn.dataset.value);
+        const btnUnit = btn.dataset.unit;
+        if (btnValue === timeValue && btnUnit === timeUnit) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
+function saveSettings4() {
+    const settings = {
+        timeValue: document.getElementById('timeValue4').value,
+        timeUnit: document.querySelector('.plot4-unit.active')?.dataset.unit || 'hours',
+        variables: {}
+    };
+    document.querySelectorAll('.variable-toggle4').forEach(cb => {
+        settings.variables[cb.dataset.group] = cb.checked;
+    });
+    localStorage.setItem('plot4Settings', JSON.stringify(settings));
+}
+
+function loadSettings4() {
+    const saved = localStorage.getItem('plot4Settings');
+    if (!saved) return;
+    const settings = JSON.parse(saved);
+    document.getElementById('timeValue4').value = settings.timeValue || 24;
+    document.querySelectorAll('.plot4-unit').forEach(box => {
+        box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
+    });
+    if (settings.variables) {
         document.querySelectorAll('.variable-toggle4').forEach(cb => {
-            cb.addEventListener('change', function () {
-                updateChart4();
-                saveSettings4();
-            });
-        });
-
-        document.getElementById('yAxisAutoScale4').addEventListener('change', function () {
-            const isAuto = this.checked;
-            document.getElementById('yAxisMin4').disabled = isAuto;
-            document.getElementById('yAxisMax4').disabled = isAuto;
-            document.getElementById('applyYAxis4').disabled = isAuto;
-            if (isAuto && chart4) {
-                chart4.options.scales.y.min = undefined;
-                chart4.options.scales.y.max = undefined;
-                chart4.update('none');
+            if (settings.variables.hasOwnProperty(cb.dataset.group)) {
+                cb.checked = settings.variables[cb.dataset.group];
             }
-            saveSettings4();
         });
+    }
+}
 
-        document.getElementById('applyYAxis4').addEventListener('click', function () {
-            if (!chart4) return;
-            const min = parseFloat(document.getElementById('yAxisMin4').value);
-            const max = parseFloat(document.getElementById('yAxisMax4').value);
-            if (!isNaN(min)) chart4.options.scales.y.min = min;
-            if (!isNaN(max)) chart4.options.scales.y.max = max;
-            chart4.update('none');
-            saveSettings4();
+// UI wiring for Plot 4
+document.getElementById('toggleTools4').addEventListener('click', function () {
+    const tools = document.getElementById('plotTools4');
+    const isHidden = tools.style.display === 'none';
+    tools.style.display = isHidden ? 'block' : 'none';
+    this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
+});
+
+document.querySelectorAll('.preset4').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.getElementById('timeValue4').value = this.dataset.value;
+        document.querySelectorAll('.plot4-unit').forEach(box => {
+            box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
         });
+        updateChart4();
+        saveSettings4();
+    });
+});
+
+document.querySelectorAll('.plot4-unit').forEach(box => {
+    box.addEventListener('click', function () {
+        document.querySelectorAll('.plot4-unit').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        updateActivePresetButton4();
+        saveSettings4();
+    });
+});
+
+document.getElementById('applyTimeRange4').addEventListener('click', function () {
+    updateChart4();
+    saveSettings4();
+});
+
+// Pan buttons now use panChart4
+document.getElementById('panLeft4').addEventListener('click', () => {
+    panChart4('left');
+});
+document.getElementById('panRight4').addEventListener('click', () => {
+    panChart4('right');
+});
+
+document.querySelectorAll('.variable-toggle4').forEach(cb => {
+    cb.addEventListener('change', function () {
+        updateChart4();
+        saveSettings4();
+    });
+});
+
+document.getElementById('yAxisAutoScale4').addEventListener('change', function () {
+    const isAuto = this.checked;
+    document.getElementById('yAxisMin4').disabled = isAuto;
+    document.getElementById('yAxisMax4').disabled = isAuto;
+    document.getElementById('applyYAxis4').disabled = isAuto;
+    if (isAuto && chart4) {
+        chart4.options.scales.y.min = undefined;
+        chart4.options.scales.y.max = undefined;
+        chart4.update('none');
+    }
+    saveSettings4();
+});
+
+document.getElementById('applyYAxis4').addEventListener('click', function () {
+    if (!chart4) return;
+    const min = parseFloat(document.getElementById('yAxisMin4').value);
+    const max = parseFloat(document.getElementById('yAxisMax4').value);
+    if (!isNaN(min)) chart4.options.scales.y.min = min;
+    if (!isNaN(max)) chart4.options.scales.y.max = max;
+    chart4.update('none');
+    saveSettings4();
+});
+
 
 
         // PLOT 5 ONLY — Speeds
