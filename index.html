@@ -642,7 +642,7 @@
     <script>
         // ============================================
         // ============================================
-        // SHARED: CONFIG & STATE (used by all plots)
+        // SHARED (UNIFIED FOR ALL PLOTS) — CONFIG & STATE
         // ============================================
         // ============================================
 
@@ -656,40 +656,9 @@
 
         // ============================================
         // ============================================
-        // SHARED: UTILITY FUNCTIONS (used by all plots)
+        // SHARED (UNIFIED FOR ALL PLOTS) — UTILITY FUNCTIONS
         // ============================================
         // ============================================
-
-        // // Simple on-screen debug log (works inside iframe)
-        // function debugLog(...args) {
-        //     try {
-        //         let box = document.getElementById('debug_box');
-        //         if (!box) {
-        //             box = document.createElement('pre');
-        //             box.id = 'debug_box';
-        //             box.style.position = 'fixed';
-        //             box.style.left = '0';
-        //             box.style.right = '0';
-        //             box.style.bottom = '0';
-        //             box.style.maxHeight = '160px';
-        //             box.style.overflow = 'auto';
-        //             box.style.background = '#111';
-        //             box.style.color = '#0f0';
-        //             box.style.font = '11px monospace';
-        //             box.style.margin = '0';
-        //             box.style.padding = '4px 6px';
-        //             box.style.zIndex = '999999';
-        //             document.body.appendChild(box);
-        //         }
-        //         const msg = args.map(a =>
-        //             typeof a === 'string' ? a : JSON.stringify(a)
-        //         ).join(' ');
-        //         box.textContent += msg + '\n';
-        //     } catch (e) {
-        //         // last-resort fallback
-        //         console.log('debugLog fallback:', args);
-        //     }
-        // }
 
         // Parse token from URL
         function getTokenFromUrl() {
@@ -729,77 +698,47 @@
             }
         }
 
-        // ============================================
-        // Columns used for sensor history
-        // ============================================
-        const HISTORY_COLUMNS =
-            'timestamp,' +
-            'batt_curr_min,batt_curr_max,batt_curr_avg,' +
-            'alt_curr_min,alt_curr_max,alt_curr_avg,' +
-            'victron_curr_min,victron_curr_max,victron_curr_avg,' +
-            'batt_volt_min,batt_volt_max,batt_volt_avg,' +
-            'soc_min,soc_max,soc_avg,' +
-            'alt_temp_min,alt_temp_max,alt_temp_avg,' +
-            'temp_therm_min,temp_therm_max,temp_therm_avg,' +
-            'amb_temp_min,amb_temp_max,amb_temp_avg,' +
-            'rpm_min,rpm_max,rpm_avg,' +
-            'duty_cycle_min,duty_cycle_max,duty_cycle_avg,' +
-            'ign_duty,eng_duty,' +
-            'sog_min,sog_max,sog_avg,' +
-            'aws_min,aws_max,aws_avg,' +
-            'tws_min,tws_max,tws_avg,' +
-            'vmg_min,vmg_max,vmg_avg,' +
-            'cog_min,cog_max,cog_avg,' +
-            'heading_min,heading_max,heading_avg,' +
-            'awa_min,awa_max,awa_avg,' +
-            'twa_min,twa_max,twa_avg,' +
-            'leeway_min,leeway_max,leeway_avg,' +
-            'alt_zero_min,alt_zero_max,alt_zero_avg';
+        // Fetch sensor history 
+        async function fetchSensorHistory(deviceUid) {
+            try {
+                const { data, error } = await supabase
+                    .from('sensor_history')
+                    .select(HISTORY_COLUMNS)
+                    .eq('device_uid', deviceUid)
+                    .order('timestamp', { ascending: true });
 
+                if (error) {
+                    // debugLog('fetchSensorHistory ERROR:', error.message || JSON.stringify(error));
+                    throw error;
+                }
 
+                const minDate = new Date('2020-01-01').getTime();
+                const maxDate = new Date('2100-01-01').getTime();
 
-            async function fetchSensorHistory(deviceUid) {
-    try {
-        const { data, error } = await supabase
-            .from('sensor_history')
-            .select(HISTORY_COLUMNS)
-            .eq('device_uid', deviceUid)
-            .order('timestamp', { ascending: true });
+                const filtered = (data || []).filter(d => {
+                    const ts = new Date(d.timestamp).getTime();
+                    return ts >= minDate && ts <= maxDate;
+                });
 
-        if (error) {
-            // debugLog('fetchSensorHistory ERROR:', error.message || JSON.stringify(error));
-            throw error;
+                // debugLog('rows:', filtered.length);
+
+                if (filtered.length > 0) {
+                    const f = filtered[0];
+                    // debugLog('keys:', Object.keys(f).join(','));
+                    // debugLog('temps:', {
+                    //     alt_temp_min: f.alt_temp_min,
+                    //     temp_therm_min: f.temp_therm_min,
+                    //     amb_temp_min: f.amb_temp_min
+                    // });
+                }
+
+                return filtered;
+            } catch (error) {
+                // debugLog('fetchSensorHistory THROWN:', error.message || error);
+                console.error('Data fetch error:', error);
+                throw new Error('Failed to fetch sensor data');
+            }
         }
-
-        const minDate = new Date('2020-01-01').getTime();
-        const maxDate = new Date('2100-01-01').getTime();
-
-        const filtered = (data || []).filter(d => {
-            const ts = new Date(d.timestamp).getTime();
-            return ts >= minDate && ts <= maxDate;
-        });
-
-        // debugLog('rows:', filtered.length);
-
-        if (filtered.length > 0) {
-            const f = filtered[0];
-            // debugLog('keys:', Object.keys(f).join(','));
-            // debugLog('temps:', {
-            //     alt_temp_min: f.alt_temp_min,
-            //     temp_therm_min: f.temp_therm_min,
-            //     amb_temp_min: f.amb_temp_min
-            // });
-        }
-
-        return filtered;
-    } catch (error) {
-        // debugLog('fetchSensorHistory THROWN:', error.message || error);
-        console.error('Data fetch error:', error);
-        throw new Error('Failed to fetch sensor data');
-    }
-}
-
-
 
         // Shared helper: apply time window
         function filterDataByTime(data, value, unit) {
@@ -821,14 +760,14 @@
 
         // ============================================
         // ============================================
-        // END SHARED SECTION
+        // END SHARED (UNIFIED FOR ALL PLOTS) SECTION
         // ============================================
         // ============================================
 
 
         // ============================================
         // ============================================
-        // PLOT 1: Currents (A) - STATE
+        // PLOT 1 ONLY — Currents (A) / STATE
         // ============================================
         // ============================================
 
@@ -836,7 +775,7 @@
 
         // ============================================
         // ============================================
-        // PLOT 1: Currents (A) - SETTINGS PERSISTENCE
+        // PLOT 1 ONLY — Currents (A) / SETTINGS PERSISTENCE
         // ============================================
         // ============================================
 
@@ -896,7 +835,7 @@
 
         // ============================================
         // ============================================
-        // PLOT 1: Currents (A) - CHART CREATION
+        // PLOT 1 ONLY — Currents (A) / CHART CREATION
         // ============================================
         // ============================================
 
@@ -1098,7 +1037,7 @@
 
         // ============================================
         // ============================================
-        // PLOT 1: Currents (A) - UPDATE & HELPERS
+        // PLOT 1 ONLY — Currents (A) / UPDATE & HELPERS
         // ============================================
         // ============================================
 
@@ -1131,7 +1070,7 @@
 
         // ============================================
         // ============================================
-        // PLOT 1: Currents (A) - EVENT LISTENERS
+        // PLOT 1 ONLY — Currents (A) / EVENT LISTENERS
         // ============================================
         // ============================================
 
@@ -1213,14 +1152,14 @@
 
         // ============================================
         // ============================================
-        // END PLOT 1
+        // END PLOT 1 ONLY
         // ============================================
         // ============================================
 
 
         // ============================================
         // ============================================
-        // PLOT 2: Battery Voltage & SOC - STATE
+        // PLOT 2 ONLY — Battery Voltage & SOC / STATE
         // ============================================
         // ============================================
 
@@ -1228,7 +1167,7 @@
 
         // ============================================
         // ============================================
-        // PLOT 2: Battery Voltage & SOC - SETTINGS PERSISTENCE
+        // PLOT 2 ONLY — Battery Voltage & SOC / SETTINGS PERSISTENCE
         // ============================================
         // ============================================
 
@@ -1288,7 +1227,7 @@
 
         // ============================================
         // ============================================
-        // PLOT 2: Battery Voltage & SOC - CHART CREATION
+        // PLOT 2 ONLY — Battery Voltage & SOC / CHART CREATION
         // ============================================
         // ============================================
 
@@ -1462,7 +1401,7 @@
 
         // ============================================
         // ============================================
-        // PLOT 2: Battery Voltage & SOC - UPDATE & HELPERS
+        // PLOT 2 ONLY — Battery Voltage & SOC / UPDATE & HELPERS
         // ============================================
         // ============================================
 
@@ -1496,7 +1435,7 @@
 
         // ============================================
         // ============================================
-        // PLOT 2: Battery Voltage & SOC - EVENT LISTENERS
+        // PLOT 2 ONLY — Battery Voltage & SOC / EVENT LISTENERS
         // ============================================
         // ============================================
 
@@ -1578,11 +1517,11 @@
 
         // ============================================
         // ============================================
-        // END PLOT 2
+        // END PLOT 2 ONLY
         // ============================================
         // ============================================
 
-        // ========== PLOT 3: Temperatures & Barometric Pressure ==========
+        // PLOT 3 ONLY — Temperatures & Barometric Pressure
         let chart3 = null;
 
         function createChart3(data) {
@@ -1848,7 +1787,7 @@
         });
 
 
-        // ========== PLOT 4: Engine & Alternator Duty ==========
+        // PLOT 4 ONLY — Engine & Alternator Duty
         let chart4 = null;
 
         function createChart4(data) {
@@ -2095,7 +2034,7 @@
         });
 
 
-        // ========== PLOT 5: Speeds ==========
+        // PLOT 5 ONLY — Speeds
         let chart5 = null;
 
         function createChart5(data) {
@@ -2295,7 +2234,7 @@
         });
 
 
-        // ========== PLOT 6: Angles ==========
+        // PLOT 6 ONLY — Angles
         let chart6 = null;
 
         function createChart6(data) {
@@ -2504,7 +2443,7 @@
         });
 
 
-        // ========== PLOT 7: Alternator Zero Offset ==========
+        // PLOT 7 ONLY — Alternator Zero Offset
         let chart7 = null;
 
         function createChart7(data) {
@@ -2677,7 +2616,7 @@
         });
 
 
-        // SHARED: MAIN INITIALIZATION
+        // SHARED (UNIFIED FOR ALL PLOTS) — MAIN INITIALIZATION
         // ============================================
         // ============================================
 
@@ -2737,7 +2676,7 @@
 
         // ============================================
         // ============================================
-        // END SHARED: MAIN INITIALIZATION
+        // END SHARED (UNIFIED FOR ALL PLOTS) — MAIN INITIALIZATION
         // ============================================
         // ============================================
     </script>
