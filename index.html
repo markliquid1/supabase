@@ -207,7 +207,7 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart3" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
+            <div id="loadingChart3" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart3" style="display: none;"></canvas>
@@ -297,7 +297,7 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart4" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
+            <div id="loadingChart4" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart4" style="display: none;"></canvas>
@@ -387,7 +387,7 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart5" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
+            <div id="loadingChart5" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart5" style="display: none;"></canvas>
@@ -477,7 +477,7 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart6" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
+            <div id="loadingChart6" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart6" style="display: none;"></canvas>
@@ -574,7 +574,7 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart7" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
+            <div id="loadingChart7" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart7" style="display: none;"></canvas>
@@ -1511,16 +1511,25 @@
         let chart3 = null;
 
         function createChart3(data) {
+            console.log('Plot 3: createChart3 called with', data.length, 'records');
             const canvas = document.getElementById('chart3');
             const ctx = canvas.getContext('2d');
             const timestamps = data.map(d => new Date(d.timestamp));
 
             const checkedVars = new Set();
             document.querySelectorAll('.variable-toggle3:checked').forEach(cb => {
+                console.log('Plot 3: Checked variable:', cb.dataset.group);
                 checkedVars.add(cb.dataset.group);
             });
 
             const datasets = [];
+            console.log('Plot 3: Sample data point:', {
+                alt_temp_min: data[0]?.alt_temp_min,
+                alt_temp_max: data[0]?.alt_temp_max,
+                alt_temp_avg: data[0]?.alt_temp_avg,
+                amb_temp_min: data[0]?.amb_temp_min,
+                baro_min: data[0]?.baro_min
+            });
 
             // Alternator Temperature (left axis, °F) - blue
             if (checkedVars.has('AltTemp')) {
@@ -1559,6 +1568,12 @@
             }
 
             if (chart3) chart3.destroy();
+
+            console.log('Plot 3: Creating chart with', datasets.length, 'datasets');
+            if (datasets.length > 0) {
+                console.log('Plot 3: First dataset:', datasets[0].label, 'has', datasets[0].data.length, 'points');
+                console.log('Plot 3: First 3 values:', datasets[0].data.slice(0, 3));
+            }
 
             chart3 = new Chart(ctx, {
                 type: 'line',
