@@ -1945,6 +1945,7 @@
 
         // PLOT 3 ONLY — Temperatures & Barometric Pressure
         let chart3 = null;
+        let chart3SourceData = [];
 
         function createChart3(data) {
             console.log('Plot 3: createChart3 called with', data.length, 'records');
@@ -2099,10 +2100,14 @@
         }
 
         // Apply time filter & rebuild chart
-        function updateChart3() {
+              // Apply time filter & rebuild chart
+              function updateChart3() {
             const timeValue = parseInt(document.getElementById('timeValue3').value);
             const activeUnit = document.querySelector('.plot3-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+
+            // keep unbinned full history for zoom/pan
+            chart3SourceData = fullData;
 
             const filteredData = timeValue > 0
                 ? filterDataByTime(fullData, timeValue, timeUnit)
@@ -2113,6 +2118,99 @@
             createChart3(binnedData);
             updateActivePresetButton3();
         }
+
+        function rebinChart3ToVisibleRange(chart) {
+            if (!chart3SourceData || chart3SourceData.length === 0) return;
+            if (!chart || !chart.scales || !chart.scales.x) return;
+
+            const xScale = chart.scales.x;
+            const xOpts = chart.options.scales.x || {};
+
+            // Use options.min/max if set, otherwise current scale min/max
+            let min = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+            if (min == null || max == null) return;
+
+            // Clamp to data range
+            const dataMin = new Date(chart3SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
+
+            const clampedMin = Math.max(min, dataMin);
+            const clampedMax = Math.min(max, dataMax);
+            if (clampedMin >= clampedMax) return;
+
+            // Filter raw data to the current visible x-window
+            const visibleRaw = chart3SourceData.filter(row => {
+                const t = new Date(row.timestamp).getTime();
+                return t >= clampedMin && t <= clampedMax;
+            });
+
+            if (!visibleRaw.length) return;
+
+            const reBinned = applyBinning(visibleRaw);
+
+            // Update labels to the rebinned timestamps
+            const labels = reBinned.map(row => new Date(row.timestamp));
+            chart.data.labels = labels;
+
+            // Update each dataset based on its label
+            chart.data.datasets.forEach(ds => {
+                let key = null;
+
+                switch (ds.label) {
+                    case 'Alt Temp Min':
+                        key = 'alt_temp_min';
+                        break;
+                    case 'Alt Temp Max':
+                        key = 'alt_temp_max';
+                        break;
+                    case 'Alt Temp':
+                        key = 'alt_temp_avg';
+                        break;
+
+                    case 'Therm Temp Min':
+                        key = 'temp_therm_min';
+                        break;
+                    case 'Therm Temp Max':
+                        key = 'temp_therm_max';
+                        break;
+                    case 'Therm Temp':
+                        key = 'temp_therm_avg';
+                        break;
+
+                    case 'Amb Temp Min':
+                        key = 'amb_temp_min';
+                        break;
+                    case 'Amb Temp Max':
+                        key = 'amb_temp_max';
+                        break;
+                    case 'Amb Temp':
+                        key = 'amb_temp_avg';
+                        break;
+
+                    case 'Baro Min':
+                        key = 'baro_min';
+                        break;
+                    case 'Baro Max':
+                        key = 'baro_max';
+                        break;
+                    case 'Baro':
+                        key = 'baro_avg';
+                        break;
+
+                    default:
+                        key = null;
+                }
+
+                if (key) {
+                    ds.data = reBinned.map(row => row[key]);
+                }
+            });
+
+            // Re-render with new data but keep current zoom/pan window
+            chart.update('none');
+        }
+
 
 
         function updateActivePresetButton3() {
@@ -2191,12 +2289,61 @@
             saveSettings3();
         });
 
+        function panChart3(direction) {
+            if (!chart3 || !chart3.scales || !chart3.scales.x) return;
+            if (!chart3SourceData || !chart3SourceData.length) return;
+
+            const xScale = chart3.scales.x;
+            const xOpts = chart3.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart3SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
+
+            if (currentMin == null || currentMax == null) {
+                currentMin = dataMin;
+                currentMax = dataMax;
+            }
+
+            const range = currentMax - currentMin;
+            if (range <= 0) return;
+
+            // Pan by 50% of current window width
+            const shift = range * 0.5;
+
+            let newMin = direction === 'left' ? currentMin - shift : currentMin + shift;
+            let newMax = direction === 'left' ? currentMax - shift : currentMax + shift;
+
+            // Clamp to data range so we never pan into pure empty space
+            if (newMin < dataMin) {
+                newMin = dataMin;
+                newMax = dataMin + range;
+                if (newMax > dataMax) newMax = dataMax;
+            }
+            if (newMax > dataMax) {
+                newMax = dataMax;
+                newMin = dataMax - range;
+                if (newMin < dataMin) newMin = dataMin;
+            }
+
+            // Write new limits, update scales, then rebin using the new window
+            chart3.options.scales.x.min = newMin;
+            chart3.options.scales.x.max = newMax;
+
+            chart3.update('none');
+            rebinChart3ToVisibleRange(chart3);
+        }
+
         document.getElementById('panLeft3').addEventListener('click', () => {
-            if (chart3) chart3.pan({ x: -100 }, undefined, 'default');
+            panChart3('left');
         });
         document.getElementById('panRight3').addEventListener('click', () => {
-            if (chart3) chart3.pan({ x: 100 }, undefined, 'default');
+            panChart3('right');
         });
+
 
         document.querySelectorAll('.variable-toggle3').forEach(cb => {
             cb.addEventListener('change', function () {
