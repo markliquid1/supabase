@@ -1164,23 +1164,23 @@
 
         // Apply time window & rebuild chart
         function updateChart1() {
-            const timeValue = parseInt(document.getElementById('timeValue1').value);
-            const activeUnit = document.querySelector('.plot1-unit.active');
-            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+    const timeValue = parseInt(document.getElementById('timeValue1').value);
+    const activeUnit = document.querySelector('.plot1-unit.active');
+    const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
-            // ALWAYS keep full raw data here so pan/zoom can reach everything
-            chart1SourceData = fullData;
+    // Full raw data always remains available for zoom/pan expansion
+    chart1SourceData = fullData;
 
-            // This controls the INITIAL visible window only
-            const filteredData = timeValue > 0
-                ? filterDataByTime(fullData, timeValue, timeUnit)
-                : fullData;
+    // Initial visible window is filtered; re-binning happens after zooming/panning
+    const filteredData = timeValue > 0
+        ? filterDataByTime(fullData, timeValue, timeUnit)
+        : fullData;
 
-            const initialBinned = applyBinning(filteredData);
-            createChart1(initialBinned);
+    const initialBinned = applyBinning(filteredData);
+    createChart1(initialBinned);
+    updateActivePresetButton1();
+}
 
-            updateActivePresetButton1();
-        }
 
             const timeValue = parseInt(document.getElementById('timeValue1').value);
             const activeUnit = document.querySelector('.plot1-unit.active');
@@ -1196,7 +1196,7 @@
             createChart1(initialBinned);
 
             updateActivePresetButton1();
-        }
+        
         function rebinChart1ToVisibleRange(chart) {
             if (!chart1SourceData || chart1SourceData.length === 0) return;
 
