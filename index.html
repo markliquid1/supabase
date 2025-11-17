@@ -749,7 +749,12 @@
             'amb_temp_min,amb_temp_max,amb_temp_avg,' +
             'rpm_min,rpm_max,rpm_avg,' +
             'duty_cycle_min,duty_cycle_max,duty_cycle_avg,' +
-            'ign_duty,eng_duty';
+            'ign_duty,eng_duty' +
+            ',sog_min,sog_max,sog_avg' +
+            ',aws_min,aws_max,aws_avg' +
+            ',tws_min,tws_max,tws_avg' +
+            ',vmg_min,vmg_max,vmg_avg'
+            ;
 
 
         async function fetchSensorHistory(deviceUid) {
