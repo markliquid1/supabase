@@ -207,7 +207,8 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart3" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
+            <div id="loadingChart3"
+                style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart3" style="display: none;"></canvas>
@@ -297,7 +298,8 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart4" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
+            <div id="loadingChart4"
+                style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart4" style="display: none;"></canvas>
@@ -387,7 +389,8 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart5" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
+            <div id="loadingChart5"
+                style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart5" style="display: none;"></canvas>
@@ -477,7 +480,8 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart6" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
+            <div id="loadingChart6"
+                style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart6" style="display: none;"></canvas>
@@ -574,7 +578,8 @@
                 ▼ Open Plot Tools Below
             </button>
 
-            <div id="loadingChart7" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
+            <div id="loadingChart7"
+                style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
                 Loading chart...
             </div>
             <canvas id="chart7" style="display: none;"></canvas>
@@ -640,7 +645,7 @@
         // SHARED: CONFIG & STATE (used by all plots)
         // ============================================
         // ============================================
-        
+
         // Supabase configuration
         const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
@@ -693,38 +698,89 @@
             }
         }
 
-        // Fetch sensor history 
-        async function fetchSensorHistory(deviceUid) {
-            try {
-                const { data, error } = await supabase
-                    .from('sensor_history')
-                    .select(`
-                timestamp,
-                batt_curr_min, batt_curr_max, batt_curr_avg,
-                alt_curr_min, alt_curr_max, alt_curr_avg,
-                victron_curr_min, victron_curr_max, victron_curr_avg,
-                batt_volt_min, batt_volt_max, batt_volt_avg,
-                soc_min, soc_max, soc_avg
-            `)
-                    .eq('device_uid', deviceUid)
-                    .order('timestamp', { ascending: true });
+// ============================================
+// Columns used for sensor history
+// ============================================
+const HISTORY_COLUMNS = `
+    timestamp,
 
-                if (error) throw error;
+    -- Plot 1: Currents
+    batt_curr_min, batt_curr_max, batt_curr_avg,
+    alt_curr_min,  alt_curr_max,  alt_curr_avg,
+    victron_curr_min, victron_curr_max, victron_curr_avg,
 
-                const minDate = new Date('2020-01-01').getTime();
-                const maxDate = new Date('2100-01-01').getTime();
+    -- Plot 2: Battery Voltage + SOC
+    batt_volt_min, batt_volt_max, batt_volt_avg,
+    soc_min, soc_max, soc_avg,
 
-                const filtered = data.filter(d => {
-                    const ts = new Date(d.timestamp).getTime();
-                    return ts >= minDate && ts <= maxDate;
-                });
+    -- Plot 3: Temperatures
+    alt_temp_min, alt_temp_max, alt_temp_avg,
+    temp_therm_min, temp_therm_max, temp_therm_avg,
+    amb_temp_min, amb_temp_max, amb_temp_avg
 
-                return filtered;
-            } catch (error) {
-                console.error('Data fetch error:', error);
-                throw new Error('Failed to fetch sensor data');
-            }
-        }
+    /*
+    -- Plot 4: Engine + Alternator Duty
+    , rpm_min, rpm_max, rpm_avg
+    , duty_cycle_min, duty_cycle_max, duty_cycle_avg
+    , ign_duty
+    , eng_duty
+
+    -- Plot 5: Speeds (knots)
+    , sog_min, sog_max, sog_avg
+    , aws_min, aws_max, aws_avg
+    , tws_min, tws_max, tws_avg
+    , vmg_min, vmg_max, vmg_avg
+
+    -- Plot 6: Angles (deg)
+    , cog_min, cog_max, cog_avg
+    , heading_min, heading_max, heading_avg
+    , awa_min, awa_max, awa_avg
+    , twa_min, twa_max, twa_avg
+    , leeway_min, leeway_max, leeway_avg
+
+    -- Plot 7: Alternator Zero Offset
+    , alt_zero_min, alt_zero_max, alt_zero_avg
+    */
+`;
+
+// ============================================
+// Fetch sensor history
+// ============================================
+async function fetchSensorHistory(deviceUid) {
+    try {
+        const { data, error } = await supabase
+            .from('sensor_history')
+            .select(HISTORY_COLUMNS)
+            .eq('device_uid', deviceUid)
+            .order('timestamp', { ascending: true });
+
+        if (error) throw error;
+
+        const minDate = new Date('2020-01-01').getTime();
+        const maxDate = new Date('2100-01-01').getTime();
+
+        return data.filter(d => {
+            const ts = new Date(d.timestamp).getTime();
+            return ts >= minDate && ts <= maxDate;
+        });
+
+    } catch (error) {
+        console.error('Data fetch error:', error);
+
+        // Debug overlay (safe for iframe, no console needed)
+        const dbg = document.getElementById("debug_box") || (() => {
+            const div = document.createElement("pre");
+            div.id = "debug_box";
+            div.style = "position:fixed; bottom:0; left:0; right:0; max-height:160px; overflow:auto; background:#111; color:#0f0; font:11px monospace; z-index:999999; padding:6px;";
+            document.body.appendChild(div);
+            return div;
+        })();
+        dbg.textContent += `\n${(error?.message || error)}`;
+
+        throw new Error('Failed to fetch sensor data');
+    }
+}
+
 
         // Shared helper: apply time window
         function filterDataByTime(data, value, unit) {
@@ -756,7 +812,7 @@
         // PLOT 1: Currents (A) - STATE
         // ============================================
         // ============================================
-        
+
         let chart1 = null;
 
         // ============================================
@@ -1148,7 +1204,7 @@
         // PLOT 2: Battery Voltage & SOC - STATE
         // ============================================
         // ============================================
-        
+
         let chart2 = null;
 
         // ============================================
@@ -2181,16 +2237,20 @@
             this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
         });
 
-        document.querySelectorAll('.preset5').forEach(btn => { btn.addEventListener('click', function () {
-            document.getElementById('timeValue5').value = this.dataset.value;
-            document.querySelectorAll('.plot5-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
-            updateChart5(); saveSettings5();
-        }); });
+        document.querySelectorAll('.preset5').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.getElementById('timeValue5').value = this.dataset.value;
+                document.querySelectorAll('.plot5-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
+                updateChart5(); saveSettings5();
+            });
+        });
 
-        document.querySelectorAll('.plot5-unit').forEach(box => { box.addEventListener('click', function () {
-            document.querySelectorAll('.plot5-unit').forEach(b => b.classList.remove('active'));
-            this.classList.add('active'); updateActivePresetButton5(); saveSettings5();
-        }); });
+        document.querySelectorAll('.plot5-unit').forEach(box => {
+            box.addEventListener('click', function () {
+                document.querySelectorAll('.plot5-unit').forEach(b => b.classList.remove('active'));
+                this.classList.add('active'); updateActivePresetButton5(); saveSettings5();
+            });
+        });
 
         document.getElementById('applyTimeRange5').addEventListener('click', () => { updateChart5(); saveSettings5(); });
         document.getElementById('panLeft5').addEventListener('click', () => { if (chart5) chart5.pan({ x: -100 }, undefined, 'default'); });
@@ -2386,16 +2446,20 @@
             this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
         });
 
-        document.querySelectorAll('.preset6').forEach(btn => { btn.addEventListener('click', function () {
-            document.getElementById('timeValue6').value = this.dataset.value;
-            document.querySelectorAll('.plot6-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
-            updateChart6(); saveSettings6();
-        }); });
+        document.querySelectorAll('.preset6').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.getElementById('timeValue6').value = this.dataset.value;
+                document.querySelectorAll('.plot6-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
+                updateChart6(); saveSettings6();
+            });
+        });
 
-        document.querySelectorAll('.plot6-unit').forEach(box => { box.addEventListener('click', function () {
-            document.querySelectorAll('.plot6-unit').forEach(b => b.classList.remove('active'));
-            this.classList.add('active'); updateActivePresetButton6(); saveSettings6();
-        }); });
+        document.querySelectorAll('.plot6-unit').forEach(box => {
+            box.addEventListener('click', function () {
+                document.querySelectorAll('.plot6-unit').forEach(b => b.classList.remove('active'));
+                this.classList.add('active'); updateActivePresetButton6(); saveSettings6();
+            });
+        });
 
         document.getElementById('applyTimeRange6').addEventListener('click', () => { updateChart6(); saveSettings6(); });
         document.getElementById('panLeft6').addEventListener('click', () => { if (chart6) chart6.pan({ x: -100 }, undefined, 'default'); });
@@ -2555,16 +2619,20 @@
             this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
         });
 
-        document.querySelectorAll('.preset7').forEach(btn => { btn.addEventListener('click', function () {
-            document.getElementById('timeValue7').value = this.dataset.value;
-            document.querySelectorAll('.plot7-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
-            updateChart7(); saveSettings7();
-        }); });
+        document.querySelectorAll('.preset7').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.getElementById('timeValue7').value = this.dataset.value;
+                document.querySelectorAll('.plot7-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
+                updateChart7(); saveSettings7();
+            });
+        });
 
-        document.querySelectorAll('.plot7-unit').forEach(box => { box.addEventListener('click', function () {
-            document.querySelectorAll('.plot7-unit').forEach(b => b.classList.remove('active'));
-            this.classList.add('active'); updateActivePresetButton7(); saveSettings7();
-        }); });
+        document.querySelectorAll('.plot7-unit').forEach(box => {
+            box.addEventListener('click', function () {
+                document.querySelectorAll('.plot7-unit').forEach(b => b.classList.remove('active'));
+                this.classList.add('active'); updateActivePresetButton7(); saveSettings7();
+            });
+        });
 
         document.getElementById('applyTimeRange7').addEventListener('click', () => { updateChart7(); saveSettings7(); });
         document.getElementById('panLeft7').addEventListener('click', () => { if (chart7) chart7.pan({ x: -100 }, undefined, 'default'); });
