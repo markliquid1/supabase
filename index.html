@@ -15,6 +15,99 @@
 </head>
 
 <body>
+
+
+    <div style="margin: 10px 0; padding: 10px; border-top: 1px solid #ddd;">
+        <label style="font-weight: bold;">Timezone:
+            <select id="timezoneSelect" style="padding: 5px; margin-left: 10px;">
+                <option value="auto">Auto (Device Local)</option>
+                <optgroup label="UTC">
+                    <option value="UTC">UTC</option>
+                </optgroup>
+                <optgroup label="North America">
+                    <option value="America/New_York">Eastern (New York)</option>
+                    <option value="America/Chicago">Central (Chicago)</option>
+                    <option value="America/Denver">Mountain (Denver)</option>
+                    <option value="America/Los_Angeles">Pacific (Los Angeles)</option>
+                    <option value="America/Anchorage">Alaska</option>
+                    <option value="Pacific/Honolulu">Hawaii</option>
+                    <option value="America/Phoenix">Arizona (no DST)</option>
+                    <option value="America/Toronto">Toronto</option>
+                    <option value="America/Vancouver">Vancouver</option>
+                    <option value="America/Halifax">Atlantic (Halifax)</option>
+                    <option value="America/St_Johns">Newfoundland</option>
+                </optgroup>
+                <optgroup label="Caribbean & Central America">
+                    <option value="America/Puerto_Rico">Puerto Rico</option>
+                    <option value="America/Havana">Cuba</option>
+                    <option value="America/Jamaica">Jamaica</option>
+                    <option value="America/Panama">Panama</option>
+                    <option value="America/Mexico_City">Mexico City</option>
+                    <option value="America/Cancun">Cancun</option>
+                    <option value="America/Costa_Rica">Costa Rica</option>
+                </optgroup>
+                <optgroup label="South America">
+                    <option value="America/Sao_Paulo">Brazil (São Paulo)</option>
+                    <option value="America/Argentina/Buenos_Aires">Argentina</option>
+                    <option value="America/Santiago">Chile</option>
+                    <option value="America/Bogota">Colombia</option>
+                    <option value="America/Lima">Peru</option>
+                </optgroup>
+                <optgroup label="Europe">
+                    <option value="Europe/London">UK (London)</option>
+                    <option value="Europe/Dublin">Ireland</option>
+                    <option value="Europe/Paris">France/Spain (Paris)</option>
+                    <option value="Europe/Berlin">Germany (Berlin)</option>
+                    <option value="Europe/Rome">Italy (Rome)</option>
+                    <option value="Europe/Athens">Greece (Athens)</option>
+                    <option value="Europe/Istanbul">Turkey (Istanbul)</option>
+                    <option value="Europe/Moscow">Russia (Moscow)</option>
+                    <option value="Europe/Lisbon">Portugal (Lisbon)</option>
+                    <option value="Europe/Amsterdam">Netherlands</option>
+                    <option value="Europe/Stockholm">Sweden</option>
+                    <option value="Europe/Oslo">Norway</option>
+                </optgroup>
+                <optgroup label="Africa">
+                    <option value="Africa/Cairo">Egypt (Cairo)</option>
+                    <option value="Africa/Johannesburg">South Africa</option>
+                    <option value="Africa/Nairobi">Kenya (Nairobi)</option>
+                    <option value="Africa/Lagos">Nigeria (Lagos)</option>
+                </optgroup>
+                <optgroup label="Middle East">
+                    <option value="Asia/Dubai">UAE (Dubai)</option>
+                    <option value="Asia/Jerusalem">Israel</option>
+                    <option value="Asia/Riyadh">Saudi Arabia</option>
+                </optgroup>
+                <optgroup label="Asia">
+                    <option value="Asia/Tokyo">Japan (Tokyo)</option>
+                    <option value="Asia/Shanghai">China (Shanghai)</option>
+                    <option value="Asia/Hong_Kong">Hong Kong</option>
+                    <option value="Asia/Singapore">Singapore</option>
+                    <option value="Asia/Bangkok">Thailand (Bangkok)</option>
+                    <option value="Asia/Kolkata">India</option>
+                    <option value="Asia/Seoul">South Korea (Seoul)</option>
+                    <option value="Asia/Manila">Philippines (Manila)</option>
+                </optgroup>
+                <optgroup label="Pacific">
+                    <option value="Australia/Sydney">Australia (Sydney)</option>
+                    <option value="Australia/Melbourne">Australia (Melbourne)</option>
+                    <option value="Australia/Perth">Australia (Perth)</option>
+                    <option value="Pacific/Auckland">New Zealand</option>
+                    <option value="Pacific/Fiji">Fiji</option>
+                    <option value="Pacific/Tahiti">French Polynesia</option>
+                    <option value="Pacific/Guam">Guam</option>
+                </optgroup>
+                <optgroup label="Atlantic">
+                    <option value="Atlantic/Azores">Azores</option>
+                    <option value="Atlantic/Bermuda">Bermuda</option>
+                    <option value="Atlantic/Cape_Verde">Cape Verde</option>
+                    <option value="Atlantic/Reykjavik">Iceland</option>
+                </optgroup>
+            </select>
+        </label>
+    </div>
+
+
     <div class="container">
         <div id="error-message"
             style="display:none; color:#f44336; margin:10px 0; padding:10px; background:#ffebee; border-radius:4px;">
@@ -696,7 +789,24 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Shared data store (all plots use this)
+
+
         let fullData = [];
+
+        let selectedTimezone = 'auto';
+
+        function getDisplayTimezone() {
+            return selectedTimezone === 'auto'
+                ? Intl.DateTimeFormat().resolvedOptions().timeZone
+                : selectedTimezone;
+        }
+
+        function normalizeTimestamp(ts) {
+            if (typeof ts === 'string' && !ts.includes('Z') && !ts.includes('+')) {
+                return ts + 'Z';
+            }
+            return ts;
+        }
 
         const MAX_BINS_PER_PLOT = 120;
 
@@ -866,6 +976,9 @@
                     return ts >= minDate && ts <= maxDate;
                 });
 
+                // Normalize all timestamps to UTC
+                filtered.forEach(row => row.timestamp = normalizeTimestamp(row.timestamp));
+
                 // debugLog('rows:', filtered.length);
 
                 if (filtered.length > 0) {
@@ -904,6 +1017,27 @@
             return data.filter(d => new Date(d.timestamp) >= cutoff);
         }
 
+        // Shared timezone change handler - updates all charts
+        document.addEventListener('DOMContentLoaded', function () {
+            const tzSelect = document.getElementById('timezoneSelect');
+            if (tzSelect) {
+                tzSelect.addEventListener('change', function () {
+                    selectedTimezone = this.value;
+                    const newZone = getDisplayTimezone();
+
+                    // Update all charts that exist
+                    [chart1, chart2, chart3, chart4, chart5, chart6, chart7].forEach(chart => {
+                        if (chart && chart.options && chart.options.scales && chart.options.scales.x) {
+                            chart.options.scales.x.adapters.date.zone = newZone;
+                            chart.update('none');
+                        }
+                    });
+
+                    saveSettings1();  // Save timezone preference
+                });
+            }
+        });
+
         // ============================================
         // ============================================
         // END SHARED (UNIFIED FOR ALL PLOTS) SECTION
@@ -933,7 +1067,8 @@
                 timeUnit: document.querySelector('.plot1-unit.active')?.dataset.unit || 'hours',
                 yAxisAuto: document.getElementById('yAxisAutoScale1').checked,
                 yAxisMin: document.getElementById('yAxisMin1').value,
-                yAxisMax: document.getElementById('yAxisMax1').value
+                yAxisMax: document.getElementById('yAxisMax1').value,
+                timezone: selectedTimezone
             };
             localStorage.setItem('chartSettings_plot1', JSON.stringify(settings));
         }
@@ -946,6 +1081,8 @@
                     box.classList.toggle('active', box.dataset.unit === 'hours');
                 });
                 document.querySelectorAll('.variable-toggle1').forEach(cb => cb.checked = true);
+                selectedTimezone = 'auto';
+                document.getElementById('timezoneSelect').value = 'auto';
                 return;
             }
 
@@ -961,10 +1098,14 @@
                 if (settings.yAxisMin) document.getElementById('yAxisMin1').value = settings.yAxisMin;
                 if (settings.yAxisMax) document.getElementById('yAxisMax1').value = settings.yAxisMax;
 
+                selectedTimezone = settings.timezone || 'auto';
+                document.getElementById('timezoneSelect').value = selectedTimezone;
+
                 if (settings.checkedVariables && settings.checkedVariables.length > 0) {
                     document.querySelectorAll('.variable-toggle1').forEach(cb => {
                         cb.checked = settings.checkedVariables.includes(cb.dataset.group);
                     });
+
                 } else {
                     document.querySelectorAll('.variable-toggle1').forEach(cb => cb.checked = true);
                 }
@@ -977,9 +1118,10 @@
                     box.classList.toggle('active', box.dataset.unit === 'hours');
                 });
                 document.querySelectorAll('.variable-toggle1').forEach(cb => cb.checked = true);
+                selectedTimezone = 'auto';
+                document.getElementById('timezoneSelect').value = 'auto';
             }
         }
-
         // ============================================
         // ============================================
         // PLOT 1 ONLY — Currents (A) / CHART CREATION
@@ -1170,8 +1312,12 @@
                     scales: {
                         x: {
                             type: 'time',
+                            adapters: {
+                                date: {
+                                    zone: getDisplayTimezone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -1463,7 +1609,8 @@
             if (!isNaN(max)) chart1.options.scales.y.max = max;
             chart1.update('none');
             saveSettings1();
-        });
+        }
+        );
 
         // ============================================
         // ============================================
@@ -1698,6 +1845,11 @@
                     scales: {
                         x: {
                             type: 'time',
+                            adapters: {
+                                date: {
+                                    zone: getDisplayTimezone()
+                                }
+                            },
                             time: {
                                 displayFormats: {
                                     minute: 'HH:mm',
@@ -2142,8 +2294,12 @@
                     scales: {
                         x: {
                             type: 'time',
+                            adapters: {
+                                date: {
+                                    zone: getDisplayTimezone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -2586,8 +2742,12 @@
                     scales: {
                         x: {
                             type: 'time',
+                            adapters: {
+                                date: {
+                                    zone: getDisplayTimezone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -3017,8 +3177,12 @@
                     scales: {
                         x: {
                             type: 'time',
+                            adapters: {
+                                date: {
+                                    zone: getDisplayTimezone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -3382,8 +3546,12 @@
                     scales: {
                         x: {
                             type: 'time',
+                            adapters: {
+                                date: {
+                                    zone: getDisplayTimezone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -3724,8 +3892,12 @@
                     scales: {
                         x: {
                             type: 'time',
+                            adapters: {
+                                date: {
+                                    zone: getDisplayTimezone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
