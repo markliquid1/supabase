@@ -109,8 +109,6 @@
         </div>
 
         <!-- ===== END PLOT 1 UI ===== -->
-        <br><br><br>
-
         <!-- ============================================
      PLOT 2: Battery Voltage & SOC - CHART AREA + TOOLS
      ============================================ -->
@@ -170,6 +168,20 @@
                     Max: <input type="number" id="yAxisMax2" style="width: 70px;" placeholder="auto" disabled>
                 </label>
                 <button id="applyYAxis2" style="margin-left: 5px;" disabled>Apply</button>
+            </div>
+            <div class="control-group-label">Right Y-Axis Controls (SOC)</div>
+            <div class="time-range-section">
+                <label style="font-weight: 500;">Right Y-axis:</label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
+                    <input type="checkbox" id="y1AxisAutoScale2" checked> Auto scale
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
+                    Min: <input type="number" id="y1AxisMin2" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    Max: <input type="number" id="y1AxisMax2" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <button id="applyY1Axis2" style="margin-left: 5px;" disabled>Apply</button>
             </div>
 
             <div class="control-group-label">Variables</div>
@@ -251,6 +263,22 @@
                     Max: <input type="number" id="yAxisMax3" style="width: 70px;" placeholder="auto" disabled>
                 </label>
                 <button id="applyYAxis3" style="margin-left: 5px;" disabled>Apply</button>
+            </div>
+
+            <div class="control-group-label">Right Y-Axis Controls (Pressure)</div>
+
+            <div class="time-range-section">
+                <label style="font-weight: 500;">Right Y-axis:</label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
+                    <input type="checkbox" id="y1AxisAutoScale3" checked> Auto scale
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
+                    Min: <input type="number" id="y1AxisMin3" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    Max: <input type="number" id="y1AxisMax3" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <button id="applyY1Axis3" style="margin-left: 5px;" disabled>Apply</button>
             </div>
 
             <div class="control-group-label">Variables</div>
@@ -342,6 +370,22 @@
                     Max: <input type="number" id="yAxisMax4" style="width: 70px;" placeholder="auto" disabled>
                 </label>
                 <button id="applyYAxis4" style="margin-left: 5px;" disabled>Apply</button>
+            </div>
+
+            <div class="control-group-label">Right Y-Axis Controls (Duty Cycle)</div>
+
+            <div class="time-range-section">
+                <label style="font-weight: 500;">Right Y-axis:</label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
+                    <input type="checkbox" id="y1AxisAutoScale4" checked> Auto scale
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
+                    Min: <input type="number" id="y1AxisMin4" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    Max: <input type="number" id="y1AxisMax4" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <button id="applyY1Axis4" style="margin-left: 5px;" disabled>Apply</button>
             </div>
 
             <div class="control-group-label">Variables</div>
@@ -1942,6 +1986,29 @@
             saveSettings2();
         });
 
+        document.getElementById('y1AxisAutoScale2').addEventListener('change', function () {
+            const isAuto = this.checked;
+            document.getElementById('y1AxisMin2').disabled = isAuto;
+            document.getElementById('y1AxisMax2').disabled = isAuto;
+            document.getElementById('applyY1Axis2').disabled = isAuto;
+            if (isAuto && chart2) {
+                chart2.options.scales.y1.min = undefined;
+                chart2.options.scales.y1.max = undefined;
+                chart2.update('none');
+            }
+            saveSettings2();
+        });
+
+        document.getElementById('applyY1Axis2').addEventListener('click', function () {
+            if (!chart2) return;
+            const min = parseFloat(document.getElementById('y1AxisMin2').value);
+            const max = parseFloat(document.getElementById('y1AxisMax2').value);
+            if (!isNaN(min)) chart2.options.scales.y1.min = min;
+            if (!isNaN(max)) chart2.options.scales.y1.max = max;
+            chart2.update('none');
+            saveSettings2();
+        });
+
         // ============================================
         // ============================================
         // END PLOT 2 ONLY
@@ -2387,6 +2454,29 @@
             saveSettings3();
         });
 
+        document.getElementById('y1AxisAutoScale3').addEventListener('change', function () {
+            const isAuto = this.checked;
+            document.getElementById('y1AxisMin3').disabled = isAuto;
+            document.getElementById('y1AxisMax3').disabled = isAuto;
+            document.getElementById('applyY1Axis3').disabled = isAuto;
+            if (isAuto && chart3) {
+                chart3.options.scales.y1.min = undefined;
+                chart3.options.scales.y1.max = undefined;
+                chart3.update('none');
+            }
+            saveSettings3();
+        });
+
+        document.getElementById('applyY1Axis3').addEventListener('click', function () {
+            if (!chart3) return;
+            const min = parseFloat(document.getElementById('y1AxisMin3').value);
+            const max = parseFloat(document.getElementById('y1AxisMax3').value);
+            if (!isNaN(min)) chart3.options.scales.y1.min = min;
+            if (!isNaN(max)) chart3.options.scales.y1.max = max;
+            chart3.update('none');
+            saveSettings3();
+        });
+
 
         // PLOT 4 ONLY — Engine & Alternator Duty
         let chart4 = null;
@@ -2792,6 +2882,28 @@
             saveSettings4();
         });
 
+        document.getElementById('y1AxisAutoScale4').addEventListener('change', function () {
+            const isAuto = this.checked;
+            document.getElementById('y1AxisMin4').disabled = isAuto;
+            document.getElementById('y1AxisMax4').disabled = isAuto;
+            document.getElementById('applyY1Axis4').disabled = isAuto;
+            if (isAuto && chart4) {
+                chart4.options.scales.y1.min = undefined;
+                chart4.options.scales.y1.max = undefined;
+                chart4.update('none');
+            }
+            saveSettings4();
+        });
+
+        document.getElementById('applyY1Axis4').addEventListener('click', function () {
+            if (!chart4) return;
+            const min = parseFloat(document.getElementById('y1AxisMin4').value);
+            const max = parseFloat(document.getElementById('y1AxisMax4').value);
+            if (!isNaN(min)) chart4.options.scales.y1.min = min;
+            if (!isNaN(max)) chart4.options.scales.y1.max = max;
+            chart4.update('none');
+            saveSettings4();
+        });
 
         // PLOT 5 ONLY — Speeds
         let chart5 = null;
