@@ -1108,6 +1108,7 @@
                                     rebinChart1ToVisibleRange(chart);
                                 }
                             },
+
                             pan: {
                                 enabled: true,
                                 mode: 'x',
@@ -1116,11 +1117,11 @@
                                 onPanComplete({ chart }) {
                                     rebinChart1ToVisibleRange(chart);
                                 }
+                            },
+                            limits: {
+                                x: { min: 'original', max: 'original' }
                             }
-                            // no limits.x here
                         }
-
-
                     },
                     scales: {
                         x: {
@@ -1635,6 +1636,7 @@
                                     rebinChart2ToVisibleRange(chart);
                                 }
                             },
+
                             pan: {
                                 enabled: true,
                                 mode: 'x',
@@ -1643,6 +1645,9 @@
                                 onPanComplete({ chart }) {
                                     rebinChart2ToVisibleRange(chart);
                                 }
+                            },
+                            limits: {
+                                x: { min: 'original', max: 'original' }
                             }
                         }
                     },
@@ -2385,6 +2390,7 @@
 
         // PLOT 4 ONLY — Engine & Alternator Duty
         let chart4 = null;
+        let chart4SourceData = [];
 
         function createChart4(data) {
             const canvas = document.getElementById('chart4');
@@ -2467,13 +2473,20 @@
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
-                                mode: 'x'
+                                mode: 'x',
+                                onZoomComplete({ chart }) {
+                                    rebinChart4ToVisibleRange(chart);
+                                }
                             },
+
                             pan: {
                                 enabled: true,
                                 mode: 'x',
                                 modifierKey: null,
-                                threshold: 0
+                                threshold: 0,
+                                onPanComplete({ chart }) {
+                                    rebinChart4ToVisibleRange(chart);
+                                }
                             },
                             limits: {
                                 x: { min: 'original', max: 'original' }
@@ -2524,14 +2537,97 @@
             const activeUnit = document.querySelector('.plot4-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
+            // Keep unbinned full history for zoom/pan expansion
+            chart4SourceData = fullData;
+
+            // Initial visible window respects "Show last" controls
             const filteredData = timeValue > 0
                 ? filterDataByTime(fullData, timeValue, timeUnit)
                 : fullData;
 
-            const binnedData = applyBinning(filteredData);
-
-            createChart4(binnedData);
+            const initialBinned = applyBinning(filteredData);
+            createChart4(initialBinned);
             updateActivePresetButton4();
+        }
+        function rebinChart4ToVisibleRange(chart) {
+            if (!chart4SourceData || chart4SourceData.length === 0) return;
+
+            const xScale = chart.scales.x;
+            if (!xScale) return;
+
+            const xOpts = chart.options.scales.x || {};
+
+            // Use options.min/max if set, otherwise current scale min/max
+            let min = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+            if (min == null || max == null) return;
+
+            // Clamp to data range
+            const dataMin = new Date(chart4SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
+
+            const clampedMin = Math.max(min, dataMin);
+            const clampedMax = Math.min(max, dataMax);
+            if (clampedMin >= clampedMax) return;
+
+            // Filter raw data to the current visible x-window
+            const visibleRaw = chart4SourceData.filter(row => {
+                const t = new Date(row.timestamp).getTime();
+                return t >= clampedMin && t <= clampedMax;
+            });
+
+            if (!visibleRaw.length) return;
+
+            const reBinned = applyBinning(visibleRaw);
+
+            // Update labels to the rebinned timestamps
+            const labels = reBinned.map(row => new Date(row.timestamp));
+            chart.data.labels = labels;
+
+            // Update each dataset based on its label
+            chart.data.datasets.forEach(ds => {
+                let key = null;
+
+                switch (ds.label) {
+                    case 'RPM Min':
+                        key = 'rpm_min';
+                        break;
+                    case 'RPM Max':
+                        key = 'rpm_max';
+                        break;
+                    case 'RPM':
+                        key = 'rpm_avg';
+                        break;
+
+                    case 'Alt Duty Min':
+                        key = 'duty_cycle_min';
+                        break;
+                    case 'Alt Duty Max':
+                        key = 'duty_cycle_max';
+                        break;
+                    case 'Alt Duty':
+                        key = 'duty_cycle_avg';
+                        break;
+
+                    case 'Ign Duty':
+                        key = 'ign_duty';
+                        break;
+
+                    case 'Eng Duty':
+                        key = 'eng_duty';
+                        break;
+
+                    default:
+                        key = null;
+                }
+
+                if (key) {
+                    ds.data = reBinned.map(row => row[key]);
+                }
+            });
+
+            // Re-render with new data but keep current zoom/pan window
+            chart.update('none');
         }
 
         function updateActivePresetButton4() {
@@ -2610,11 +2706,60 @@
             saveSettings4();
         });
 
+        function panChart4(direction) {
+            if (!chart4 || !chart4.scales || !chart4.scales.x) return;
+            if (!chart4SourceData || !chart4SourceData.length) return;
+
+            const xScale = chart4.scales.x;
+            const xOpts = chart4.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart4SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
+
+            if (currentMin == null || currentMax == null) {
+                currentMin = dataMin;
+                currentMax = dataMax;
+            }
+
+            const range = currentMax - currentMin;
+            if (range <= 0) return;
+
+            // Pan by 50% of current window width
+            const shift = range * 0.5;
+
+            let newMin = direction === 'left' ? currentMin - shift : currentMin + shift;
+            let newMax = direction === 'left' ? currentMax - shift : currentMax + shift;
+
+            // Clamp to data range
+            if (newMin < dataMin) {
+                newMin = dataMin;
+                newMax = dataMin + range;
+                if (newMax > dataMax) newMax = dataMax;
+            }
+            if (newMax > dataMax) {
+                newMax = dataMax;
+                newMin = dataMax - range;
+                if (newMin < dataMin) newMin = dataMin;
+            }
+
+            // Write new limits, update scales, then rebin
+            chart4.options.scales.x.min = newMin;
+            chart4.options.scales.x.max = newMax;
+
+            chart4.update('none');
+            rebinChart4ToVisibleRange(chart4);
+        }
+
         document.getElementById('panLeft4').addEventListener('click', () => {
-            if (chart4) chart4.pan({ x: -100 }, undefined, 'default');
+            panChart4('left');
         });
+
         document.getElementById('panRight4').addEventListener('click', () => {
-            if (chart4) chart4.pan({ x: 100 }, undefined, 'default');
+            panChart4('right');
         });
 
         document.querySelectorAll('.variable-toggle4').forEach(cb => {
@@ -2650,6 +2795,7 @@
 
         // PLOT 5 ONLY — Speeds
         let chart5 = null;
+        let chart5SourceData = [];
 
         function createChart5(data) {
             const canvas = document.getElementById('chart5');
@@ -2736,13 +2882,20 @@
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
-                                mode: 'x'
+                                mode: 'x',
+                                onZoomComplete({ chart }) {
+                                    rebinChart5ToVisibleRange(chart);
+                                }
                             },
+
                             pan: {
                                 enabled: true,
                                 mode: 'x',
                                 modifierKey: null,
-                                threshold: 0
+                                threshold: 0,
+                                onPanComplete({ chart }) {
+                                    rebinChart5ToVisibleRange(chart);
+                                }
                             },
                             limits: {
                                 x: { min: 'original', max: 'original' }
@@ -2785,14 +2938,101 @@
             const activeUnit = document.querySelector('.plot5-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
+            // Keep unbinned full history for zoom/pan expansion
+            chart5SourceData = fullData;
+
             const filteredData = timeValue > 0
                 ? filterDataByTime(fullData, timeValue, timeUnit)
                 : fullData;
 
-            const binnedData = applyBinning(filteredData);
-
-            createChart5(binnedData);
+            const initialBinned = applyBinning(filteredData);
+            createChart5(initialBinned);
             updateActivePresetButton5();
+        }
+        function rebinChart5ToVisibleRange(chart) {
+            if (!chart5SourceData || chart5SourceData.length === 0) return;
+            if (!chart || !chart.scales || !chart.scales.x) return;
+
+            const xScale = chart.scales.x;
+            const xOpts = chart.options.scales.x || {};
+
+            let min = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+            if (min == null || max == null) return;
+
+            const dataMin = new Date(chart5SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart5SourceData[chart5SourceData.length - 1].timestamp).getTime();
+
+            const clampedMin = Math.max(min, dataMin);
+            const clampedMax = Math.min(max, dataMax);
+            if (clampedMin >= clampedMax) return;
+
+            const visibleRaw = chart5SourceData.filter(row => {
+                const t = new Date(row.timestamp).getTime();
+                return t >= clampedMin && t <= clampedMax;
+            });
+
+            if (!visibleRaw.length) return;
+
+            const reBinned = applyBinning(visibleRaw);
+
+            const labels = reBinned.map(row => new Date(row.timestamp));
+            chart.data.labels = labels;
+
+            chart.data.datasets.forEach(ds => {
+                let key = null;
+
+                switch (ds.label) {
+                    case 'SOG Min':
+                        key = 'sog_min';
+                        break;
+                    case 'SOG Max':
+                        key = 'sog_max';
+                        break;
+                    case 'SOG':
+                        key = 'sog_avg';
+                        break;
+
+                    case 'AWS Min':
+                        key = 'aws_min';
+                        break;
+                    case 'AWS Max':
+                        key = 'aws_max';
+                        break;
+                    case 'AWS':
+                        key = 'aws_avg';
+                        break;
+
+                    case 'TWS Min':
+                        key = 'tws_min';
+                        break;
+                    case 'TWS Max':
+                        key = 'tws_max';
+                        break;
+                    case 'TWS':
+                        key = 'tws_avg';
+                        break;
+
+                    case 'VMG Min':
+                        key = 'vmg_min';
+                        break;
+                    case 'VMG Max':
+                        key = 'vmg_max';
+                        break;
+                    case 'VMG':
+                        key = 'vmg_avg';
+                        break;
+
+                    default:
+                        key = null;
+                }
+
+                if (key) {
+                    ds.data = reBinned.map(row => row[key]);
+                }
+            });
+
+            chart.update('none');
         }
 
         function updateActivePresetButton5() {
@@ -2841,9 +3081,53 @@
             });
         });
 
+        function panChart5(direction) {
+            if (!chart5 || !chart5.scales || !chart5.scales.x) return;
+            if (!chart5SourceData || !chart5SourceData.length) return;
+
+            const xScale = chart5.scales.x;
+            const xOpts = chart5.options.scales.x || {};
+
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart5SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart5SourceData[chart5SourceData.length - 1].timestamp).getTime();
+
+            if (currentMin == null || currentMax == null) {
+                currentMin = dataMin;
+                currentMax = dataMax;
+            }
+
+            const range = currentMax - currentMin;
+            if (range <= 0) return;
+
+            const shift = range * 0.5;
+
+            let newMin = direction === 'left' ? currentMin - shift : currentMin + shift;
+            let newMax = direction === 'left' ? currentMax - shift : currentMax + shift;
+
+            if (newMin < dataMin) {
+                newMin = dataMin;
+                newMax = dataMin + range;
+                if (newMax > dataMax) newMax = dataMax;
+            }
+            if (newMax > dataMax) {
+                newMax = dataMax;
+                newMin = dataMax - range;
+                if (newMin < dataMin) newMin = dataMin;
+            }
+
+            chart5.options.scales.x.min = newMin;
+            chart5.options.scales.x.max = newMax;
+
+            chart5.update('none');
+            rebinChart5ToVisibleRange(chart5);
+        }
+
         document.getElementById('applyTimeRange5').addEventListener('click', () => { updateChart5(); saveSettings5(); });
-        document.getElementById('panLeft5').addEventListener('click', () => { if (chart5) chart5.pan({ x: -100 }, undefined, 'default'); });
-        document.getElementById('panRight5').addEventListener('click', () => { if (chart5) chart5.pan({ x: 100 }, undefined, 'default'); });
+        document.getElementById('panLeft5').addEventListener('click', () => { panChart5('left'); });
+        document.getElementById('panRight5').addEventListener('click', () => { panChart5('right'); });
         document.querySelectorAll('.variable-toggle5').forEach(cb => { cb.addEventListener('change', () => { updateChart5(); saveSettings5(); }); });
 
         document.getElementById('yAxisAutoScale5').addEventListener('change', function () {
@@ -2867,6 +3151,7 @@
 
         // PLOT 6 ONLY — Angles
         let chart6 = null;
+        let chart6SourceData = [];
 
         function createChart6(data) {
             const canvas = document.getElementById('chart6');
@@ -2962,13 +3247,20 @@
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
-                                mode: 'x'
+                                mode: 'x',
+                                onZoomComplete({ chart }) {
+                                    rebinChart6ToVisibleRange(chart);
+                                }
                             },
+
                             pan: {
                                 enabled: true,
                                 mode: 'x',
                                 modifierKey: null,
-                                threshold: 0
+                                threshold: 0,
+                                onPanComplete({ chart }) {
+                                    rebinChart6ToVisibleRange(chart);
+                                }
                             },
                             limits: {
                                 x: { min: 'original', max: 'original' }
@@ -3012,14 +3304,112 @@
             const activeUnit = document.querySelector('.plot6-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
+            // Keep unbinned full history for zoom/pan expansion
+            chart6SourceData = fullData;
+
             const filteredData = timeValue > 0
                 ? filterDataByTime(fullData, timeValue, timeUnit)
                 : fullData;
 
-            const binnedData = applyBinning(filteredData);
-
-            createChart6(binnedData);
+            const initialBinned = applyBinning(filteredData);
+            createChart6(initialBinned);
             updateActivePresetButton6();
+        }
+
+        function rebinChart6ToVisibleRange(chart) {
+            if (!chart6SourceData || chart6SourceData.length === 0) return;
+            if (!chart || !chart.scales || !chart.scales.x) return;
+
+            const xScale = chart.scales.x;
+            const xOpts = chart.options.scales.x || {};
+
+            let min = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+            if (min == null || max == null) return;
+
+            const dataMin = new Date(chart6SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart6SourceData[chart6SourceData.length - 1].timestamp).getTime();
+
+            const clampedMin = Math.max(min, dataMin);
+            const clampedMax = Math.min(max, dataMax);
+            if (clampedMin >= clampedMax) return;
+
+            const visibleRaw = chart6SourceData.filter(row => {
+                const t = new Date(row.timestamp).getTime();
+                return t >= clampedMin && t <= clampedMax;
+            });
+
+            if (!visibleRaw.length) return;
+
+            const reBinned = applyBinning(visibleRaw);
+
+            const labels = reBinned.map(row => new Date(row.timestamp));
+            chart.data.labels = labels;
+
+            chart.data.datasets.forEach(ds => {
+                let key = null;
+
+                switch (ds.label) {
+                    case 'COG Min':
+                        key = 'cog_min';
+                        break;
+                    case 'COG Max':
+                        key = 'cog_max';
+                        break;
+                    case 'COG':
+                        key = 'cog_avg';
+                        break;
+
+                    case 'Heading Min':
+                        key = 'heading_min';
+                        break;
+                    case 'Heading Max':
+                        key = 'heading_max';
+                        break;
+                    case 'Heading':
+                        key = 'heading_avg';
+                        break;
+
+                    case 'AWA Min':
+                        key = 'awa_min';
+                        break;
+                    case 'AWA Max':
+                        key = 'awa_max';
+                        break;
+                    case 'AWA':
+                        key = 'awa_avg';
+                        break;
+
+                    case 'TWA Min':
+                        key = 'twa_min';
+                        break;
+                    case 'TWA Max':
+                        key = 'twa_max';
+                        break;
+                    case 'TWA':
+                        key = 'twa_avg';
+                        break;
+
+                    case 'Leeway Min':
+                        key = 'leeway_min';
+                        break;
+                    case 'Leeway Max':
+                        key = 'leeway_max';
+                        break;
+                    case 'Leeway':
+                        key = 'leeway_avg';
+                        break;
+
+                    default:
+                        key = null;
+                }
+
+                if (key) {
+                    ds.data = reBinned.map(row => row[key]);
+                }
+            });
+
+            chart.update('none');
         }
 
         function updateActivePresetButton6() {
@@ -3069,8 +3459,52 @@
         });
 
         document.getElementById('applyTimeRange6').addEventListener('click', () => { updateChart6(); saveSettings6(); });
-        document.getElementById('panLeft6').addEventListener('click', () => { if (chart6) chart6.pan({ x: -100 }, undefined, 'default'); });
-        document.getElementById('panRight6').addEventListener('click', () => { if (chart6) chart6.pan({ x: 100 }, undefined, 'default'); });
+        function panChart6(direction) {
+            if (!chart6 || !chart6.scales || !chart6.scales.x) return;
+            if (!chart6SourceData || !chart6SourceData.length) return;
+
+            const xScale = chart6.scales.x;
+            const xOpts = chart6.options.scales.x || {};
+
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart6SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart6SourceData[chart6SourceData.length - 1].timestamp).getTime();
+
+            if (currentMin == null || currentMax == null) {
+                currentMin = dataMin;
+                currentMax = dataMax;
+            }
+
+            const range = currentMax - currentMin;
+            if (range <= 0) return;
+
+            const shift = range * 0.5;
+
+            let newMin = direction === 'left' ? currentMin - shift : currentMin + shift;
+            let newMax = direction === 'left' ? currentMax - shift : currentMax + shift;
+
+            if (newMin < dataMin) {
+                newMin = dataMin;
+                newMax = dataMin + range;
+                if (newMax > dataMax) newMax = dataMax;
+            }
+            if (newMax > dataMax) {
+                newMax = dataMax;
+                newMin = dataMax - range;
+                if (newMin < dataMin) newMin = dataMin;
+            }
+
+            chart6.options.scales.x.min = newMin;
+            chart6.options.scales.x.max = newMax;
+
+            chart6.update('none');
+            rebinChart6ToVisibleRange(chart6);
+        }
+
+        document.getElementById('panLeft6').addEventListener('click', () => { panChart6('left'); });
+        document.getElementById('panRight6').addEventListener('click', () => { panChart6('right'); });
         document.querySelectorAll('.variable-toggle6').forEach(cb => { cb.addEventListener('change', () => { updateChart6(); saveSettings6(); }); });
 
         document.getElementById('yAxisAutoScale6').addEventListener('change', function () {
@@ -3094,6 +3528,8 @@
 
         // PLOT 7 ONLY — Alternator Zero Offset
         let chart7 = null;
+        let chart7SourceData = [];
+
 
         function createChart7(data) {
             const canvas = document.getElementById('chart7');
@@ -3153,13 +3589,20 @@
                             zoom: {
                                 wheel: { enabled: true },
                                 pinch: { enabled: true },
-                                mode: 'x'
+                                mode: 'x',
+                                onZoomComplete({ chart }) {
+                                    rebinChart7ToVisibleRange(chart);
+                                }
                             },
+
                             pan: {
                                 enabled: true,
                                 mode: 'x',
                                 modifierKey: null,
-                                threshold: 0
+                                threshold: 0,
+                                onPanComplete({ chart }) {
+                                    rebinChart7ToVisibleRange(chart);
+                                }
                             },
                             limits: {
                                 x: { min: 'original', max: 'original' }
@@ -3203,14 +3646,71 @@
             const activeUnit = document.querySelector('.plot7-unit.active');
             const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
+            // Keep unbinned full history for zoom/pan expansion
+            chart7SourceData = fullData;
+
             const filteredData = timeValue > 0
                 ? filterDataByTime(fullData, timeValue, timeUnit)
                 : fullData;
 
-            const binnedData = applyBinning(filteredData);
-
-            createChart7(binnedData);
+            const initialBinned = applyBinning(filteredData);
+            createChart7(initialBinned);
             updateActivePresetButton7();
+        }
+        function rebinChart7ToVisibleRange(chart) {
+            if (!chart7SourceData || chart7SourceData.length === 0) return;
+            if (!chart || !chart.scales || !chart.scales.x) return;
+
+            const xScale = chart.scales.x;
+            const xOpts = chart.options.scales.x || {};
+
+            let min = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+            if (min == null || max == null) return;
+
+            const dataMin = new Date(chart7SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart7SourceData[chart7SourceData.length - 1].timestamp).getTime();
+
+            const clampedMin = Math.max(min, dataMin);
+            const clampedMax = Math.min(max, dataMax);
+            if (clampedMin >= clampedMax) return;
+
+            const visibleRaw = chart7SourceData.filter(row => {
+                const t = new Date(row.timestamp).getTime();
+                return t >= clampedMin && t <= clampedMax;
+            });
+
+            if (!visibleRaw.length) return;
+
+            const reBinned = applyBinning(visibleRaw);
+
+            const labels = reBinned.map(row => new Date(row.timestamp));
+            chart.data.labels = labels;
+
+            chart.data.datasets.forEach(ds => {
+                let key = null;
+
+                switch (ds.label) {
+                    case 'Alt Zero Min':
+                        key = 'alt_zero_min';
+                        break;
+                    case 'Alt Zero Max':
+                        key = 'alt_zero_max';
+                        break;
+                    case 'Alt Zero':
+                        key = 'alt_zero_avg';
+                        break;
+
+                    default:
+                        key = null;
+                }
+
+                if (key) {
+                    ds.data = reBinned.map(row => row[key]);
+                }
+            });
+
+            chart.update('none');
         }
 
         function updateActivePresetButton7() {
@@ -3259,9 +3759,53 @@
             });
         });
 
+        function panChart7(direction) {
+            if (!chart7 || !chart7.scales || !chart7.scales.x) return;
+            if (!chart7SourceData || !chart7SourceData.length) return;
+
+            const xScale = chart7.scales.x;
+            const xOpts = chart7.options.scales.x || {};
+
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart7SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart7SourceData[chart7SourceData.length - 1].timestamp).getTime();
+
+            if (currentMin == null || currentMax == null) {
+                currentMin = dataMin;
+                currentMax = dataMax;
+            }
+
+            const range = currentMax - currentMin;
+            if (range <= 0) return;
+
+            const shift = range * 0.5;
+
+            let newMin = direction === 'left' ? currentMin - shift : currentMin + shift;
+            let newMax = direction === 'left' ? currentMax - shift : currentMax + shift;
+
+            if (newMin < dataMin) {
+                newMin = dataMin;
+                newMax = dataMin + range;
+                if (newMax > dataMax) newMax = dataMax;
+            }
+            if (newMax > dataMax) {
+                newMax = dataMax;
+                newMin = dataMax - range;
+                if (newMin < dataMin) newMin = dataMin;
+            }
+
+            chart7.options.scales.x.min = newMin;
+            chart7.options.scales.x.max = newMax;
+
+            chart7.update('none');
+            rebinChart7ToVisibleRange(chart7);
+        }
+
         document.getElementById('applyTimeRange7').addEventListener('click', () => { updateChart7(); saveSettings7(); });
-        document.getElementById('panLeft7').addEventListener('click', () => { if (chart7) chart7.pan({ x: -100 }, undefined, 'default'); });
-        document.getElementById('panRight7').addEventListener('click', () => { if (chart7) chart7.pan({ x: 100 }, undefined, 'default'); });
+        document.getElementById('panLeft7').addEventListener('click', () => { panChart7('left'); });
+        document.getElementById('panRight7').addEventListener('click', () => { panChart7('right'); });
         document.querySelectorAll('.variable-toggle7').forEach(cb => { cb.addEventListener('change', () => { updateChart7(); saveSettings7(); }); });
 
         document.getElementById('yAxisAutoScale7').addEventListener('change', function () {
