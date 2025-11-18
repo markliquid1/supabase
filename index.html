@@ -1021,17 +1021,12 @@
             if (tzSelect) {
                 tzSelect.addEventListener('change', function () {
                     selectedTimezone = this.value;
-                    const newZone = getDisplayTimezone();
-
-                    // Update all charts that exist
                     [chart1, chart2, chart3, chart4, chart5, chart6, chart7].forEach(chart => {
-                        if (chart && chart.options && chart.options.scales && chart.options.scales.x) {
-                            chart.options.scales.x.adapters.date.zone = newZone;
+                        if (chart) {
                             chart.update('none');
                         }
                     });
-
-                    saveSettings1();  // Save timezone preference
+                    saveSettings1();
                 });
             }
         });
@@ -1310,24 +1305,19 @@
                     scales: {
                         x: {
                             type: 'time',
-                            adapters: {
-                                date: {
-                                    zone: getDisplayTimezone()
-                                }
-                            },
                             time: {
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
+                                parser: 'iso'
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function (value) {
+                                    const dt = luxon.DateTime.fromMillis(value, {
+                                        zone: getDisplayTimezone()
+                                    });
+                                    return dt.toFormat('MMM d, HH:mm');
+                                }
                             }
                         },
 
@@ -1843,24 +1833,19 @@
                     scales: {
                         x: {
                             type: 'time',
-                            adapters: {
-                                date: {
-                                    zone: getDisplayTimezone()
-                                }
-                            },
                             time: {
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
+                                parser: 'iso'
                             },
                             ticks: {
                                 maxTicksLimit: 8,
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function (value) {
+                                    const dt = luxon.DateTime.fromMillis(value, {
+                                        zone: getDisplayTimezone()
+                                    });
+                                    return dt.toFormat('MMM d, HH:mm');
+                                }
                             }
                         },
                         y: {
@@ -2292,24 +2277,19 @@
                     scales: {
                         x: {
                             type: 'time',
-                            adapters: {
-                                date: {
-                                    zone: getDisplayTimezone()
-                                }
-                            },
                             time: {
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
+                                parser: 'iso'
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function (value) {
+                                    const dt = luxon.DateTime.fromMillis(value, {
+                                        zone: getDisplayTimezone()
+                                    });
+                                    return dt.toFormat('MMM d, HH:mm');
+                                }
                             }
                         },
 
@@ -2740,24 +2720,19 @@
                     scales: {
                         x: {
                             type: 'time',
-                            adapters: {
-                                date: {
-                                    zone: getDisplayTimezone()
-                                }
-                            },
                             time: {
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
+                                parser: 'iso'
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function (value) {
+                                    const dt = luxon.DateTime.fromMillis(value, {
+                                        zone: getDisplayTimezone()
+                                    });
+                                    return dt.toFormat('MMM d, HH:mm');
+                                }
                             }
                         },
 
@@ -3175,24 +3150,19 @@
                     scales: {
                         x: {
                             type: 'time',
-                            adapters: {
-                                date: {
-                                    zone: getDisplayTimezone()
-                                }
-                            },
                             time: {
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
+                                parser: 'iso'
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function (value) {
+                                    const dt = luxon.DateTime.fromMillis(value, {
+                                        zone: getDisplayTimezone()
+                                    });
+                                    return dt.toFormat('MMM d, HH:mm');
+                                }
                             }
                         },
 
@@ -3544,24 +3514,19 @@
                     scales: {
                         x: {
                             type: 'time',
-                            adapters: {
-                                date: {
-                                    zone: getDisplayTimezone()
-                                }
-                            },
                             time: {
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
+                                parser: 'iso'
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function (value) {
+                                    const dt = luxon.DateTime.fromMillis(value, {
+                                        zone: getDisplayTimezone()
+                                    });
+                                    return dt.toFormat('MMM d, HH:mm');
+                                }
                             }
                         },
 
@@ -3890,24 +3855,19 @@
                     scales: {
                         x: {
                             type: 'time',
-                            adapters: {
-                                date: {
-                                    zone: getDisplayTimezone()
-                                }
-                            },
                             time: {
-                                displayFormats: {
-                                    minute: 'HH:mm',
-                                    hour: 'MMM d, HH:mm',
-                                    day: 'MMM d',
-                                    week: 'MMM d',
-                                    month: 'MMM yyyy'
-                                }
+                                parser: 'iso'
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function (value) {
+                                    const dt = luxon.DateTime.fromMillis(value, {
+                                        zone: getDisplayTimezone()
+                                    });
+                                    return dt.toFormat('MMM d, HH:mm');
+                                }
                             }
                         },
 
