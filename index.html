@@ -8,104 +8,109 @@
 
     <link rel="stylesheet" href="styles2.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+    <!-- Chart.js + Luxon + adapter + zoom (UMD builds so the date adapter actually registers) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.umd.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 
 <body>
 
 
-<div style="margin: 10px 0; padding: 10px; border-top: 1px solid #ddd;">
-    <label style="font-weight: bold;">Timezone: 
-        <select id="timezoneSelect" style="padding: 5px; margin-left: 10px;">
-            <option value="auto">Auto (Device Local)</option>
-            <optgroup label="UTC">
-                <option value="UTC">UTC</option>
-            </optgroup>
-            <optgroup label="North America">
-                <option value="America/New_York">Eastern (New York)</option>
-                <option value="America/Chicago">Central (Chicago)</option>
-                <option value="America/Denver">Mountain (Denver)</option>
-                <option value="America/Los_Angeles">Pacific (Los Angeles)</option>
-                <option value="America/Anchorage">Alaska</option>
-                <option value="Pacific/Honolulu">Hawaii</option>
-                <option value="America/Phoenix">Arizona (no DST)</option>
-                <option value="America/Toronto">Toronto</option>
-                <option value="America/Vancouver">Vancouver</option>
-                <option value="America/Halifax">Atlantic (Halifax)</option>
-                <option value="America/St_Johns">Newfoundland</option>
-            </optgroup>
-            <optgroup label="Caribbean & Central America">
-                <option value="America/Puerto_Rico">Puerto Rico</option>
-                <option value="America/Havana">Cuba</option>
-                <option value="America/Jamaica">Jamaica</option>
-                <option value="America/Panama">Panama</option>
-                <option value="America/Mexico_City">Mexico City</option>
-                <option value="America/Cancun">Cancun</option>
-                <option value="America/Costa_Rica">Costa Rica</option>
-            </optgroup>
-            <optgroup label="South America">
-                <option value="America/Sao_Paulo">Brazil (São Paulo)</option>
-                <option value="America/Argentina/Buenos_Aires">Argentina</option>
-                <option value="America/Santiago">Chile</option>
-                <option value="America/Bogota">Colombia</option>
-                <option value="America/Lima">Peru</option>
-            </optgroup>
-            <optgroup label="Europe">
-                <option value="Europe/London">UK (London)</option>
-                <option value="Europe/Dublin">Ireland</option>
-                <option value="Europe/Paris">France/Spain (Paris)</option>
-                <option value="Europe/Berlin">Germany (Berlin)</option>
-                <option value="Europe/Rome">Italy (Rome)</option>
-                <option value="Europe/Athens">Greece (Athens)</option>
-                <option value="Europe/Istanbul">Turkey (Istanbul)</option>
-                <option value="Europe/Moscow">Russia (Moscow)</option>
-                <option value="Europe/Lisbon">Portugal (Lisbon)</option>
-                <option value="Europe/Amsterdam">Netherlands</option>
-                <option value="Europe/Stockholm">Sweden</option>
-                <option value="Europe/Oslo">Norway</option>
-            </optgroup>
-            <optgroup label="Africa">
-                <option value="Africa/Cairo">Egypt (Cairo)</option>
-                <option value="Africa/Johannesburg">South Africa</option>
-                <option value="Africa/Nairobi">Kenya (Nairobi)</option>
-                <option value="Africa/Lagos">Nigeria (Lagos)</option>
-            </optgroup>
-            <optgroup label="Middle East">
-                <option value="Asia/Dubai">UAE (Dubai)</option>
-                <option value="Asia/Jerusalem">Israel</option>
-                <option value="Asia/Riyadh">Saudi Arabia</option>
-            </optgroup>
-            <optgroup label="Asia">
-                <option value="Asia/Tokyo">Japan (Tokyo)</option>
-                <option value="Asia/Shanghai">China (Shanghai)</option>
-                <option value="Asia/Hong_Kong">Hong Kong</option>
-                <option value="Asia/Singapore">Singapore</option>
-                <option value="Asia/Bangkok">Thailand (Bangkok)</option>
-                <option value="Asia/Kolkata">India</option>
-                <option value="Asia/Seoul">South Korea (Seoul)</option>
-                <option value="Asia/Manila">Philippines (Manila)</option>
-            </optgroup>
-            <optgroup label="Pacific">
-                <option value="Australia/Sydney">Australia (Sydney)</option>
-                <option value="Australia/Melbourne">Australia (Melbourne)</option>
-                <option value="Australia/Perth">Australia (Perth)</option>
-                <option value="Pacific/Auckland">New Zealand</option>
-                <option value="Pacific/Fiji">Fiji</option>
-                <option value="Pacific/Tahiti">French Polynesia</option>
-                <option value="Pacific/Guam">Guam</option>
-            </optgroup>
-            <optgroup label="Atlantic">
-                <option value="Atlantic/Azores">Azores</option>
-                <option value="Atlantic/Bermuda">Bermuda</option>
-                <option value="Atlantic/Cape_Verde">Cape Verde</option>
-                <option value="Atlantic/Reykjavik">Iceland</option>
-            </optgroup>
-        </select>
-    </label>
-</div>
+    <div style="margin: 10px 0; padding: 10px; border-top: 1px solid #ddd;">
+        <label style="font-weight: bold;">Timezone:
+            <select id="timezoneSelect" style="padding: 5px; margin-left: 10px;">
+                <option value="auto">Auto (Device Local)</option>
+                <optgroup label="UTC">
+                    <option value="UTC">UTC</option>
+                </optgroup>
+                <optgroup label="North America">
+                    <option value="America/New_York">Eastern (New York)</option>
+                    <option value="America/Chicago">Central (Chicago)</option>
+                    <option value="America/Denver">Mountain (Denver)</option>
+                    <option value="America/Los_Angeles">Pacific (Los Angeles)</option>
+                    <option value="America/Anchorage">Alaska</option>
+                    <option value="Pacific/Honolulu">Hawaii</option>
+                    <option value="America/Phoenix">Arizona (no DST)</option>
+                    <option value="America/Toronto">Toronto</option>
+                    <option value="America/Vancouver">Vancouver</option>
+                    <option value="America/Halifax">Atlantic (Halifax)</option>
+                    <option value="America/St_Johns">Newfoundland</option>
+                </optgroup>
+                <optgroup label="Caribbean & Central America">
+                    <option value="America/Puerto_Rico">Puerto Rico</option>
+                    <option value="America/Havana">Cuba</option>
+                    <option value="America/Jamaica">Jamaica</option>
+                    <option value="America/Panama">Panama</option>
+                    <option value="America/Mexico_City">Mexico City</option>
+                    <option value="America/Cancun">Cancun</option>
+                    <option value="America/Costa_Rica">Costa Rica</option>
+                </optgroup>
+                <optgroup label="South America">
+                    <option value="America/Sao_Paulo">Brazil (São Paulo)</option>
+                    <option value="America/Argentina/Buenos_Aires">Argentina</option>
+                    <option value="America/Santiago">Chile</option>
+                    <option value="America/Bogota">Colombia</option>
+                    <option value="America/Lima">Peru</option>
+                </optgroup>
+                <optgroup label="Europe">
+                    <option value="Europe/London">UK (London)</option>
+                    <option value="Europe/Dublin">Ireland</option>
+                    <option value="Europe/Paris">France/Spain (Paris)</option>
+                    <option value="Europe/Berlin">Germany (Berlin)</option>
+                    <option value="Europe/Rome">Italy (Rome)</option>
+                    <option value="Europe/Athens">Greece (Athens)</option>
+                    <option value="Europe/Istanbul">Turkey (Istanbul)</option>
+                    <option value="Europe/Moscow">Russia (Moscow)</option>
+                    <option value="Europe/Lisbon">Portugal (Lisbon)</option>
+                    <option value="Europe/Amsterdam">Netherlands</option>
+                    <option value="Europe/Stockholm">Sweden</option>
+                    <option value="Europe/Oslo">Norway</option>
+                </optgroup>
+                <optgroup label="Africa">
+                    <option value="Africa/Cairo">Egypt (Cairo)</option>
+                    <option value="Africa/Johannesburg">South Africa</option>
+                    <option value="Africa/Nairobi">Kenya (Nairobi)</option>
+                    <option value="Africa/Lagos">Nigeria (Lagos)</option>
+                </optgroup>
+                <optgroup label="Middle East">
+                    <option value="Asia/Dubai">UAE (Dubai)</option>
+                    <option value="Asia/Jerusalem">Israel</option>
+                    <option value="Asia/Riyadh">Saudi Arabia</option>
+                </optgroup>
+                <optgroup label="Asia">
+                    <option value="Asia/Tokyo">Japan (Tokyo)</option>
+                    <option value="Asia/Shanghai">China (Shanghai)</option>
+                    <option value="Asia/Hong_Kong">Hong Kong</option>
+                    <option value="Asia/Singapore">Singapore</option>
+                    <option value="Asia/Bangkok">Thailand (Bangkok)</option>
+                    <option value="Asia/Kolkata">India</option>
+                    <option value="Asia/Seoul">South Korea (Seoul)</option>
+                    <option value="Asia/Manila">Philippines (Manila)</option>
+                </optgroup>
+                <optgroup label="Pacific">
+                    <option value="Australia/Sydney">Australia (Sydney)</option>
+                    <option value="Australia/Melbourne">Australia (Melbourne)</option>
+                    <option value="Australia/Perth">Australia (Perth)</option>
+                    <option value="Pacific/Auckland">New Zealand</option>
+                    <option value="Pacific/Fiji">Fiji</option>
+                    <option value="Pacific/Tahiti">French Polynesia</option>
+                    <option value="Pacific/Guam">Guam</option>
+                </optgroup>
+                <optgroup label="Atlantic">
+                    <option value="Atlantic/Azores">Azores</option>
+                    <option value="Atlantic/Bermuda">Bermuda</option>
+                    <option value="Atlantic/Cape_Verde">Cape Verde</option>
+                    <option value="Atlantic/Reykjavik">Iceland</option>
+                </optgroup>
+            </select>
+        </label>
+    </div>
 
 
     <div class="container">
@@ -788,6 +793,45 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // ===== Timezone handling (shared across all plots) =====
+        const { DateTime, Settings } = luxon;
+
+        // Device/browser zone
+        const browserTimeZone =
+            (Intl.DateTimeFormat().resolvedOptions().timeZone) || 'UTC';
+
+        // User-selected value from dropdown ("auto" or an explicit IANA zone)
+        let selectedTimeZone =
+            localStorage.getItem('history_timezone') || 'auto';
+
+        function getEffectiveTimeZone() {
+            return selectedTimeZone === 'auto' ? browserTimeZone : selectedTimeZone;
+        }
+
+        // Apply zone to Luxon (used by chartjs-adapter-luxon)
+        function applyGlobalTimeZone() {
+            const zone = getEffectiveTimeZone();
+            // This affects how Luxon formats times, which the adapter uses
+            Settings.defaultZone = zone;
+        }
+
+        // Format a tooltip title using the active zone
+        function formatTooltipTimestamp(parsedX) {
+            if (parsedX == null) return '';
+
+            // parsedX can be a number (ms) or Date; handle both
+            const millis = (typeof parsedX === 'number')
+                ? parsedX
+                : new Date(parsedX).getTime();
+
+            const dt = DateTime.fromMillis(millis).setZone(getEffectiveTimeZone());
+            // Adjust format as you like
+            return dt.toFormat('yyyy-LL-dd HH:mm');
+        }
+
+        applyGlobalTimeZone();
+
+
         // Shared data store (all plots use this)
         let fullData = [];
 
@@ -1212,11 +1256,13 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: function (items) {
-                                    return new Date(items[0].parsed.x).toLocaleString();
+                                title: (items) => {
+                                    if (!items || !items.length) return '';
+                                    return formatTooltipTimestamp(items[0].parsed.x);
                                 }
                             }
                         },
+
                         legend: {
                             position: 'top',
                             labels: {
@@ -1263,8 +1309,13 @@
                     scales: {
                         x: {
                             type: 'time',
+                            // Tell the Luxon adapter what zone to use at creation time
+                            adapters: {
+                                date: {
+                                    zone: getEffectiveTimeZone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -1274,11 +1325,12 @@
                                 }
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
                                 major: { enabled: true }
                             }
                         },
+
 
                         y: {
                             type: 'linear',
@@ -1744,10 +1796,14 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: (items) => {
+                                    if (!items || !items.length) return '';
+                                    return formatTooltipTimestamp(items[0].parsed.x);
+                                }
                             }
                         },
                         legend: {
+
                             position: 'top',
                             labels: {
                                 usePointStyle: true,
@@ -1791,6 +1847,12 @@
                     scales: {
                         x: {
                             type: 'time',
+                            // Tell the Luxon adapter what zone to use at creation time
+                            adapters: {
+                                date: {
+                                    zone: getEffectiveTimeZone()
+                                }
+                            },
                             time: {
                                 displayFormats: {
                                     minute: 'HH:mm',
@@ -1806,6 +1868,7 @@
                                 major: { enabled: true }
                             }
                         },
+
                         y: {
                             type: 'linear',
                             position: 'left',
@@ -2189,10 +2252,14 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: (items) => {
+                                    if (!items || !items.length) return '';
+                                    return formatTooltipTimestamp(items[0].parsed.x);
+                                }
                             }
                         },
                         legend: {
+
                             position: 'top',
                             labels: {
                                 usePointStyle: true,
@@ -2235,8 +2302,13 @@
                     scales: {
                         x: {
                             type: 'time',
+                            // Tell the Luxon adapter what zone to use at creation time
+                            adapters: {
+                                date: {
+                                    zone: getEffectiveTimeZone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -2246,11 +2318,12 @@
                                 }
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
                                 major: { enabled: true }
                             }
                         },
+
 
                         y: {
                             type: 'linear',
@@ -2633,10 +2706,14 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: (items) => {
+                                    if (!items || !items.length) return '';
+                                    return formatTooltipTimestamp(items[0].parsed.x);
+                                }
                             }
                         },
                         legend: {
+
                             position: 'top',
                             labels: {
                                 usePointStyle: true,
@@ -2679,8 +2756,13 @@
                     scales: {
                         x: {
                             type: 'time',
+                            // Tell the Luxon adapter what zone to use at creation time
+                            adapters: {
+                                date: {
+                                    zone: getEffectiveTimeZone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -2690,11 +2772,12 @@
                                 }
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
                                 major: { enabled: true }
                             }
                         },
+
 
                         y: {
                             type: 'linear',
@@ -3064,10 +3147,14 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: (items) => {
+                                    if (!items || !items.length) return '';
+                                    return formatTooltipTimestamp(items[0].parsed.x);
+                                }
                             }
                         },
                         legend: {
+
                             position: 'top',
                             labels: {
                                 usePointStyle: true,
@@ -3110,8 +3197,13 @@
                     scales: {
                         x: {
                             type: 'time',
+                            // Tell the Luxon adapter what zone to use at creation time
+                            adapters: {
+                                date: {
+                                    zone: getEffectiveTimeZone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -3121,11 +3213,12 @@
                                 }
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
                                 major: { enabled: true }
                             }
                         },
+
 
                         y: {
                             type: 'linear',
@@ -3429,10 +3522,14 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: (items) => {
+                                    if (!items || !items.length) return '';
+                                    return formatTooltipTimestamp(items[0].parsed.x);
+                                }
                             }
                         },
                         legend: {
+
                             position: 'top',
                             labels: {
                                 usePointStyle: true,
@@ -3475,8 +3572,13 @@
                     scales: {
                         x: {
                             type: 'time',
+                            // Tell the Luxon adapter what zone to use at creation time
+                            adapters: {
+                                date: {
+                                    zone: getEffectiveTimeZone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -3486,11 +3588,12 @@
                                 }
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
                                 major: { enabled: true }
                             }
                         },
+
 
                         y: {
                             type: 'linear',
@@ -3771,10 +3874,14 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: (items) => {
+                                    if (!items || !items.length) return '';
+                                    return formatTooltipTimestamp(items[0].parsed.x);
+                                }
                             }
                         },
                         legend: {
+
                             position: 'top',
                             labels: {
                                 usePointStyle: true,
@@ -3817,8 +3924,13 @@
                     scales: {
                         x: {
                             type: 'time',
+                            // Tell the Luxon adapter what zone to use at creation time
+                            adapters: {
+                                date: {
+                                    zone: getEffectiveTimeZone()
+                                }
+                            },
                             time: {
-                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -3828,11 +3940,12 @@
                                 }
                             },
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
                                 major: { enabled: true }
                             }
                         },
+
 
                         y: {
                             type: 'linear',
@@ -4035,8 +4148,41 @@
         // SHARED (UNIFIED FOR ALL PLOTS) — MAIN INITIALIZATION
         // ============================================
         // ============================================
+        // ===== Timezone dropdown wiring =====
+        function initTimezoneControl() {
+            const tzSelect = document.getElementById('timezoneSelect');
+            if (!tzSelect) return;
+
+            // Restore previous choice if any
+            if (selectedTimeZone) {
+                tzSelect.value = selectedTimeZone;
+            }
+
+            tzSelect.addEventListener('change', () => {
+                selectedTimeZone = tzSelect.value || 'auto';
+                localStorage.setItem('history_timezone', selectedTimeZone);
+                applyGlobalTimeZone();
+                refreshAllChartsForTimezone();
+            });
+        }
+
+        // Rebuild all charts so axes + tooltips pick up the new zone
+        function refreshAllChartsForTimezone() {
+            if (!fullData || !fullData.length) return;
+
+            // These functions already exist and rebuild each chart completely
+            updateChart1();
+            updateChart2();
+            updateChart3();
+            updateChart4();
+            updateChart5();
+            updateChart6();
+            updateChart7();
+        }
 
         async function init() {
+            initTimezoneControl();
+
             const token = getTokenFromUrl();
 
             if (!token) {
