@@ -1256,9 +1256,8 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: (items) => {
-                                    if (!items || !items.length) return '';
-                                    return formatTooltipTimestamp(items[0].parsed.x);
+                                title: function (items) {
+                                    return new Date(items[0].parsed.x).toLocaleString();
                                 }
                             }
                         },
