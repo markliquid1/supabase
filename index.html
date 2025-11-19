@@ -1347,7 +1347,7 @@
                                 }
                             },
                             limits: {
-                                x: { min: false, max: false }  // Allow unlimited zoom/pan
+                                x: { min: 'original', max: 'original' }
                             }
                         }
                     },
@@ -1397,23 +1397,33 @@
 
         // Apply time window & rebuild chart
         function updateChart1() {
-            const timeValue = parseInt(document.getElementById('timeValue1').value);
-            const activeUnit = document.querySelector('.plot1-unit.active');
-            const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
+    const timeValue = parseInt(document.getElementById('timeValue1').value);
+    const activeUnit = document.querySelector('.plot1-unit.active');
+    const timeUnit = activeUnit ? activeUnit.dataset.unit : 'hours';
 
-            // Keep unbinned full history for zoom/pan expansion
-            chart1SourceData = fullData;
+    // Keep unbinned full history for zoom/pan expansion
+    chart1SourceData = fullData;
 
-            // Initial visible window respects "Show last" controls
-            const filteredData = timeValue > 0
-                ? filterDataByTime(fullData, timeValue, timeUnit)
-                : fullData;
-
-            const initialBinned = applyBinning(filteredData);
-            createChart1(initialBinned);
-            updateActivePresetButton1();
+    // Create chart with ALL data (binned)
+    const allDataBinned = applyBinning(fullData);
+    createChart1(allDataBinned);
+    
+    // AFTER chart creation, set the view window if time filter is active
+    if (chart1 && timeValue > 0 && fullData.length > 0) {
+        const filteredData = filterDataByTime(fullData, timeValue, timeUnit);
+        if (filteredData.length > 0) {
+            const minTime = new Date(filteredData[0].timestamp).getTime();
+            const maxTime = new Date(filteredData[filteredData.length - 1].timestamp).getTime();
+            
+            // Use zoomScale to set the view programmatically
+            chart1.zoomScale('x', {min: minTime, max: maxTime}, 'none');
+            
+            // This triggers rebinChart1ToVisibleRange automatically
         }
-
+    }
+    
+    updateActivePresetButton1();
+}
         function rebinChart1ToVisibleRange(chart) {
             if (!chart1SourceData || chart1SourceData.length === 0) return;
 
