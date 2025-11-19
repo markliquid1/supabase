@@ -1366,13 +1366,11 @@
                             },
 
                             ticks: {
-                                maxTicksLimit: 8,
+                                maxTicksLimit: 8,      // target ~7–8 labels
                                 autoSkip: true,
-                                major: { enabled: true },
-                                callback: function (value) {
-                                    return formatAxisTimestamp(value);
-                                }
+                                major: { enabled: true }
                             }
+
 
 
                         },
@@ -1413,16 +1411,6 @@
 
             const initialBinned = applyBinning(filteredData);
             createChart1(initialBinned);
-
-            // Set x-axis limits based on filtered data
-            if (chart1 && filteredData.length > 0) {
-                const minTime = new Date(filteredData[0].timestamp).getTime();
-                const maxTime = new Date(filteredData[filteredData.length - 1].timestamp).getTime();
-                chart1.options.scales.x.min = minTime;
-                chart1.options.scales.x.max = maxTime;
-                chart1.update('none');
-            }
-
             updateActivePresetButton1();
         }
 
