@@ -834,15 +834,13 @@
                 
                 // Rebuild all charts with new timezone
                 if (fullData && fullData.length > 0) {
-                    // For now, just update chart1
                     updateChart1();
-                    // TODO: Update other charts
-                    // updateChart2();
-                    // updateChart3();
-                    // updateChart4();
-                    // updateChart5();
-                    // updateChart6();
-                    // updateChart7();
+                    updateChart2();
+                    updateChart3();
+                    updateChart4();
+                    updateChart5();
+                    updateChart6();
+                    updateChart7();
                 }
             });
         });
@@ -1890,7 +1888,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: 1,
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'Batt Volt Max',
@@ -1901,7 +1900,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: '-1',
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'Batt Volt',
@@ -1912,7 +1912,8 @@
                         pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
-                        order: 1
+                        order: 1,
+                        spanGaps: false
                     }
                 );
             }
@@ -1929,7 +1930,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: 1,
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'SOC Max',
@@ -1940,7 +1942,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: '-1',
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'SOC',
@@ -1951,7 +1954,8 @@
                         pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
-                        order: 1
+                        order: 1,
+                        spanGaps: false
                     }
                 );
             }
@@ -1970,7 +1974,9 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: function (items) {
+                                    return formatDateStringForTooltip(new Date(items[0].parsed.x));
+                                }
                             }
                         },
                         legend: {
@@ -2029,7 +2035,49 @@
                             ticks: {
                                 maxTicksLimit: 8,
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function(value, index, ticks) {
+                                    const date = new Date(value);
+                                    
+                                    // Determine the appropriate format based on the time range
+                                    const range = this.max - this.min;
+                                    const hour = 3600000;
+                                    const day = 86400000;
+                                    
+                                    let formatOptions = {
+                                        hour12: false
+                                    };
+                                    
+                                    if (range < hour * 2) {
+                                        // Less than 2 hours: show HH:mm
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day) {
+                                        // Less than a day: show MMM d, HH:mm
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day * 30) {
+                                        // Less than a month: show MMM d
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                    } else {
+                                        // More than a month: show MMM yyyy
+                                        formatOptions.month = 'short';
+                                        formatOptions.year = 'numeric';
+                                    }
+                                    
+                                    if (selectedTimezone === 'local') {
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else if (selectedTimezone === 'UTC') {
+                                        formatOptions.timeZone = 'UTC';
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else {
+                                        formatOptions.timeZone = selectedTimezone;
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    }
+                                }
                             }
                         },
                         y: {
@@ -2364,36 +2412,48 @@
             // Alternator Temperature (left axis, °F) - blue
             if (checkedVars.has('AltTemp')) {
                 datasets.push(
-                    { label: 'Alt Temp Min', data: data.map(d => d.alt_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Alt Temp Max', data: data.map(d => d.alt_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Alt Temp', data: data.map(d => d.alt_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Alt Temp Min', data: data.map(d => d.alt_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Temp Max', data: data.map(d => d.alt_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Temp', data: data.map(d => d.alt_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Thermistor Temperature (left axis, °F) - orange
             if (checkedVars.has('ThermTemp')) {
                 datasets.push(
-                    { label: 'Therm Temp Min', data: data.map(d => d.temp_therm_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Therm Temp Max', data: data.map(d => d.temp_therm_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Therm Temp', data: data.map(d => d.temp_therm_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Therm Temp Min', data: data.map(d => d.temp_therm_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Therm Temp Max', data: data.map(d => d.temp_therm_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Therm Temp', data: data.map(d => d.temp_therm_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Ambient Temperature (left axis, °F) - green
             if (checkedVars.has('AmbTemp')) {
                 datasets.push(
-                    { label: 'Amb Temp Min', data: data.map(d => d.amb_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Amb Temp Max', data: data.map(d => d.amb_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Amb Temp', data: data.map(d => d.amb_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Amb Temp Min', data: data.map(d => d.amb_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Amb Temp Max', data: data.map(d => d.amb_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Amb Temp', data: data.map(d => d.amb_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Barometric Pressure (right axis) - pink
             if (checkedVars.has('BaroPressure')) {
                 datasets.push(
-                    { label: 'Baro Min', data: data.map(d => d.baro_min), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Baro Max', data: data.map(d => d.baro_max), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Baro', data: data.map(d => d.baro_avg), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Baro Min', data: data.map(d => d.baro_min), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Baro Max', data: data.map(d => d.baro_max), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Baro', data: data.map(d => d.baro_avg), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -2417,7 +2477,9 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: function (items) {
+                                    return formatDateStringForTooltip(new Date(items[0].parsed.x));
+                                }
                             }
                         },
                         legend: {
@@ -2476,7 +2538,49 @@
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function(value, index, ticks) {
+                                    const date = new Date(value);
+                                    
+                                    // Determine the appropriate format based on the time range
+                                    const range = this.max - this.min;
+                                    const hour = 3600000;
+                                    const day = 86400000;
+                                    
+                                    let formatOptions = {
+                                        hour12: false
+                                    };
+                                    
+                                    if (range < hour * 2) {
+                                        // Less than 2 hours: show HH:mm
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day) {
+                                        // Less than a day: show MMM d, HH:mm
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day * 30) {
+                                        // Less than a month: show MMM d
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                    } else {
+                                        // More than a month: show MMM yyyy
+                                        formatOptions.month = 'short';
+                                        formatOptions.year = 'numeric';
+                                    }
+                                    
+                                    if (selectedTimezone === 'local') {
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else if (selectedTimezone === 'UTC') {
+                                        formatOptions.timeZone = 'UTC';
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else {
+                                        formatOptions.timeZone = selectedTimezone;
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    }
+                                }
                             }
                         },
 
@@ -2810,32 +2914,40 @@
             // RPM (left axis) - blue
             if (checkedVars.has('RPM')) {
                 datasets.push(
-                    { label: 'RPM Min', data: data.map(d => d.rpm_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'RPM Max', data: data.map(d => d.rpm_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'RPM', data: data.map(d => d.rpm_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'RPM Min', data: data.map(d => d.rpm_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'RPM Max', data: data.map(d => d.rpm_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'RPM', data: data.map(d => d.rpm_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Alternator Duty Cycle (right axis) - orange
             if (checkedVars.has('DutyCycle')) {
                 datasets.push(
-                    { label: 'Alt Duty Min', data: data.map(d => d.duty_cycle_min), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Alt Duty Max', data: data.map(d => d.duty_cycle_max), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Alt Duty', data: data.map(d => d.duty_cycle_avg), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Alt Duty Min', data: data.map(d => d.duty_cycle_min), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Duty Max', data: data.map(d => d.duty_cycle_max), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Duty', data: data.map(d => d.duty_cycle_avg), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Ignition Duty (right axis, instantaneous) - green
             if (checkedVars.has('IgnDuty')) {
                 datasets.push(
-                    { label: 'Ign Duty', data: data.map(d => d.ign_duty), yAxisID: 'y1', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Ign Duty', data: data.map(d => d.ign_duty), yAxisID: 'y1', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Engine Running Duty (right axis, instantaneous) - pink
             if (checkedVars.has('EngDuty')) {
                 datasets.push(
-                    { label: 'Eng Duty', data: data.map(d => d.eng_duty), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Eng Duty', data: data.map(d => d.eng_duty), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -2853,7 +2965,9 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: function (items) {
+                                    return formatDateStringForTooltip(new Date(items[0].parsed.x));
+                                }
                             }
                         },
                         legend: {
@@ -2912,7 +3026,49 @@
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function(value, index, ticks) {
+                                    const date = new Date(value);
+                                    
+                                    // Determine the appropriate format based on the time range
+                                    const range = this.max - this.min;
+                                    const hour = 3600000;
+                                    const day = 86400000;
+                                    
+                                    let formatOptions = {
+                                        hour12: false
+                                    };
+                                    
+                                    if (range < hour * 2) {
+                                        // Less than 2 hours: show HH:mm
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day) {
+                                        // Less than a day: show MMM d, HH:mm
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day * 30) {
+                                        // Less than a month: show MMM d
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                    } else {
+                                        // More than a month: show MMM yyyy
+                                        formatOptions.month = 'short';
+                                        formatOptions.year = 'numeric';
+                                    }
+                                    
+                                    if (selectedTimezone === 'local') {
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else if (selectedTimezone === 'UTC') {
+                                        formatOptions.timeZone = 'UTC';
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else {
+                                        formatOptions.timeZone = selectedTimezone;
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    }
+                                }
                             }
                         },
 
@@ -3229,36 +3385,48 @@
             // SOG - blue
             if (checkedVars.has('SOG')) {
                 datasets.push(
-                    { label: 'SOG Min', data: data.map(d => d.sog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'SOG Max', data: data.map(d => d.sog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'SOG', data: data.map(d => d.sog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'SOG Min', data: data.map(d => d.sog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'SOG Max', data: data.map(d => d.sog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'SOG', data: data.map(d => d.sog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // AWS - orange
             if (checkedVars.has('AWS')) {
                 datasets.push(
-                    { label: 'AWS Min', data: data.map(d => d.aws_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'AWS Max', data: data.map(d => d.aws_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'AWS', data: data.map(d => d.aws_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'AWS Min', data: data.map(d => d.aws_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'AWS Max', data: data.map(d => d.aws_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'AWS', data: data.map(d => d.aws_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // TWS - green
             if (checkedVars.has('TWS')) {
                 datasets.push(
-                    { label: 'TWS Min', data: data.map(d => d.tws_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'TWS Max', data: data.map(d => d.tws_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'TWS', data: data.map(d => d.tws_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'TWS Min', data: data.map(d => d.tws_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'TWS Max', data: data.map(d => d.tws_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'TWS', data: data.map(d => d.tws_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // VMG - pink
             if (checkedVars.has('VMG')) {
                 datasets.push(
-                    { label: 'VMG Min', data: data.map(d => d.vmg_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'VMG Max', data: data.map(d => d.vmg_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'VMG', data: data.map(d => d.vmg_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'VMG Min', data: data.map(d => d.vmg_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'VMG Max', data: data.map(d => d.vmg_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'VMG', data: data.map(d => d.vmg_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -3276,7 +3444,9 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: function (items) {
+                                    return formatDateStringForTooltip(new Date(items[0].parsed.x));
+                                }
                             }
                         },
                         legend: {
@@ -3335,7 +3505,49 @@
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function(value, index, ticks) {
+                                    const date = new Date(value);
+                                    
+                                    // Determine the appropriate format based on the time range
+                                    const range = this.max - this.min;
+                                    const hour = 3600000;
+                                    const day = 86400000;
+                                    
+                                    let formatOptions = {
+                                        hour12: false
+                                    };
+                                    
+                                    if (range < hour * 2) {
+                                        // Less than 2 hours: show HH:mm
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day) {
+                                        // Less than a day: show MMM d, HH:mm
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day * 30) {
+                                        // Less than a month: show MMM d
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                    } else {
+                                        // More than a month: show MMM yyyy
+                                        formatOptions.month = 'short';
+                                        formatOptions.year = 'numeric';
+                                    }
+                                    
+                                    if (selectedTimezone === 'local') {
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else if (selectedTimezone === 'UTC') {
+                                        formatOptions.timeZone = 'UTC';
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else {
+                                        formatOptions.timeZone = selectedTimezone;
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    }
+                                }
                             }
                         },
 
@@ -3578,45 +3790,60 @@
             // COG - blue
             if (checkedVars.has('COG')) {
                 datasets.push(
-                    { label: 'COG Min', data: data.map(d => d.cog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'COG Max', data: data.map(d => d.cog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'COG', data: data.map(d => d.cog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'COG Min', data: data.map(d => d.cog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'COG Max', data: data.map(d => d.cog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'COG', data: data.map(d => d.cog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Heading - orange
             if (checkedVars.has('Heading')) {
                 datasets.push(
-                    { label: 'Heading Min', data: data.map(d => d.heading_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Heading Max', data: data.map(d => d.heading_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Heading', data: data.map(d => d.heading_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Heading Min', data: data.map(d => d.heading_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Heading Max', data: data.map(d => d.heading_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Heading', data: data.map(d => d.heading_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // AWA - green
             if (checkedVars.has('AWA')) {
                 datasets.push(
-                    { label: 'AWA Min', data: data.map(d => d.awa_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'AWA Max', data: data.map(d => d.awa_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'AWA', data: data.map(d => d.awa_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'AWA Min', data: data.map(d => d.awa_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'AWA Max', data: data.map(d => d.awa_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'AWA', data: data.map(d => d.awa_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // TWA - pink
             if (checkedVars.has('TWA')) {
                 datasets.push(
-                    { label: 'TWA Min', data: data.map(d => d.twa_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'TWA Max', data: data.map(d => d.twa_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'TWA', data: data.map(d => d.twa_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'TWA Min', data: data.map(d => d.twa_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'TWA Max', data: data.map(d => d.twa_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'TWA', data: data.map(d => d.twa_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Leeway - sky blue
             if (checkedVars.has('Leeway')) {
                 datasets.push(
-                    { label: 'Leeway Min', data: data.map(d => d.leeway_min), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Leeway Max', data: data.map(d => d.leeway_max), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Leeway', data: data.map(d => d.leeway_avg), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 1)', backgroundColor: 'rgba(86, 180, 233, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Leeway Min', data: data.map(d => d.leeway_min), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Leeway Max', data: data.map(d => d.leeway_max), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Leeway', data: data.map(d => d.leeway_avg), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 1)', backgroundColor: 'rgba(86, 180, 233, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -3634,7 +3861,9 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: function (items) {
+                                    return formatDateStringForTooltip(new Date(items[0].parsed.x));
+                                }
                             }
                         },
                         legend: {
@@ -3693,7 +3922,49 @@
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function(value, index, ticks) {
+                                    const date = new Date(value);
+                                    
+                                    // Determine the appropriate format based on the time range
+                                    const range = this.max - this.min;
+                                    const hour = 3600000;
+                                    const day = 86400000;
+                                    
+                                    let formatOptions = {
+                                        hour12: false
+                                    };
+                                    
+                                    if (range < hour * 2) {
+                                        // Less than 2 hours: show HH:mm
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day) {
+                                        // Less than a day: show MMM d, HH:mm
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day * 30) {
+                                        // Less than a month: show MMM d
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                    } else {
+                                        // More than a month: show MMM yyyy
+                                        formatOptions.month = 'short';
+                                        formatOptions.year = 'numeric';
+                                    }
+                                    
+                                    if (selectedTimezone === 'local') {
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else if (selectedTimezone === 'UTC') {
+                                        formatOptions.timeZone = 'UTC';
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else {
+                                        formatOptions.timeZone = selectedTimezone;
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    }
+                                }
                             }
                         },
 
@@ -3949,9 +4220,12 @@
             // Alt Zero - blue
             if (checkedVars.has('AltZero')) {
                 datasets.push(
-                    { label: 'Alt Zero Min', data: data.map(d => d.alt_zero_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2 },
-                    { label: 'Alt Zero Max', data: data.map(d => d.alt_zero_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2 },
-                    { label: 'Alt Zero', data: data.map(d => d.alt_zero_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1 }
+                    { label: 'Alt Zero Min', data: data.map(d => d.alt_zero_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Zero Max', data: data.map(d => d.alt_zero_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Zero', data: data.map(d => d.alt_zero_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -3969,7 +4243,9 @@
                             mode: 'nearest',
                             intersect: false,
                             callbacks: {
-                                title: items => new Date(items[0].parsed.x).toLocaleString()
+                                title: function (items) {
+                                    return formatDateStringForTooltip(new Date(items[0].parsed.x));
+                                }
                             }
                         },
                         legend: {
@@ -4028,7 +4304,49 @@
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function(value, index, ticks) {
+                                    const date = new Date(value);
+                                    
+                                    // Determine the appropriate format based on the time range
+                                    const range = this.max - this.min;
+                                    const hour = 3600000;
+                                    const day = 86400000;
+                                    
+                                    let formatOptions = {
+                                        hour12: false
+                                    };
+                                    
+                                    if (range < hour * 2) {
+                                        // Less than 2 hours: show HH:mm
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day) {
+                                        // Less than a day: show MMM d, HH:mm
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day * 30) {
+                                        // Less than a month: show MMM d
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                    } else {
+                                        // More than a month: show MMM yyyy
+                                        formatOptions.month = 'short';
+                                        formatOptions.year = 'numeric';
+                                    }
+                                    
+                                    if (selectedTimezone === 'local') {
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else if (selectedTimezone === 'UTC') {
+                                        formatOptions.timeZone = 'UTC';
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else {
+                                        formatOptions.timeZone = selectedTimezone;
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    }
+                                }
                             }
                         },
 
