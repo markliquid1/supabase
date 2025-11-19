@@ -21,6 +21,66 @@
             style="display:none; color:#f44336; margin:10px 0; padding:10px; background:#ffebee; border-radius:4px;">
         </div>
 
+        <!-- Timezone Selection -->
+        <div style="background: #2a2a2a; padding: 10px; margin-bottom: 15px; border-radius: 5px; display: flex; align-items: center; gap: 15px;">
+            <label style="color: #e0e0e0; font-weight: 500;">Display Timezone:</label>
+            <select id="timezone-selector" style="padding: 5px 10px; background: #3a3a3a; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; min-width: 250px;">
+                <option value="local">Browser Local Time</option>
+                <option value="UTC">UTC</option>
+                <optgroup label="Americas">
+                    <option value="America/New_York">Eastern (New York)</option>
+                    <option value="America/Chicago">Central (Chicago)</option>
+                    <option value="America/Denver">Mountain (Denver)</option>
+                    <option value="America/Los_Angeles">Pacific (Los Angeles)</option>
+                    <option value="America/Anchorage">Alaska (Anchorage)</option>
+                    <option value="Pacific/Honolulu">Hawaii (Honolulu)</option>
+                    <option value="America/Toronto">Toronto</option>
+                    <option value="America/Vancouver">Vancouver</option>
+                    <option value="America/Mexico_City">Mexico City</option>
+                    <option value="America/Sao_Paulo">São Paulo</option>
+                    <option value="America/Buenos_Aires">Buenos Aires</option>
+                </optgroup>
+                <optgroup label="Europe">
+                    <option value="Europe/London">London</option>
+                    <option value="Europe/Paris">Paris</option>
+                    <option value="Europe/Berlin">Berlin</option>
+                    <option value="Europe/Rome">Rome</option>
+                    <option value="Europe/Madrid">Madrid</option>
+                    <option value="Europe/Amsterdam">Amsterdam</option>
+                    <option value="Europe/Stockholm">Stockholm</option>
+                    <option value="Europe/Moscow">Moscow</option>
+                    <option value="Europe/Athens">Athens</option>
+                    <option value="Europe/Istanbul">Istanbul</option>
+                </optgroup>
+                <optgroup label="Asia">
+                    <option value="Asia/Dubai">Dubai</option>
+                    <option value="Asia/Kolkata">India (Kolkata)</option>
+                    <option value="Asia/Bangkok">Bangkok</option>
+                    <option value="Asia/Singapore">Singapore</option>
+                    <option value="Asia/Hong_Kong">Hong Kong</option>
+                    <option value="Asia/Shanghai">China (Shanghai)</option>
+                    <option value="Asia/Seoul">Seoul</option>
+                    <option value="Asia/Tokyo">Tokyo</option>
+                    <option value="Asia/Jakarta">Jakarta</option>
+                </optgroup>
+                <optgroup label="Pacific">
+                    <option value="Australia/Perth">Perth</option>
+                    <option value="Australia/Sydney">Sydney</option>
+                    <option value="Australia/Melbourne">Melbourne</option>
+                    <option value="Australia/Brisbane">Brisbane</option>
+                    <option value="Pacific/Auckland">Auckland</option>
+                    <option value="Pacific/Fiji">Fiji</option>
+                </optgroup>
+                <optgroup label="Africa">
+                    <option value="Africa/Cairo">Cairo</option>
+                    <option value="Africa/Lagos">Lagos</option>
+                    <option value="Africa/Johannesburg">Johannesburg</option>
+                    <option value="Africa/Nairobi">Nairobi</option>
+                </optgroup>
+            </select>
+            <span id="timezone-info" style="color: #999; font-size: 12px;"></span>
+        </div>
+
         <!-- ============================================
              PLOT 1: Currents (A) - CHART AREA + TOOLS
              ============================================ -->
@@ -699,6 +759,94 @@
         // Shared data store (all plots use this)
         let fullData = [];
 
+        // ============================================
+        // TIMEZONE MANAGEMENT
+        // ============================================
+        
+        let selectedTimezone = 'local'; // Default to browser local time
+        
+        // Load saved timezone preference
+        function loadTimezonePreference() {
+            const saved = localStorage.getItem('selectedTimezone');
+            if (saved) {
+                selectedTimezone = saved;
+                document.getElementById('timezone-selector').value = saved;
+            }
+            updateTimezoneInfo();
+        }
+        
+        // Save timezone preference
+        function saveTimezonePreference() {
+            localStorage.setItem('selectedTimezone', selectedTimezone);
+        }
+        
+        // Update timezone info display
+        function updateTimezoneInfo() {
+            const infoElement = document.getElementById('timezone-info');
+            if (selectedTimezone === 'local') {
+                const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const offset = new Date().getTimezoneOffset();
+                const offsetHours = Math.floor(Math.abs(offset) / 60);
+                const offsetMinutes = Math.abs(offset) % 60;
+                const offsetSign = offset <= 0 ? '+' : '-';
+                infoElement.textContent = `(${tzName} UTC${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')})`;
+            } else if (selectedTimezone === 'UTC') {
+                infoElement.textContent = '(UTC+00:00)';
+            } else {
+                // For specific timezones, show current offset
+                const now = new Date();
+                const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+                const tzDate = new Date(now.toLocaleString('en-US', { timeZone: selectedTimezone }));
+                const diff = (tzDate - utcDate) / (1000 * 60 * 60);
+                const sign = diff >= 0 ? '+' : '';
+                infoElement.textContent = `(UTC${sign}${diff.toFixed(1).replace('.0', '')})`;
+            }
+        }
+        
+        // Format date string for tooltip based on selected timezone
+        function formatDateStringForTooltip(date) {
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            
+            if (selectedTimezone === 'local') {
+                return date.toLocaleString('en-US', options);
+            } else if (selectedTimezone === 'UTC') {
+                return date.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+            } else {
+                options.timeZone = selectedTimezone;
+                return date.toLocaleString('en-US', options) + ' ' + selectedTimezone.split('/').pop();
+            }
+        }
+        
+        // Setup timezone selector event listener
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('timezone-selector').addEventListener('change', function(e) {
+                selectedTimezone = e.target.value;
+                saveTimezonePreference();
+                updateTimezoneInfo();
+                
+                // Rebuild all charts with new timezone
+                if (fullData && fullData.length > 0) {
+                    // For now, just update chart1
+                    updateChart1();
+                    // TODO: Update other charts
+                    // updateChart2();
+                    // updateChart3();
+                    // updateChart4();
+                    // updateChart5();
+                    // updateChart6();
+                    // updateChart7();
+                }
+            });
+        });
+
         const MAX_BINS_PER_PLOT = 120;
 
         const OKABE_ITO = {
@@ -1122,7 +1270,7 @@
                             intersect: false,
                             callbacks: {
                                 title: function (items) {
-                                    return new Date(items[0].parsed.x).toLocaleString();
+                                    return formatDateStringForTooltip(new Date(items[0].parsed.x));
                                 }
                             }
                         },
@@ -1185,7 +1333,49 @@
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function(value, index, ticks) {
+                                    const date = new Date(value);
+                                    
+                                    // Determine the appropriate format based on the time range
+                                    const range = this.max - this.min;
+                                    const hour = 3600000;
+                                    const day = 86400000;
+                                    
+                                    let formatOptions = {
+                                        hour12: false
+                                    };
+                                    
+                                    if (range < hour * 2) {
+                                        // Less than 2 hours: show HH:mm
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day) {
+                                        // Less than a day: show MMM d, HH:mm
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                        formatOptions.hour = '2-digit';
+                                        formatOptions.minute = '2-digit';
+                                    } else if (range < day * 30) {
+                                        // Less than a month: show MMM d
+                                        formatOptions.month = 'short';
+                                        formatOptions.day = 'numeric';
+                                    } else {
+                                        // More than a month: show MMM yyyy
+                                        formatOptions.month = 'short';
+                                        formatOptions.year = 'numeric';
+                                    }
+                                    
+                                    if (selectedTimezone === 'local') {
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else if (selectedTimezone === 'UTC') {
+                                        formatOptions.timeZone = 'UTC';
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    } else {
+                                        formatOptions.timeZone = selectedTimezone;
+                                        return date.toLocaleString('en-US', formatOptions);
+                                    }
+                                }
                             }
                         },
 
@@ -3913,6 +4103,9 @@
         // ============================================
 
         async function init() {
+            // Load timezone preference first
+            loadTimezonePreference();
+            
             const token = getTokenFromUrl();
 
             if (!token) {
