@@ -905,14 +905,31 @@
         function applyBinning(data, maxBins = MAX_BINS_PER_PLOT) {
             if (!Array.isArray(data) || data.length <= maxBins) return data;
 
+            // Check if the first point (most recent) is an extension point
+            const hasExtensionPoint = data.length > 0 && data[0]._isExtensionPoint;
+            let extensionPoint = null;
+            let dataToProcess = data;
+            
+            if (hasExtensionPoint) {
+                // Remove extension point temporarily for binning
+                extensionPoint = data[0];
+                dataToProcess = data.slice(1);
+            }
+
             const result = [];
-            const binSize = Math.ceil(data.length / maxBins);
-            if (binSize <= 1) return data;
+            const binSize = Math.ceil(dataToProcess.length / maxBins);
+            if (binSize <= 1) {
+                // No binning needed, but still add extension point back if present
+                if (hasExtensionPoint) {
+                    return [extensionPoint, ...dataToProcess];
+                }
+                return dataToProcess;
+            }
 
-            const keys = Object.keys(data[0]).filter(k => k !== 'timestamp');
+            const keys = Object.keys(dataToProcess[0]).filter(k => k !== 'timestamp' && k !== '_isExtensionPoint');
 
-            for (let i = 0; i < data.length; i += binSize) {
-                const slice = data.slice(i, i + binSize);
+            for (let i = 0; i < dataToProcess.length; i += binSize) {
+                const slice = dataToProcess.slice(i, i + binSize);
                 if (!slice.length) continue;
 
                 const bin = {};
@@ -947,6 +964,11 @@
                 }
 
                 result.push(bin);
+            }
+
+            // Add extension point back at the beginning (most recent)
+            if (hasExtensionPoint) {
+                result.unshift(extensionPoint);
             }
 
             return result;
@@ -1046,72 +1068,74 @@
                     
                     // Only add extension point if most recent data is older than 1 minute
                     if (now - mostRecentTime > 60000) {
-                        // Create a data point at "now" with all values as NaN
+                        // Create a data point at "now" with all values as null
+                        // null creates gaps in Chart.js line charts
                         const extensionPoint = {
                             timestamp: now.toISOString(),
-                            // All numeric fields set to NaN
-                            batt_curr_min: NaN,
-                            batt_curr_max: NaN,
-                            batt_curr_avg: NaN,
-                            alt_curr_min: NaN,
-                            alt_curr_max: NaN,
-                            alt_curr_avg: NaN,
-                            victron_curr_min: NaN,
-                            victron_curr_max: NaN,
-                            victron_curr_avg: NaN,
-                            batt_volt_min: NaN,
-                            batt_volt_max: NaN,
-                            batt_volt_avg: NaN,
-                            soc_min: NaN,
-                            soc_max: NaN,
-                            soc_avg: NaN,
-                            alt_temp_min: NaN,
-                            alt_temp_max: NaN,
-                            alt_temp_avg: NaN,
-                            temp_therm_min: NaN,
-                            temp_therm_max: NaN,
-                            temp_therm_avg: NaN,
-                            amb_temp_min: NaN,
-                            amb_temp_max: NaN,
-                            amb_temp_avg: NaN,
-                            rpm_min: NaN,
-                            rpm_max: NaN,
-                            rpm_avg: NaN,
-                            duty_cycle_min: NaN,
-                            duty_cycle_max: NaN,
-                            duty_cycle_avg: NaN,
-                            ign_duty: NaN,
-                            eng_duty: NaN,
-                            sog_min: NaN,
-                            sog_max: NaN,
-                            sog_avg: NaN,
-                            aws_min: NaN,
-                            aws_max: NaN,
-                            aws_avg: NaN,
-                            tws_min: NaN,
-                            tws_max: NaN,
-                            tws_avg: NaN,
-                            vmg_min: NaN,
-                            vmg_max: NaN,
-                            vmg_avg: NaN,
-                            cog_min: NaN,
-                            cog_max: NaN,
-                            cog_avg: NaN,
-                            heading_min: NaN,
-                            heading_max: NaN,
-                            heading_avg: NaN,
-                            awa_min: NaN,
-                            awa_max: NaN,
-                            awa_avg: NaN,
-                            twa_min: NaN,
-                            twa_max: NaN,
-                            twa_avg: NaN,
-                            leeway_min: NaN,
-                            leeway_max: NaN,
-                            leeway_avg: NaN,
-                            alt_zero_min: NaN,
-                            alt_zero_max: NaN,
-                            alt_zero_avg: NaN
+                            _isExtensionPoint: true,  // Marker to identify this point
+                            // All numeric fields set to null to create gaps
+                            batt_curr_min: null,
+                            batt_curr_max: null,
+                            batt_curr_avg: null,
+                            alt_curr_min: null,
+                            alt_curr_max: null,
+                            alt_curr_avg: null,
+                            victron_curr_min: null,
+                            victron_curr_max: null,
+                            victron_curr_avg: null,
+                            batt_volt_min: null,
+                            batt_volt_max: null,
+                            batt_volt_avg: null,
+                            soc_min: null,
+                            soc_max: null,
+                            soc_avg: null,
+                            alt_temp_min: null,
+                            alt_temp_max: null,
+                            alt_temp_avg: null,
+                            temp_therm_min: null,
+                            temp_therm_max: null,
+                            temp_therm_avg: null,
+                            amb_temp_min: null,
+                            amb_temp_max: null,
+                            amb_temp_avg: null,
+                            rpm_min: null,
+                            rpm_max: null,
+                            rpm_avg: null,
+                            duty_cycle_min: null,
+                            duty_cycle_max: null,
+                            duty_cycle_avg: null,
+                            ign_duty: null,
+                            eng_duty: null,
+                            sog_min: null,
+                            sog_max: null,
+                            sog_avg: null,
+                            aws_min: null,
+                            aws_max: null,
+                            aws_avg: null,
+                            tws_min: null,
+                            tws_max: null,
+                            tws_avg: null,
+                            vmg_min: null,
+                            vmg_max: null,
+                            vmg_avg: null,
+                            cog_min: null,
+                            cog_max: null,
+                            cog_avg: null,
+                            heading_min: null,
+                            heading_max: null,
+                            heading_avg: null,
+                            awa_min: null,
+                            awa_max: null,
+                            awa_avg: null,
+                            twa_min: null,
+                            twa_max: null,
+                            twa_avg: null,
+                            leeway_min: null,
+                            leeway_max: null,
+                            leeway_avg: null,
+                            alt_zero_min: null,
+                            alt_zero_max: null,
+                            alt_zero_avg: null
                         };
                         
                         // Insert at the beginning (since data is sorted descending)
@@ -1250,7 +1274,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: 1,
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'Batt Curr Max',
@@ -1260,7 +1285,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: '-1',
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'Batt Curr',
@@ -1270,7 +1296,8 @@
                         pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
-                        order: 1
+                        order: 1,
+                        spanGaps: false
                     }
                 );
             }
@@ -1286,7 +1313,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: 1,
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'Solar Curr Max',
@@ -1296,7 +1324,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: '-1',
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'Solar Curr',
@@ -1306,7 +1335,8 @@
                         pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
-                        order: 1
+                        order: 1,
+                        spanGaps: false
                     }
                 );
             }
@@ -1322,7 +1352,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: 1,
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'Alt Curr Max',
@@ -1332,7 +1363,8 @@
                         pointRadius: 0,
                         borderWidth: 1,
                         fill: '-1',
-                        order: 2
+                        order: 2,
+                        spanGaps: false
                     },
                     {
                         label: 'Alt Curr',
@@ -1342,7 +1374,8 @@
                         pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
-                        order: 1
+                        order: 1,
+                        spanGaps: false
                     }
                 );
             }
