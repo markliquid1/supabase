@@ -1303,7 +1303,8 @@
                             intersect: false,
                             callbacks: {
                                 title: function (items) {
-                                    return new Date(items[0].parsed.x).toLocaleString();
+                                    if (!items || !items.length) return '';
+                                    return formatTooltipTimestamp(items[0].parsed.x);
                                 }
                             }
                         },
@@ -1363,11 +1364,17 @@
                                     month: 'MMM yyyy'
                                 }
                             },
+
                             ticks: {
-                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxTicksLimit: 8,
                                 autoSkip: true,
-                                major: { enabled: true }
+                                major: { enabled: true },
+                                callback: function (value) {
+                                    return formatAxisTimestamp(value);
+                                }
                             }
+
+
                         },
 
                         y: {
@@ -1406,9 +1413,18 @@
 
             const initialBinned = applyBinning(filteredData);
             createChart1(initialBinned);
+
+            // Set x-axis limits based on filtered data
+            if (chart1 && filteredData.length > 0) {
+                const minTime = new Date(filteredData[0].timestamp).getTime();
+                const maxTime = new Date(filteredData[filteredData.length - 1].timestamp).getTime();
+                chart1.options.scales.x.min = minTime;
+                chart1.options.scales.x.max = maxTime;
+                chart1.update('none');
+            }
+
             updateActivePresetButton1();
         }
-
 
         function rebinChart1ToVisibleRange(chart) {
             if (!chart1SourceData || chart1SourceData.length === 0) return;
@@ -1543,7 +1559,8 @@
             box.addEventListener('click', function () {
                 document.querySelectorAll('.plot1-unit').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                updateActivePresetButton1();
+                updateChart1();              // make unit change actually rebuild chart
+                updateActivePresetButton1(); // keep preset button highlight logic
                 saveSettings1();
             });
         });
