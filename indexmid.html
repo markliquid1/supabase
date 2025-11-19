@@ -852,7 +852,7 @@
                     .from('sensor_history')
                     .select(HISTORY_COLUMNS)
                     .eq('device_uid', deviceUid)
-                    .order('timestamp', { ascending: false });
+                    .order('timestamp', { ascending: true });
 
                 if (error) {
                     // debugLog('fetchSensorHistory ERROR:', error.message || JSON.stringify(error));
@@ -891,8 +891,7 @@
         function filterDataByTime(data, value, unit) {
             if (!value || value <= 0 || data.length === 0) return data;
 
-            // With descending order, newest data is at index 0
-            const now = new Date(data[0].timestamp);
+            const now = new Date(data[data.length - 1].timestamp);
             let milliseconds = 0;
 
             switch (unit) {
@@ -1243,9 +1242,8 @@
             if (min == null || max == null) return;
 
             // Clamp to data range
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart1SourceData[chart1SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart1SourceData[0].timestamp).getTime();
+            const dataMin = new Date(chart1SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart1SourceData[chart1SourceData.length - 1].timestamp).getTime();
 
             const clampedMin = Math.max(min, dataMin);
             const clampedMax = Math.min(max, dataMax);
@@ -1386,9 +1384,8 @@
             let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
             let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
 
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart1SourceData[chart1SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart1SourceData[0].timestamp).getTime();
+            const dataMin = new Date(chart1SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart1SourceData[chart1SourceData.length - 1].timestamp).getTime();
 
             if (currentMin == null || currentMax == null) {
                 currentMin = dataMin;
@@ -1777,9 +1774,8 @@
             if (min == null || max == null) return;
 
             // Clamp to data range
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart2SourceData[chart2SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart2SourceData[0].timestamp).getTime();
+            const dataMin = new Date(chart2SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart2SourceData[chart2SourceData.length - 1].timestamp).getTime();
 
             const clampedMin = Math.max(min, dataMin);
             const clampedMax = Math.min(max, dataMax);
@@ -1913,9 +1909,8 @@
             let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
             let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
 
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart2SourceData[chart2SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart2SourceData[0].timestamp).getTime();
+            const dataMin = new Date(chart2SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart2SourceData[chart2SourceData.length - 1].timestamp).getTime();
 
             if (currentMin == null || currentMax == null) {
                 currentMin = dataMin;
@@ -2217,9 +2212,8 @@
             if (min == null || max == null) return;
 
             // Clamp to data range
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart3SourceData[0].timestamp).getTime();
+            const dataMin = new Date(chart3SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
 
             const clampedMin = Math.max(min, dataMin);
             const clampedMax = Math.min(max, dataMax);
@@ -2376,9 +2370,18 @@
         });
 
         function panChart3(direction) {
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart3SourceData[0].timestamp).getTime();
+            if (!chart3 || !chart3.scales || !chart3.scales.x) return;
+            if (!chart3SourceData || !chart3SourceData.length) return;
+
+            const xScale = chart3.scales.x;
+            const xOpts = chart3.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart3SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
 
             if (currentMin == null || currentMax == null) {
                 currentMin = dataMin;
@@ -2651,9 +2654,8 @@
             if (min == null || max == null) return;
 
             // Clamp to data range
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart4SourceData[0].timestamp).getTime();
+            const dataMin = new Date(chart4SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
 
             const clampedMin = Math.max(min, dataMin);
             const clampedMax = Math.min(max, dataMax);
@@ -2796,9 +2798,18 @@
         });
 
         function panChart4(direction) {
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart4SourceData[0].timestamp).getTime();
+            if (!chart4 || !chart4.scales || !chart4.scales.x) return;
+            if (!chart4SourceData || !chart4SourceData.length) return;
+
+            const xScale = chart4.scales.x;
+            const xOpts = chart4.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart4SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
 
             if (currentMin == null || currentMax == null) {
                 currentMin = dataMin;
@@ -3062,9 +3073,8 @@
             let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
             if (min == null || max == null) return;
 
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart5SourceData[chart5SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart5SourceData[0].timestamp).getTime();
+            const dataMin = new Date(chart5SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart5SourceData[chart5SourceData.length - 1].timestamp).getTime();
 
             const clampedMin = Math.max(min, dataMin);
             const clampedMax = Math.min(max, dataMax);
@@ -3185,9 +3195,17 @@
         });
 
         function panChart5(direction) {
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart5SourceData[chart5SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart5SourceData[0].timestamp).getTime();
+            if (!chart5 || !chart5.scales || !chart5.scales.x) return;
+            if (!chart5SourceData || !chart5SourceData.length) return;
+
+            const xScale = chart5.scales.x;
+            const xOpts = chart5.options.scales.x || {};
+
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart5SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart5SourceData[chart5SourceData.length - 1].timestamp).getTime();
 
             if (currentMin == null || currentMax == null) {
                 currentMin = dataMin;
@@ -3422,9 +3440,8 @@
             let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
             if (min == null || max == null) return;
 
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart6SourceData[chart6SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart6SourceData[0].timestamp).getTime();
+            const dataMin = new Date(chart6SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart6SourceData[chart6SourceData.length - 1].timestamp).getTime();
 
             const clampedMin = Math.max(min, dataMin);
             const clampedMax = Math.min(max, dataMax);
@@ -3556,9 +3573,17 @@
 
         document.getElementById('applyTimeRange6').addEventListener('click', () => { updateChart6(); saveSettings6(); });
         function panChart6(direction) {
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart6SourceData[chart6SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart6SourceData[0].timestamp).getTime();
+            if (!chart6 || !chart6.scales || !chart6.scales.x) return;
+            if (!chart6SourceData || !chart6SourceData.length) return;
+
+            const xScale = chart6.scales.x;
+            const xOpts = chart6.options.scales.x || {};
+
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart6SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart6SourceData[chart6SourceData.length - 1].timestamp).getTime();
 
             if (currentMin == null || currentMax == null) {
                 currentMin = dataMin;
@@ -3756,9 +3781,8 @@
             let max = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
             if (min == null || max == null) return;
 
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart7SourceData[chart7SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart7SourceData[0].timestamp).getTime();
+            const dataMin = new Date(chart7SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart7SourceData[chart7SourceData.length - 1].timestamp).getTime();
 
             const clampedMin = Math.max(min, dataMin);
             const clampedMax = Math.min(max, dataMax);
@@ -3849,9 +3873,17 @@
         });
 
         function panChart7(direction) {
-            // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart7SourceData[chart7SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart7SourceData[0].timestamp).getTime();
+            if (!chart7 || !chart7.scales || !chart7.scales.x) return;
+            if (!chart7SourceData || !chart7SourceData.length) return;
+
+            const xScale = chart7.scales.x;
+            const xOpts = chart7.options.scales.x || {};
+
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
+            const dataMin = new Date(chart7SourceData[0].timestamp).getTime();
+            const dataMax = new Date(chart7SourceData[chart7SourceData.length - 1].timestamp).getTime();
 
             if (currentMin == null || currentMax == null) {
                 currentMin = dataMin;
