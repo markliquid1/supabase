@@ -15,7 +15,6 @@
         src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.umd.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 </head>
 
@@ -1170,8 +1169,8 @@
                 );
             }
 
-            // Solar Current - Orange (#E69F00)
-            if (checkedVars.has('VictronCurrent')) {
+            // Victron Solar Curr - Orange (#E69F00)
+            if (checkedVars.has('SolarCurr')) {
                 datasets.push(
                     {
                         label: 'Solar Curr Min',
@@ -1289,7 +1288,6 @@
                                     rebinChart1ToVisibleRange(chart);
                                 }
                             },
-
                             pan: {
                                 enabled: true,
                                 mode: 'x',
@@ -1304,17 +1302,11 @@
                             }
                         }
                     },
-
                     scales: {
                         x: {
                             type: 'time',
-                            // Tell the Luxon adapter what zone to use at creation time
-                            adapters: {
-                                date: {
-                                    zone: getEffectiveTimeZone()
-                                }
-                            },
                             time: {
+                                // Let Chart.js pick the unit based on visible range
                                 displayFormats: {
                                     minute: 'HH:mm',
                                     hour: 'MMM d, HH:mm',
@@ -1324,12 +1316,11 @@
                                 }
                             },
                             ticks: {
-                                maxTicksLimit: 8,
+                                maxTicksLimit: 8,      // target ~7–8 labels
                                 autoSkip: true,
                                 major: { enabled: true }
                             }
                         },
-
 
                         y: {
                             type: 'linear',
@@ -1340,9 +1331,6 @@
                     }
                 }
             });
-
-            document.getElementById('loadingChart1').style.display = 'none';
-            document.getElementById('chart1').style.display = 'block';
         }
 
         // ============================================
