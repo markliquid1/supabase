@@ -1729,11 +1729,16 @@
                 if (newMin < dataMin) newMin = dataMin;
             }
 
-            // Write new limits, update scales, then rebin using the new window
-            chart1.options.scales.x.min = newMin;
-            chart1.options.scales.x.max = newMax;
+            // IMPORTANT: Store the current min/max temporarily for rebinning
+            currentMin = newMin;
+            currentMax = newMax;
+            
+            // Update the scale limits directly without setting explicit options
+            // This allows zoom to still work since we're not overriding options.scales.x.min/max
+            chart1.scales.x.min = newMin;
+            chart1.scales.x.max = newMax;
 
-            // First update so chart.scales.x reflects new limits
+            // Update chart to show new range
             chart1.update('none');
 
             // Then re-bin into that window
@@ -2306,9 +2311,14 @@
                 if (newMin < dataMin) newMin = dataMin;
             }
 
-            // Write new limits, update scales, then rebin using the new window
-            chart2.options.scales.x.min = newMin;
-            chart2.options.scales.x.max = newMax;
+            // IMPORTANT: Store the current min/max temporarily for rebinning
+            currentMin = newMin;
+            currentMax = newMax;
+            
+            // Update the scale limits directly without setting explicit options
+            // This allows zoom to still work since we're not overriding options.scales.x.min/max
+            chart2.scales.x.min = newMin;
+            chart2.scales.x.max = newMax;
 
             chart2.update('none');
             rebinChart2ToVisibleRange(chart2);
@@ -2825,9 +2835,14 @@
                 if (newMin < dataMin) newMin = dataMin;
             }
 
-            // Write new limits, update scales, then rebin using the new window
-            chart3.options.scales.x.min = newMin;
-            chart3.options.scales.x.max = newMax;
+            // IMPORTANT: Store the current min/max temporarily for rebinning
+            currentMin = newMin;
+            currentMax = newMax;
+            
+            // Update the scale limits directly without setting explicit options
+            // This allows zoom to still work since we're not overriding options.scales.x.min/max
+            chart3.scales.x.min = newMin;
+            chart3.scales.x.max = newMax;
 
             chart3.update('none');
             rebinChart3ToVisibleRange(chart3);
@@ -3297,9 +3312,14 @@
                 if (newMin < dataMin) newMin = dataMin;
             }
 
-            // Write new limits, update scales, then rebin
-            chart4.options.scales.x.min = newMin;
-            chart4.options.scales.x.max = newMax;
+            // IMPORTANT: Store the current min/max temporarily for rebinning
+            currentMin = newMin;
+            currentMax = newMax;
+            
+            // Update the scale limits directly without setting explicit options
+            // This allows zoom to still work since we're not overriding options.scales.x.min/max
+            chart4.scales.x.min = newMin;
+            chart4.scales.x.max = newMax;
 
             chart4.update('none');
             rebinChart4ToVisibleRange(chart4);
@@ -3740,8 +3760,14 @@
                 if (newMin < dataMin) newMin = dataMin;
             }
 
-            chart5.options.scales.x.min = newMin;
-            chart5.options.scales.x.max = newMax;
+            // IMPORTANT: Store the current min/max temporarily for rebinning
+            currentMin = newMin;
+            currentMax = newMax;
+            
+            // Update the scale limits directly without setting explicit options
+            // This allows zoom to still work since we're not overriding options.scales.x.min/max
+            chart5.scales.x.min = newMin;
+            chart5.scales.x.max = newMax;
 
             chart5.update('none');
             rebinChart5ToVisibleRange(chart5);
@@ -4170,8 +4196,14 @@
                 if (newMin < dataMin) newMin = dataMin;
             }
 
-            chart6.options.scales.x.min = newMin;
-            chart6.options.scales.x.max = newMax;
+            // IMPORTANT: Store the current min/max temporarily for rebinning
+            currentMin = newMin;
+            currentMax = newMax;
+            
+            // Update the scale limits directly without setting explicit options
+            // This allows zoom to still work since we're not overriding options.scales.x.min/max
+            chart6.scales.x.min = newMin;
+            chart6.scales.x.max = newMax;
 
             chart6.update('none');
             rebinChart6ToVisibleRange(chart6);
@@ -4510,8 +4542,14 @@
                 if (newMin < dataMin) newMin = dataMin;
             }
 
-            chart7.options.scales.x.min = newMin;
-            chart7.options.scales.x.max = newMax;
+            // IMPORTANT: Store the current min/max temporarily for rebinning
+            currentMin = newMin;
+            currentMax = newMax;
+            
+            // Update the scale limits directly without setting explicit options
+            // This allows zoom to still work since we're not overriding options.scales.x.min/max
+            chart7.scales.x.min = newMin;
+            chart7.scales.x.max = newMax;
 
             chart7.update('none');
             rebinChart7ToVisibleRange(chart7);
