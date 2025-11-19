@@ -852,7 +852,7 @@
                     .from('sensor_history')
                     .select(HISTORY_COLUMNS)
                     .eq('device_uid', deviceUid)
-                    .order('timestamp', { ascending: false });
+                    .order('timestamp', { ascending: true });
 
                 if (error) {
                     // debugLog('fetchSensorHistory ERROR:', error.message || JSON.stringify(error));
