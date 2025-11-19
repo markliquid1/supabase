@@ -22,25 +22,25 @@
         </div>
 
         <!-- Timezone Selection -->
-        <div style="background: #2a2a2a; padding: 10px; margin-bottom: 15px; border-radius: 5px; display: flex; align-items: center; gap: 15px;">
-            <label style="color: #e0e0e0; font-weight: 500;">Display Timezone:</label>
-            <select id="timezone-selector" style="padding: 5px 10px; background: #3a3a3a; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; min-width: 250px;">
-                <option value="local">Browser Local Time</option>
+        <div style="padding: 8px 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; background: rgba(42, 42, 42, 0.5); border-radius: 4px;">
+            <label style="color: #999; font-size: 12px; font-weight: normal;">Timezone:</label>
+            <select id="timezone-selector" style="padding: 3px 8px; background: transparent; color: #ccc; border: 1px solid #444; border-radius: 3px; font-size: 12px; min-width: 180px; cursor: pointer;">
+                <option value="local">Local Time</option>
                 <option value="UTC">UTC</option>
-                <optgroup label="Americas">
-                    <option value="America/New_York">Eastern (New York)</option>
-                    <option value="America/Chicago">Central (Chicago)</option>
-                    <option value="America/Denver">Mountain (Denver)</option>
-                    <option value="America/Los_Angeles">Pacific (Los Angeles)</option>
-                    <option value="America/Anchorage">Alaska (Anchorage)</option>
-                    <option value="Pacific/Honolulu">Hawaii (Honolulu)</option>
+                <optgroup label="Americas" style="font-size: 11px;">
+                    <option value="America/New_York">New York</option>
+                    <option value="America/Chicago">Chicago</option>
+                    <option value="America/Denver">Denver</option>
+                    <option value="America/Los_Angeles">Los Angeles</option>
+                    <option value="America/Anchorage">Anchorage</option>
+                    <option value="Pacific/Honolulu">Honolulu</option>
                     <option value="America/Toronto">Toronto</option>
                     <option value="America/Vancouver">Vancouver</option>
                     <option value="America/Mexico_City">Mexico City</option>
                     <option value="America/Sao_Paulo">São Paulo</option>
                     <option value="America/Buenos_Aires">Buenos Aires</option>
                 </optgroup>
-                <optgroup label="Europe">
+                <optgroup label="Europe" style="font-size: 11px;">
                     <option value="Europe/London">London</option>
                     <option value="Europe/Paris">Paris</option>
                     <option value="Europe/Berlin">Berlin</option>
@@ -52,18 +52,18 @@
                     <option value="Europe/Athens">Athens</option>
                     <option value="Europe/Istanbul">Istanbul</option>
                 </optgroup>
-                <optgroup label="Asia">
+                <optgroup label="Asia" style="font-size: 11px;">
                     <option value="Asia/Dubai">Dubai</option>
-                    <option value="Asia/Kolkata">India (Kolkata)</option>
+                    <option value="Asia/Kolkata">Kolkata</option>
                     <option value="Asia/Bangkok">Bangkok</option>
                     <option value="Asia/Singapore">Singapore</option>
                     <option value="Asia/Hong_Kong">Hong Kong</option>
-                    <option value="Asia/Shanghai">China (Shanghai)</option>
+                    <option value="Asia/Shanghai">Shanghai</option>
                     <option value="Asia/Seoul">Seoul</option>
                     <option value="Asia/Tokyo">Tokyo</option>
                     <option value="Asia/Jakarta">Jakarta</option>
                 </optgroup>
-                <optgroup label="Pacific">
+                <optgroup label="Pacific" style="font-size: 11px;">
                     <option value="Australia/Perth">Perth</option>
                     <option value="Australia/Sydney">Sydney</option>
                     <option value="Australia/Melbourne">Melbourne</option>
@@ -71,14 +71,14 @@
                     <option value="Pacific/Auckland">Auckland</option>
                     <option value="Pacific/Fiji">Fiji</option>
                 </optgroup>
-                <optgroup label="Africa">
+                <optgroup label="Africa" style="font-size: 11px;">
                     <option value="Africa/Cairo">Cairo</option>
                     <option value="Africa/Lagos">Lagos</option>
                     <option value="Africa/Johannesburg">Johannesburg</option>
                     <option value="Africa/Nairobi">Nairobi</option>
                 </optgroup>
             </select>
-            <span id="timezone-info" style="color: #999; font-size: 12px;"></span>
+            <span id="timezone-info" style="color: #666; font-size: 11px;"></span>
         </div>
 
         <!-- ============================================
@@ -1039,8 +1039,8 @@
         function filterDataByTime(data, value, unit) {
             if (!value || value <= 0 || data.length === 0) return data;
 
-            // With descending order, newest data is at index 0
-            const now = new Date(data[0].timestamp);
+            // Use actual current time, not the newest data point
+            const now = new Date();
             let milliseconds = 0;
 
             switch (unit) {
@@ -1051,7 +1051,34 @@
             }
 
             const cutoff = new Date(now - milliseconds);
-            return data.filter(d => new Date(d.timestamp) >= cutoff);
+            let filtered = data.filter(d => new Date(d.timestamp) >= cutoff);
+            
+            // If we have data but it doesn't extend to "now", add a null entry
+            if (filtered.length > 0) {
+                const newestDataTime = new Date(filtered[0].timestamp); // Remember: descending order
+                
+                // If there's a gap between newest data and now, add null entry at "now"
+                // This creates a visual gap in the chart
+                if (newestDataTime < now - 60000) { // More than 1 minute old
+                    // Create null entry with current timestamp
+                    const nullEntry = {
+                        timestamp: now.toISOString(),
+                        batt_curr_min: null,
+                        batt_curr_max: null,
+                        batt_curr_avg: null,
+                        alt_curr_min: null,
+                        alt_curr_max: null,
+                        alt_curr_avg: null,
+                        victron_curr_min: null,
+                        victron_curr_max: null,
+                        victron_curr_avg: null
+                    };
+                    // Add to beginning since we're in descending order
+                    filtered.unshift(nullEntry);
+                }
+            }
+            
+            return filtered;
         }
 
         // ============================================
@@ -1255,6 +1282,11 @@
                 );
             }
 
+            // Add spanGaps: false to all datasets to show gaps where data is missing
+            datasets.forEach(ds => {
+                ds.spanGaps = false;
+            });
+
             if (chart1) chart1.destroy();
 
             chart1 = new Chart(ctx, {
@@ -1271,6 +1303,13 @@
                             callbacks: {
                                 title: function (items) {
                                     return formatDateStringForTooltip(new Date(items[0].parsed.x));
+                                },
+                                label: function(context) {
+                                    // Handle null values in tooltip
+                                    if (context.raw === null || context.parsed.y === null) {
+                                        return context.dataset.label + ': No data';
+                                    }
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2);
                                 }
                             }
                         },
@@ -1434,8 +1473,17 @@
 
             // Clamp to data range
             // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart1SourceData[chart1SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart1SourceData[0].timestamp).getTime();
+            // Skip null entries when finding actual data bounds
+            const realData = chart1SourceData.filter(d => 
+                d.batt_curr_avg !== null || 
+                d.alt_curr_avg !== null || 
+                d.victron_curr_avg !== null
+            );
+            
+            if (!realData.length) return;
+            
+            const dataMin = new Date(realData[realData.length - 1].timestamp).getTime();
+            const dataMax = new Date(realData[0].timestamp).getTime();
 
             const clampedMin = Math.max(min, dataMin);
             const clampedMax = Math.min(max, dataMax);
@@ -1577,8 +1625,17 @@
             let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
 
             // With descending order: newest at [0], oldest at [length-1]
-            const dataMin = new Date(chart1SourceData[chart1SourceData.length - 1].timestamp).getTime();
-            const dataMax = new Date(chart1SourceData[0].timestamp).getTime();
+            // Skip null entries when finding actual data bounds
+            const realData = chart1SourceData.filter(d => 
+                d.batt_curr_avg !== null || 
+                d.alt_curr_avg !== null || 
+                d.victron_curr_avg !== null
+            );
+            
+            if (!realData.length) return;
+            
+            const dataMin = new Date(realData[realData.length - 1].timestamp).getTime();
+            const dataMax = new Date(realData[0].timestamp).getTime();
 
             if (currentMin == null || currentMax == null) {
                 currentMin = dataMin;
