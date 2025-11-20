@@ -15,7 +15,7 @@
 </head>
 
 <body>
-
+    
     <div class="container">
         <div id="error-message"
             style="display:none; color:#f44336; margin:10px 0; padding:10px; background:#ffebee; border-radius:4px;">
@@ -24,8 +24,7 @@
         <!-- Timezone Selection -->
         <div style="padding: 10px 0; margin-bottom: 15px; display: flex; align-items: center; gap: 15px;">
             <label style="color: #e0e0e0; font-weight: 500; font-size: 13px;">Display Timezone:</label>
-            <select id="timezone-selector"
-                style="padding: 5px 10px; background: transparent; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; min-width: 250px;">
+            <select id="timezone-selector" style="padding: 5px 10px; background: transparent; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; min-width: 250px;">
                 <option value="local">Browser Local Time</option>
                 <option value="UTC">UTC</option>
                 <optgroup label="Americas">
@@ -763,9 +762,9 @@
         // ============================================
         // TIMEZONE MANAGEMENT
         // ============================================
-
+        
         let selectedTimezone = 'local'; // Default to browser local time
-
+        
         // Load saved timezone preference
         function loadTimezonePreference() {
             const saved = localStorage.getItem('selectedTimezone');
@@ -775,12 +774,12 @@
             }
             updateTimezoneInfo();
         }
-
+        
         // Save timezone preference
         function saveTimezonePreference() {
             localStorage.setItem('selectedTimezone', selectedTimezone);
         }
-
+        
         // Update timezone info display
         function updateTimezoneInfo() {
             const infoElement = document.getElementById('timezone-info');
@@ -803,7 +802,7 @@
                 infoElement.textContent = `(UTC${sign}${diff.toFixed(1).replace('.0', '')})`;
             }
         }
-
+        
         // Format date string for tooltip based on selected timezone
         function formatDateStringForTooltip(date) {
             const options = {
@@ -815,7 +814,7 @@
                 second: '2-digit',
                 hour12: false
             };
-
+            
             if (selectedTimezone === 'local') {
                 return date.toLocaleString('en-US', options);
             } else if (selectedTimezone === 'UTC') {
@@ -825,14 +824,14 @@
                 return date.toLocaleString('en-US', options) + ' ' + selectedTimezone.split('/').pop();
             }
         }
-
+        
         // Setup timezone selector event listener
-        window.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('timezone-selector').addEventListener('change', function (e) {
+        window.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('timezone-selector').addEventListener('change', function(e) {
                 selectedTimezone = e.target.value;
                 saveTimezonePreference();
                 updateTimezoneInfo();
-
+                
                 // Rebuild all charts with new timezone
                 if (fullData && fullData.length > 0) {
                     updateChart1();
@@ -909,7 +908,7 @@
             const hasExtensionPoint = data.length > 0 && data[0]._isExtensionPoint;
             let extensionPoint = null;
             let dataToProcess = data;
-
+            
             if (hasExtensionPoint) {
                 // Remove extension point temporarily for binning
                 extensionPoint = data[0];
@@ -1124,7 +1123,7 @@
             }
 
             result.push(ascending[ascending.length - 1]);
-
+            
             // Reverse back to descending order (newest first)
             return result.reverse();
         }
@@ -1171,7 +1170,7 @@
                     // Get the most recent data point (index 0 since data is sorted descending)
                     const mostRecent = withGaps[0];
                     const mostRecentTime = new Date(mostRecent.timestamp);
-
+                    
                     // Get current time in the selected timezone
                     let now;
                     if (selectedTimezone === 'local') {
@@ -1182,7 +1181,7 @@
                         // For specific timezones, create a properly adjusted time
                         now = new Date();
                     }
-
+                    
                     // Only add extension point if most recent data is older than 1 minute
                     if (now - mostRecentTime > 60000) {
                         // Create a data point at "now" with all values as null
@@ -1255,7 +1254,7 @@
                             alt_zero_max: null,
                             alt_zero_avg: null
                         };
-
+                        
                         // Insert at the beginning (since data is sorted descending)
                         withGaps.unshift(extensionPoint);
                     }
@@ -1581,20 +1580,22 @@
                             },
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
+                                maxRotation: 45,   // rotate labels to save space
+                                minRotation: 45,
                                 autoSkip: true,
                                 major: { enabled: true },
-                                callback: function (value, index, ticks) {
+                                callback: function(value, index, ticks) {
                                     const date = new Date(value);
-
+                                    
                                     // Determine the appropriate format based on the time range
                                     const range = this.max - this.min;
                                     const hour = 3600000;
                                     const day = 86400000;
-
+                                    
                                     let formatOptions = {
                                         hour12: false
                                     };
-
+                                    
                                     if (range < hour * 2) {
                                         // Less than 2 hours: show HH:mm
                                         formatOptions.hour = '2-digit';
@@ -1614,7 +1615,7 @@
                                         formatOptions.month = 'short';
                                         formatOptions.year = 'numeric';
                                     }
-
+                                    
                                     if (selectedTimezone === 'local') {
                                         return date.toLocaleString('en-US', formatOptions);
                                     } else if (selectedTimezone === 'UTC') {
@@ -1750,7 +1751,7 @@
 
             // Re-render with new data but keep current zoom/pan window
             chart.update('none');
-
+            
             // After update completes, clear explicit min/max constraints
             // This allows the zoom plugin to zoom freely while maintaining current position
             chart.options.scales.x.min = undefined;
@@ -2167,21 +2168,23 @@
                                 }
                             },
                             ticks: {
-                                maxTicksLimit: 8,
+                                maxTicksLimit: 8,      // target ~7–8 labels
+                                maxRotation: 45,   // rotate labels to save space
+                                minRotation: 45,
                                 autoSkip: true,
                                 major: { enabled: true },
-                                callback: function (value, index, ticks) {
+                                callback: function(value, index, ticks) {
                                     const date = new Date(value);
-
+                                    
                                     // Determine the appropriate format based on the time range
                                     const range = this.max - this.min;
                                     const hour = 3600000;
                                     const day = 86400000;
-
+                                    
                                     let formatOptions = {
                                         hour12: false
                                     };
-
+                                    
                                     if (range < hour * 2) {
                                         // Less than 2 hours: show HH:mm
                                         formatOptions.hour = '2-digit';
@@ -2201,7 +2204,7 @@
                                         formatOptions.month = 'short';
                                         formatOptions.year = 'numeric';
                                     }
-
+                                    
                                     if (selectedTimezone === 'local') {
                                         return date.toLocaleString('en-US', formatOptions);
                                     } else if (selectedTimezone === 'UTC') {
@@ -2332,7 +2335,7 @@
 
             // Re-render with new data but keep current zoom/pan window
             chart.update('none');
-
+            
             // After update completes, clear explicit min/max constraints
             // This allows the zoom plugin to zoom freely while maintaining current position
             chart.options.scales.x.min = undefined;
@@ -2522,10 +2525,55 @@
         // END PLOT 2 ONLY
         // ============================================
         // ============================================
+        // ============================================
+        // ============================================
+        // PLOT 3 ONLY — Temperatures & Barometric Pressure / STATE
+        // ============================================
+        // ============================================
 
-        // PLOT 3 ONLY — Temperatures & Barometric Pressure
         let chart3 = null;
         let chart3SourceData = [];
+
+        // ============================================
+        // ============================================
+        // PLOT 3 ONLY — Temperatures & Barometric Pressure / SETTINGS PERSISTENCE
+        // ============================================
+        // ============================================
+
+        function saveSettings3() {
+            const settings = {
+                timeValue: document.getElementById('timeValue3').value,
+                timeUnit: document.querySelector('.plot3-unit.active')?.dataset.unit || 'hours',
+                variables: {}
+            };
+            document.querySelectorAll('.variable-toggle3').forEach(cb => {
+                settings.variables[cb.dataset.group] = cb.checked;
+            });
+            localStorage.setItem('plot3Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings3() {
+            const saved = localStorage.getItem('plot3Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
+            document.getElementById('timeValue3').value = settings.timeValue || 24;
+            document.querySelectorAll('.plot3-unit').forEach(box => {
+                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
+            });
+            if (settings.variables) {
+                document.querySelectorAll('.variable-toggle3').forEach(cb => {
+                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
+                        cb.checked = settings.variables[cb.dataset.group];
+                    }
+                });
+            }
+        }
+
+        // ============================================
+        // ============================================
+        // PLOT 3 ONLY — Temperatures & Barometric Pressure / CHART CREATION
+        // ============================================
+        // ============================================
 
         function createChart3(data) {
             console.log('Plot 3: createChart3 called with', data.length, 'records');
@@ -2551,72 +2599,48 @@
             // Alternator Temperature (left axis, °F) - blue
             if (checkedVars.has('AltTemp')) {
                 datasets.push(
-                    {
-                        label: 'Alt Temp Min', data: data.map(d => d.alt_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Alt Temp Max', data: data.map(d => d.alt_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Alt Temp', data: data.map(d => d.alt_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Alt Temp Min', data: data.map(d => d.alt_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Temp Max', data: data.map(d => d.alt_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Temp', data: data.map(d => d.alt_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Thermistor Temperature (left axis, °F) - orange
             if (checkedVars.has('ThermTemp')) {
                 datasets.push(
-                    {
-                        label: 'Therm Temp Min', data: data.map(d => d.temp_therm_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Therm Temp Max', data: data.map(d => d.temp_therm_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Therm Temp', data: data.map(d => d.temp_therm_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Therm Temp Min', data: data.map(d => d.temp_therm_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Therm Temp Max', data: data.map(d => d.temp_therm_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Therm Temp', data: data.map(d => d.temp_therm_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Ambient Temperature (left axis, °F) - green
             if (checkedVars.has('AmbTemp')) {
                 datasets.push(
-                    {
-                        label: 'Amb Temp Min', data: data.map(d => d.amb_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Amb Temp Max', data: data.map(d => d.amb_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Amb Temp', data: data.map(d => d.amb_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Amb Temp Min', data: data.map(d => d.amb_temp_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Amb Temp Max', data: data.map(d => d.amb_temp_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Amb Temp', data: data.map(d => d.amb_temp_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Barometric Pressure (right axis) - pink
             if (checkedVars.has('BaroPressure')) {
                 datasets.push(
-                    {
-                        label: 'Baro Min', data: data.map(d => d.baro_min), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Baro Max', data: data.map(d => d.baro_max), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Baro', data: data.map(d => d.baro_avg), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Baro Min', data: data.map(d => d.baro_min), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Baro Max', data: data.map(d => d.baro_max), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Baro', data: data.map(d => d.baro_avg), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -2697,20 +2721,22 @@
                             },
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
+                                maxRotation: 45,   // rotate labels to save space
+                                minRotation: 45,
                                 autoSkip: true,
                                 major: { enabled: true },
-                                callback: function (value, index, ticks) {
+                                callback: function(value, index, ticks) {
                                     const date = new Date(value);
-
+                                    
                                     // Determine the appropriate format based on the time range
                                     const range = this.max - this.min;
                                     const hour = 3600000;
                                     const day = 86400000;
-
+                                    
                                     let formatOptions = {
                                         hour12: false
                                     };
-
+                                    
                                     if (range < hour * 2) {
                                         // Less than 2 hours: show HH:mm
                                         formatOptions.hour = '2-digit';
@@ -2730,7 +2756,7 @@
                                         formatOptions.month = 'short';
                                         formatOptions.year = 'numeric';
                                     }
-
+                                    
                                     if (selectedTimezone === 'local') {
                                         return date.toLocaleString('en-US', formatOptions);
                                     } else if (selectedTimezone === 'UTC') {
@@ -2763,8 +2789,13 @@
             canvas.style.display = 'block';
         }
 
-        // Apply time filter & rebuild chart
-        // Apply time filter & rebuild chart
+        // ============================================
+        // ============================================
+        // PLOT 3 ONLY — Temperatures & Barometric Pressure / UPDATE & HELPERS
+        // ============================================
+        // ============================================
+
+        // Apply time window & rebuild chart
         function updateChart3() {
             const timeValue = parseInt(document.getElementById('timeValue3').value);
             const activeUnit = document.querySelector('.plot3-unit.active');
@@ -2782,6 +2813,7 @@
             createChart3(binnedData);
             updateActivePresetButton3();
         }
+
 
         function rebinChart3ToVisibleRange(chart) {
             if (!chart3SourceData || chart3SourceData.length === 0) return;
@@ -2874,7 +2906,7 @@
 
             // Re-render with new data but keep current zoom/pan window
             chart.update('none');
-
+            
             // After update completes, clear explicit min/max constraints
             // This allows the zoom plugin to zoom freely while maintaining current position
             chart.options.scales.x.min = undefined;
@@ -2898,67 +2930,13 @@
             });
         }
 
-        function saveSettings3() {
-            const settings = {
-                timeValue: document.getElementById('timeValue3').value,
-                timeUnit: document.querySelector('.plot3-unit.active')?.dataset.unit || 'hours',
-                variables: {}
-            };
-            document.querySelectorAll('.variable-toggle3').forEach(cb => {
-                settings.variables[cb.dataset.group] = cb.checked;
-            });
-            localStorage.setItem('plot3Settings', JSON.stringify(settings));
-        }
+        // ============================================
+        // ============================================
+        // PLOT 3 ONLY — Temperatures & Barometric Pressure / EVENT LISTENERS
+        // ============================================
+        // ============================================
 
-        function loadSettings3() {
-            const saved = localStorage.getItem('plot3Settings');
-            if (!saved) return;
-            const settings = JSON.parse(saved);
-            document.getElementById('timeValue3').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot3-unit').forEach(box => {
-                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
-            });
-            if (settings.variables) {
-                document.querySelectorAll('.variable-toggle3').forEach(cb => {
-                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
-                        cb.checked = settings.variables[cb.dataset.group];
-                    }
-                });
-            }
-        }
-
-        document.getElementById('toggleTools3').addEventListener('click', function () {
-            const tools = document.getElementById('plotTools3');
-            const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
-        });
-
-        document.querySelectorAll('.preset3').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('timeValue3').value = this.dataset.value;
-                document.querySelectorAll('.plot3-unit').forEach(box => {
-                    box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
-                });
-                updateChart3();
-                saveSettings3();
-            });
-        });
-
-        document.querySelectorAll('.plot3-unit').forEach(box => {
-            box.addEventListener('click', function () {
-                document.querySelectorAll('.plot3-unit').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                updateActivePresetButton3();
-                saveSettings3();
-            });
-        });
-
-        document.getElementById('applyTimeRange3').addEventListener('click', function () {
-            updateChart3();
-            saveSettings3();
-        });
-
+        // Pan buttons (manual pan to keep within data range + rebin)
         function panChart3(direction) {
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
@@ -3059,10 +3037,60 @@
             saveSettings3();
         });
 
+        // ============================================
+        // ============================================
+        // END PLOT 3 ONLY
+        // ============================================
+        // ============================================
+        // ============================================
+        // ============================================
+        // PLOT 4 ONLY — RPM & Duty Cycles / STATE
+        // ============================================
+        // ============================================
 
-        // PLOT 4 ONLY — Engine & Alternator Duty
         let chart4 = null;
         let chart4SourceData = [];
+
+        // ============================================
+        // ============================================
+        // PLOT 4 ONLY — RPM & Duty Cycles / SETTINGS PERSISTENCE
+        // ============================================
+        // ============================================
+
+        function saveSettings4() {
+            const settings = {
+                timeValue: document.getElementById('timeValue4').value,
+                timeUnit: document.querySelector('.plot4-unit.active')?.dataset.unit || 'hours',
+                variables: {}
+            };
+            document.querySelectorAll('.variable-toggle4').forEach(cb => {
+                settings.variables[cb.dataset.group] = cb.checked;
+            });
+            localStorage.setItem('plot4Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings4() {
+            const saved = localStorage.getItem('plot4Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
+            document.getElementById('timeValue4').value = settings.timeValue || 24;
+            document.querySelectorAll('.plot4-unit').forEach(box => {
+                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
+            });
+            if (settings.variables) {
+                document.querySelectorAll('.variable-toggle4').forEach(cb => {
+                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
+                        cb.checked = settings.variables[cb.dataset.group];
+                    }
+                });
+            }
+        }
+
+        // ============================================
+        // ============================================
+        // PLOT 4 ONLY — RPM & Duty Cycles / CHART CREATION
+        // ============================================
+        // ============================================
 
         function createChart4(data) {
             const canvas = document.getElementById('chart4');
@@ -3079,56 +3107,40 @@
             // RPM (left axis) - blue
             if (checkedVars.has('RPM')) {
                 datasets.push(
-                    {
-                        label: 'RPM Min', data: data.map(d => d.rpm_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'RPM Max', data: data.map(d => d.rpm_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'RPM', data: data.map(d => d.rpm_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'RPM Min', data: data.map(d => d.rpm_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'RPM Max', data: data.map(d => d.rpm_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'RPM', data: data.map(d => d.rpm_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Alternator Duty Cycle (right axis) - orange
             if (checkedVars.has('DutyCycle')) {
                 datasets.push(
-                    {
-                        label: 'Alt Duty Min', data: data.map(d => d.duty_cycle_min), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Alt Duty Max', data: data.map(d => d.duty_cycle_max), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Alt Duty', data: data.map(d => d.duty_cycle_avg), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Alt Duty Min', data: data.map(d => d.duty_cycle_min), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Duty Max', data: data.map(d => d.duty_cycle_max), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Duty', data: data.map(d => d.duty_cycle_avg), yAxisID: 'y1', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Ignition Duty (right axis, instantaneous) - green
             if (checkedVars.has('IgnDuty')) {
                 datasets.push(
-                    {
-                        label: 'Ign Duty', data: data.map(d => d.ign_duty), yAxisID: 'y1', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Ign Duty', data: data.map(d => d.ign_duty), yAxisID: 'y1', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Engine Running Duty (right axis, instantaneous) - pink
             if (checkedVars.has('EngDuty')) {
                 datasets.push(
-                    {
-                        label: 'Eng Duty', data: data.map(d => d.eng_duty), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Eng Duty', data: data.map(d => d.eng_duty), yAxisID: 'y1', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -3203,20 +3215,22 @@
                             },
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
+                                maxRotation: 45,   // rotate labels to save space
+                                minRotation: 45,
                                 autoSkip: true,
                                 major: { enabled: true },
-                                callback: function (value, index, ticks) {
+                                callback: function(value, index, ticks) {
                                     const date = new Date(value);
-
+                                    
                                     // Determine the appropriate format based on the time range
                                     const range = this.max - this.min;
                                     const hour = 3600000;
                                     const day = 86400000;
-
+                                    
                                     let formatOptions = {
                                         hour12: false
                                     };
-
+                                    
                                     if (range < hour * 2) {
                                         // Less than 2 hours: show HH:mm
                                         formatOptions.hour = '2-digit';
@@ -3236,7 +3250,7 @@
                                         formatOptions.month = 'short';
                                         formatOptions.year = 'numeric';
                                     }
-
+                                    
                                     if (selectedTimezone === 'local') {
                                         return date.toLocaleString('en-US', formatOptions);
                                     } else if (selectedTimezone === 'UTC') {
@@ -3269,6 +3283,13 @@
             canvas.style.display = 'block';
         }
 
+        // ============================================
+        // ============================================
+        // PLOT 4 ONLY — RPM & Duty Cycles / UPDATE & HELPERS
+        // ============================================
+        // ============================================
+
+        // Apply time window & rebuild chart
         function updateChart4() {
             const timeValue = parseInt(document.getElementById('timeValue4').value);
             const activeUnit = document.querySelector('.plot4-unit.active');
@@ -3286,6 +3307,8 @@
             createChart4(initialBinned);
             updateActivePresetButton4();
         }
+
+
         function rebinChart4ToVisibleRange(chart) {
             if (!chart4SourceData || chart4SourceData.length === 0) return;
 
@@ -3366,12 +3389,14 @@
 
             // Re-render with new data but keep current zoom/pan window
             chart.update('none');
-
+            
             // After update completes, clear explicit min/max constraints
             // This allows the zoom plugin to zoom freely while maintaining current position
             chart.options.scales.x.min = undefined;
             chart.options.scales.x.max = undefined;
         }
+
+
 
         function updateActivePresetButton4() {
             const timeValue = parseInt(document.getElementById('timeValue4').value);
@@ -3388,67 +3413,13 @@
             });
         }
 
-        function saveSettings4() {
-            const settings = {
-                timeValue: document.getElementById('timeValue4').value,
-                timeUnit: document.querySelector('.plot4-unit.active')?.dataset.unit || 'hours',
-                variables: {}
-            };
-            document.querySelectorAll('.variable-toggle4').forEach(cb => {
-                settings.variables[cb.dataset.group] = cb.checked;
-            });
-            localStorage.setItem('plot4Settings', JSON.stringify(settings));
-        }
+        // ============================================
+        // ============================================
+        // PLOT 4 ONLY — RPM & Duty Cycles / EVENT LISTENERS
+        // ============================================
+        // ============================================
 
-        function loadSettings4() {
-            const saved = localStorage.getItem('plot4Settings');
-            if (!saved) return;
-            const settings = JSON.parse(saved);
-            document.getElementById('timeValue4').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot4-unit').forEach(box => {
-                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
-            });
-            if (settings.variables) {
-                document.querySelectorAll('.variable-toggle4').forEach(cb => {
-                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
-                        cb.checked = settings.variables[cb.dataset.group];
-                    }
-                });
-            }
-        }
-
-        document.getElementById('toggleTools4').addEventListener('click', function () {
-            const tools = document.getElementById('plotTools4');
-            const isHidden = tools.style.display === 'none';
-            tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
-        });
-
-        document.querySelectorAll('.preset4').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('timeValue4').value = this.dataset.value;
-                document.querySelectorAll('.plot4-unit').forEach(box => {
-                    box.classList.toggle('active', box.dataset.unit === this.dataset.unit);
-                });
-                updateChart4();
-                saveSettings4();
-            });
-        });
-
-        document.querySelectorAll('.plot4-unit').forEach(box => {
-            box.addEventListener('click', function () {
-                document.querySelectorAll('.plot4-unit').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                updateActivePresetButton4();
-                saveSettings4();
-            });
-        });
-
-        document.getElementById('applyTimeRange4').addEventListener('click', function () {
-            updateChart4();
-            saveSettings4();
-        });
-
+        // Pan buttons (manual pan to keep within data range + rebin)
         function panChart4(direction) {
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
@@ -3549,9 +3520,46 @@
             saveSettings4();
         });
 
-        // PLOT 5 ONLY — Speeds
+        // ============================================
+        // ============================================
+        // END PLOT 4 ONLY
+        // ============================================
+        // ============================================
+        // ============================================
+        // ============================================
+        // PLOT 5 ONLY — Speeds / STATE
+        // ============================================
+        // ============================================
+
         let chart5 = null;
         let chart5SourceData = [];
+
+        // ============================================
+        // ============================================
+        // PLOT 5 ONLY — Speeds / SETTINGS PERSISTENCE
+        // ============================================
+        // ============================================
+
+        function saveSettings5() {
+            const settings = { timeValue: document.getElementById('timeValue5').value, timeUnit: document.querySelector('.plot5-unit.active')?.dataset.unit || 'hours', variables: {} };
+            document.querySelectorAll('.variable-toggle5').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
+            localStorage.setItem('plot5Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings5() {
+            const saved = localStorage.getItem('plot5Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
+            document.getElementById('timeValue5').value = settings.timeValue || 24;
+            document.querySelectorAll('.plot5-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
+            if (settings.variables) { document.querySelectorAll('.variable-toggle5').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
+        }
+
+        // ============================================
+        // ============================================
+        // PLOT 5 ONLY — Speeds / CHART CREATION
+        // ============================================
+        // ============================================
 
         function createChart5(data) {
             const canvas = document.getElementById('chart5');
@@ -3568,72 +3576,48 @@
             // SOG - blue
             if (checkedVars.has('SOG')) {
                 datasets.push(
-                    {
-                        label: 'SOG Min', data: data.map(d => d.sog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'SOG Max', data: data.map(d => d.sog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'SOG', data: data.map(d => d.sog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'SOG Min', data: data.map(d => d.sog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'SOG Max', data: data.map(d => d.sog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'SOG', data: data.map(d => d.sog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // AWS - orange
             if (checkedVars.has('AWS')) {
                 datasets.push(
-                    {
-                        label: 'AWS Min', data: data.map(d => d.aws_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'AWS Max', data: data.map(d => d.aws_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'AWS', data: data.map(d => d.aws_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'AWS Min', data: data.map(d => d.aws_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'AWS Max', data: data.map(d => d.aws_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'AWS', data: data.map(d => d.aws_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // TWS - green
             if (checkedVars.has('TWS')) {
                 datasets.push(
-                    {
-                        label: 'TWS Min', data: data.map(d => d.tws_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'TWS Max', data: data.map(d => d.tws_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'TWS', data: data.map(d => d.tws_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'TWS Min', data: data.map(d => d.tws_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'TWS Max', data: data.map(d => d.tws_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'TWS', data: data.map(d => d.tws_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // VMG - pink
             if (checkedVars.has('VMG')) {
                 datasets.push(
-                    {
-                        label: 'VMG Min', data: data.map(d => d.vmg_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'VMG Max', data: data.map(d => d.vmg_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'VMG', data: data.map(d => d.vmg_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'VMG Min', data: data.map(d => d.vmg_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'VMG Max', data: data.map(d => d.vmg_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'VMG', data: data.map(d => d.vmg_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -3708,20 +3692,22 @@
                             },
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
+                                maxRotation: 45,   // rotate labels to save space
+                                minRotation: 45,
                                 autoSkip: true,
                                 major: { enabled: true },
-                                callback: function (value, index, ticks) {
+                                callback: function(value, index, ticks) {
                                     const date = new Date(value);
-
+                                    
                                     // Determine the appropriate format based on the time range
                                     const range = this.max - this.min;
                                     const hour = 3600000;
                                     const day = 86400000;
-
+                                    
                                     let formatOptions = {
                                         hour12: false
                                     };
-
+                                    
                                     if (range < hour * 2) {
                                         // Less than 2 hours: show HH:mm
                                         formatOptions.hour = '2-digit';
@@ -3741,7 +3727,7 @@
                                         formatOptions.month = 'short';
                                         formatOptions.year = 'numeric';
                                     }
-
+                                    
                                     if (selectedTimezone === 'local') {
                                         return date.toLocaleString('en-US', formatOptions);
                                     } else if (selectedTimezone === 'UTC') {
@@ -3766,6 +3752,14 @@
             document.getElementById('loadingChart5').style.display = 'none';
             canvas.style.display = 'block';
         }
+
+        // ============================================
+        // ============================================
+        // PLOT 5 ONLY — Speeds / UPDATE & HELPERS
+        // ============================================
+        // ============================================
+
+        // Apply time window & rebuild chart
         function updateChart5() {
             const timeValue = parseInt(document.getElementById('timeValue5').value);
             const activeUnit = document.querySelector('.plot5-unit.active');
@@ -3782,6 +3776,8 @@
             createChart5(initialBinned);
             updateActivePresetButton5();
         }
+
+
         function rebinChart5ToVisibleRange(chart) {
             if (!chart5SourceData || chart5SourceData.length === 0) return;
             if (!chart || !chart.scales || !chart.scales.x) return;
@@ -3867,12 +3863,14 @@
             });
 
             chart.update('none');
-
+            
             // After update completes, clear explicit min/max constraints
             // This allows the zoom plugin to zoom freely while maintaining current position
             chart.options.scales.x.min = undefined;
             chart.options.scales.x.max = undefined;
         }
+
+
 
         function updateActivePresetButton5() {
             const timeValue = parseInt(document.getElementById('timeValue5').value);
@@ -3884,42 +3882,13 @@
             });
         }
 
-        function saveSettings5() {
-            const settings = { timeValue: document.getElementById('timeValue5').value, timeUnit: document.querySelector('.plot5-unit.active')?.dataset.unit || 'hours', variables: {} };
-            document.querySelectorAll('.variable-toggle5').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
-            localStorage.setItem('plot5Settings', JSON.stringify(settings));
-        }
+        // ============================================
+        // ============================================
+        // PLOT 5 ONLY — Speeds / EVENT LISTENERS
+        // ============================================
+        // ============================================
 
-        function loadSettings5() {
-            const saved = localStorage.getItem('plot5Settings');
-            if (!saved) return;
-            const settings = JSON.parse(saved);
-            document.getElementById('timeValue5').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot5-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            if (settings.variables) { document.querySelectorAll('.variable-toggle5').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
-        }
-
-        document.getElementById('toggleTools5').addEventListener('click', function () {
-            const tools = document.getElementById('plotTools5');
-            tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
-            this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
-        });
-
-        document.querySelectorAll('.preset5').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('timeValue5').value = this.dataset.value;
-                document.querySelectorAll('.plot5-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
-                updateChart5(); saveSettings5();
-            });
-        });
-
-        document.querySelectorAll('.plot5-unit').forEach(box => {
-            box.addEventListener('click', function () {
-                document.querySelectorAll('.plot5-unit').forEach(b => b.classList.remove('active'));
-                this.classList.add('active'); updateActivePresetButton5(); saveSettings5();
-            });
-        });
-
+        // Pan buttons (manual pan to keep within data range + rebin)
         function panChart5(direction) {
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart5SourceData[chart5SourceData.length - 1].timestamp).getTime();
@@ -3979,10 +3948,46 @@
             chart5.update('none'); saveSettings5();
         });
 
+        // ============================================
+        // ============================================
+        // END PLOT 5 ONLY
+        // ============================================
+        // ============================================
+        // ============================================
+        // ============================================
+        // PLOT 6 ONLY — Angles / STATE
+        // ============================================
+        // ============================================
 
-        // PLOT 6 ONLY — Angles
         let chart6 = null;
         let chart6SourceData = [];
+
+        // ============================================
+        // ============================================
+        // PLOT 6 ONLY — Angles / SETTINGS PERSISTENCE
+        // ============================================
+        // ============================================
+
+        function saveSettings6() {
+            const settings = { timeValue: document.getElementById('timeValue6').value, timeUnit: document.querySelector('.plot6-unit.active')?.dataset.unit || 'hours', variables: {} };
+            document.querySelectorAll('.variable-toggle6').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
+            localStorage.setItem('plot6Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings6() {
+            const saved = localStorage.getItem('plot6Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
+            document.getElementById('timeValue6').value = settings.timeValue || 24;
+            document.querySelectorAll('.plot6-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
+            if (settings.variables) { document.querySelectorAll('.variable-toggle6').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
+        }
+
+        // ============================================
+        // ============================================
+        // PLOT 6 ONLY — Angles / CHART CREATION
+        // ============================================
+        // ============================================
 
         function createChart6(data) {
             const canvas = document.getElementById('chart6');
@@ -3999,90 +4004,60 @@
             // COG - blue
             if (checkedVars.has('COG')) {
                 datasets.push(
-                    {
-                        label: 'COG Min', data: data.map(d => d.cog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'COG Max', data: data.map(d => d.cog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'COG', data: data.map(d => d.cog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'COG Min', data: data.map(d => d.cog_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'COG Max', data: data.map(d => d.cog_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'COG', data: data.map(d => d.cog_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Heading - orange
             if (checkedVars.has('Heading')) {
                 datasets.push(
-                    {
-                        label: 'Heading Min', data: data.map(d => d.heading_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Heading Max', data: data.map(d => d.heading_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Heading', data: data.map(d => d.heading_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Heading Min', data: data.map(d => d.heading_min), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Heading Max', data: data.map(d => d.heading_max), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 0.3)', backgroundColor: 'rgba(230, 159, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Heading', data: data.map(d => d.heading_avg), yAxisID: 'y', borderColor: 'rgba(230, 159, 0, 1)', backgroundColor: 'rgba(230, 159, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // AWA - green
             if (checkedVars.has('AWA')) {
                 datasets.push(
-                    {
-                        label: 'AWA Min', data: data.map(d => d.awa_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'AWA Max', data: data.map(d => d.awa_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'AWA', data: data.map(d => d.awa_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'AWA Min', data: data.map(d => d.awa_min), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'AWA Max', data: data.map(d => d.awa_max), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 0.3)', backgroundColor: 'rgba(0, 158, 115, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'AWA', data: data.map(d => d.awa_avg), yAxisID: 'y', borderColor: 'rgba(0, 158, 115, 1)', backgroundColor: 'rgba(0, 158, 115, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // TWA - pink
             if (checkedVars.has('TWA')) {
                 datasets.push(
-                    {
-                        label: 'TWA Min', data: data.map(d => d.twa_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'TWA Max', data: data.map(d => d.twa_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'TWA', data: data.map(d => d.twa_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'TWA Min', data: data.map(d => d.twa_min), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'TWA Max', data: data.map(d => d.twa_max), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 0.3)', backgroundColor: 'rgba(204, 121, 167, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'TWA', data: data.map(d => d.twa_avg), yAxisID: 'y', borderColor: 'rgba(204, 121, 167, 1)', backgroundColor: 'rgba(204, 121, 167, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
             // Leeway - sky blue
             if (checkedVars.has('Leeway')) {
                 datasets.push(
-                    {
-                        label: 'Leeway Min', data: data.map(d => d.leeway_min), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Leeway Max', data: data.map(d => d.leeway_max), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Leeway', data: data.map(d => d.leeway_avg), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 1)', backgroundColor: 'rgba(86, 180, 233, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Leeway Min', data: data.map(d => d.leeway_min), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Leeway Max', data: data.map(d => d.leeway_max), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 0.3)', backgroundColor: 'rgba(86, 180, 233, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Leeway', data: data.map(d => d.leeway_avg), yAxisID: 'y', borderColor: 'rgba(86, 180, 233, 1)', backgroundColor: 'rgba(86, 180, 233, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -4157,20 +4132,22 @@
                             },
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
+                                maxRotation: 45,   // rotate labels to save space
+                                minRotation: 45,
                                 autoSkip: true,
                                 major: { enabled: true },
-                                callback: function (value, index, ticks) {
+                                callback: function(value, index, ticks) {
                                     const date = new Date(value);
-
+                                    
                                     // Determine the appropriate format based on the time range
                                     const range = this.max - this.min;
                                     const hour = 3600000;
                                     const day = 86400000;
-
+                                    
                                     let formatOptions = {
                                         hour12: false
                                     };
-
+                                    
                                     if (range < hour * 2) {
                                         // Less than 2 hours: show HH:mm
                                         formatOptions.hour = '2-digit';
@@ -4190,7 +4167,7 @@
                                         formatOptions.month = 'short';
                                         formatOptions.year = 'numeric';
                                     }
-
+                                    
                                     if (selectedTimezone === 'local') {
                                         return date.toLocaleString('en-US', formatOptions);
                                     } else if (selectedTimezone === 'UTC') {
@@ -4216,6 +4193,13 @@
             canvas.style.display = 'block';
         }
 
+        // ============================================
+        // ============================================
+        // PLOT 6 ONLY — Angles / UPDATE & HELPERS
+        // ============================================
+        // ============================================
+
+        // Apply time window & rebuild chart
         function updateChart6() {
             const timeValue = parseInt(document.getElementById('timeValue6').value);
             const activeUnit = document.querySelector('.plot6-unit.active');
@@ -4232,6 +4216,7 @@
             createChart6(initialBinned);
             updateActivePresetButton6();
         }
+
 
         function rebinChart6ToVisibleRange(chart) {
             if (!chart6SourceData || chart6SourceData.length === 0) return;
@@ -4328,12 +4313,14 @@
             });
 
             chart.update('none');
-
+            
             // After update completes, clear explicit min/max constraints
             // This allows the zoom plugin to zoom freely while maintaining current position
             chart.options.scales.x.min = undefined;
             chart.options.scales.x.max = undefined;
         }
+
+
 
         function updateActivePresetButton6() {
             const timeValue = parseInt(document.getElementById('timeValue6').value);
@@ -4345,43 +4332,13 @@
             });
         }
 
-        function saveSettings6() {
-            const settings = { timeValue: document.getElementById('timeValue6').value, timeUnit: document.querySelector('.plot6-unit.active')?.dataset.unit || 'hours', variables: {} };
-            document.querySelectorAll('.variable-toggle6').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
-            localStorage.setItem('plot6Settings', JSON.stringify(settings));
-        }
+        // ============================================
+        // ============================================
+        // PLOT 6 ONLY — Angles / EVENT LISTENERS
+        // ============================================
+        // ============================================
 
-        function loadSettings6() {
-            const saved = localStorage.getItem('plot6Settings');
-            if (!saved) return;
-            const settings = JSON.parse(saved);
-            document.getElementById('timeValue6').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot6-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            if (settings.variables) { document.querySelectorAll('.variable-toggle6').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
-        }
-
-        document.getElementById('toggleTools6').addEventListener('click', function () {
-            const tools = document.getElementById('plotTools6');
-            tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
-            this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
-        });
-
-        document.querySelectorAll('.preset6').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('timeValue6').value = this.dataset.value;
-                document.querySelectorAll('.plot6-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
-                updateChart6(); saveSettings6();
-            });
-        });
-
-        document.querySelectorAll('.plot6-unit').forEach(box => {
-            box.addEventListener('click', function () {
-                document.querySelectorAll('.plot6-unit').forEach(b => b.classList.remove('active'));
-                this.classList.add('active'); updateActivePresetButton6(); saveSettings6();
-            });
-        });
-
-        document.getElementById('applyTimeRange6').addEventListener('click', () => { updateChart6(); saveSettings6(); });
+        // Pan buttons (manual pan to keep within data range + rebin)
         function panChart6(direction) {
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart6SourceData[chart6SourceData.length - 1].timestamp).getTime();
@@ -4440,11 +4397,46 @@
             chart6.update('none'); saveSettings6();
         });
 
+        // ============================================
+        // ============================================
+        // END PLOT 6 ONLY
+        // ============================================
+        // ============================================
+        // ============================================
+        // ============================================
+        // PLOT 7 ONLY — Alternator Zero Offset / STATE
+        // ============================================
+        // ============================================
 
-        // PLOT 7 ONLY — Alternator Zero Offset
         let chart7 = null;
         let chart7SourceData = [];
 
+        // ============================================
+        // ============================================
+        // PLOT 7 ONLY — Alternator Zero Offset / SETTINGS PERSISTENCE
+        // ============================================
+        // ============================================
+
+        function saveSettings7() {
+            const settings = { timeValue: document.getElementById('timeValue7').value, timeUnit: document.querySelector('.plot7-unit.active')?.dataset.unit || 'hours', variables: {} };
+            document.querySelectorAll('.variable-toggle7').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
+            localStorage.setItem('plot7Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings7() {
+            const saved = localStorage.getItem('plot7Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
+            document.getElementById('timeValue7').value = settings.timeValue || 24;
+            document.querySelectorAll('.plot7-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
+            if (settings.variables) { document.querySelectorAll('.variable-toggle7').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
+        }
+
+        // ============================================
+        // ============================================
+        // PLOT 7 ONLY — Alternator Zero Offset / CHART CREATION
+        // ============================================
+        // ============================================
 
         function createChart7(data) {
             const canvas = document.getElementById('chart7');
@@ -4461,18 +4453,12 @@
             // Alt Zero - blue
             if (checkedVars.has('AltZero')) {
                 datasets.push(
-                    {
-                        label: 'Alt Zero Min', data: data.map(d => d.alt_zero_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Alt Zero Max', data: data.map(d => d.alt_zero_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
-                        spanGaps: false
-                    },
-                    {
-                        label: 'Alt Zero', data: data.map(d => d.alt_zero_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
-                        spanGaps: false
-                    }
+                    { label: 'Alt Zero Min', data: data.map(d => d.alt_zero_min), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Zero Max', data: data.map(d => d.alt_zero_max), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 0.3)', backgroundColor: 'rgba(0, 114, 178, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false },
+                    { label: 'Alt Zero', data: data.map(d => d.alt_zero_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false }
                 );
             }
 
@@ -4547,20 +4533,22 @@
                             },
                             ticks: {
                                 maxTicksLimit: 8,      // target ~7–8 labels
+                                maxRotation: 45,   // rotate labels to save space
+                                minRotation: 45,
                                 autoSkip: true,
                                 major: { enabled: true },
-                                callback: function (value, index, ticks) {
+                                callback: function(value, index, ticks) {
                                     const date = new Date(value);
-
+                                    
                                     // Determine the appropriate format based on the time range
                                     const range = this.max - this.min;
                                     const hour = 3600000;
                                     const day = 86400000;
-
+                                    
                                     let formatOptions = {
                                         hour12: false
                                     };
-
+                                    
                                     if (range < hour * 2) {
                                         // Less than 2 hours: show HH:mm
                                         formatOptions.hour = '2-digit';
@@ -4580,7 +4568,7 @@
                                         formatOptions.month = 'short';
                                         formatOptions.year = 'numeric';
                                     }
-
+                                    
                                     if (selectedTimezone === 'local') {
                                         return date.toLocaleString('en-US', formatOptions);
                                     } else if (selectedTimezone === 'UTC') {
@@ -4606,6 +4594,13 @@
             canvas.style.display = 'block';
         }
 
+        // ============================================
+        // ============================================
+        // PLOT 7 ONLY — Alternator Zero Offset / UPDATE & HELPERS
+        // ============================================
+        // ============================================
+
+        // Apply time window & rebuild chart
         function updateChart7() {
             const timeValue = parseInt(document.getElementById('timeValue7').value);
             const activeUnit = document.querySelector('.plot7-unit.active');
@@ -4622,6 +4617,8 @@
             createChart7(initialBinned);
             updateActivePresetButton7();
         }
+
+
         function rebinChart7ToVisibleRange(chart) {
             if (!chart7SourceData || chart7SourceData.length === 0) return;
             if (!chart || !chart.scales || !chart.scales.x) return;
@@ -4677,12 +4674,14 @@
             });
 
             chart.update('none');
-
+            
             // After update completes, clear explicit min/max constraints
             // This allows the zoom plugin to zoom freely while maintaining current position
             chart.options.scales.x.min = undefined;
             chart.options.scales.x.max = undefined;
         }
+
+
 
         function updateActivePresetButton7() {
             const timeValue = parseInt(document.getElementById('timeValue7').value);
@@ -4694,42 +4693,13 @@
             });
         }
 
-        function saveSettings7() {
-            const settings = { timeValue: document.getElementById('timeValue7').value, timeUnit: document.querySelector('.plot7-unit.active')?.dataset.unit || 'hours', variables: {} };
-            document.querySelectorAll('.variable-toggle7').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
-            localStorage.setItem('plot7Settings', JSON.stringify(settings));
-        }
+        // ============================================
+        // ============================================
+        // PLOT 7 ONLY — Alternator Zero Offset / EVENT LISTENERS
+        // ============================================
+        // ============================================
 
-        function loadSettings7() {
-            const saved = localStorage.getItem('plot7Settings');
-            if (!saved) return;
-            const settings = JSON.parse(saved);
-            document.getElementById('timeValue7').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot7-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            if (settings.variables) { document.querySelectorAll('.variable-toggle7').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
-        }
-
-        document.getElementById('toggleTools7').addEventListener('click', function () {
-            const tools = document.getElementById('plotTools7');
-            tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
-            this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
-        });
-
-        document.querySelectorAll('.preset7').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.getElementById('timeValue7').value = this.dataset.value;
-                document.querySelectorAll('.plot7-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === this.dataset.unit); });
-                updateChart7(); saveSettings7();
-            });
-        });
-
-        document.querySelectorAll('.plot7-unit').forEach(box => {
-            box.addEventListener('click', function () {
-                document.querySelectorAll('.plot7-unit').forEach(b => b.classList.remove('active'));
-                this.classList.add('active'); updateActivePresetButton7(); saveSettings7();
-            });
-        });
-
+        // Pan buttons (manual pan to keep within data range + rebin)
         function panChart7(direction) {
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart7SourceData[chart7SourceData.length - 1].timestamp).getTime();
@@ -4789,15 +4759,21 @@
             chart7.update('none'); saveSettings7();
         });
 
+        // ============================================
+        // ============================================
+        // END PLOT 7 ONLY
+        // ============================================
+        // ============================================
 
-        // SHARED (UNIFIED FOR ALL PLOTS) — MAIN INITIALIZATION
+
+// SHARED (UNIFIED FOR ALL PLOTS) — MAIN INITIALIZATION
         // ============================================
         // ============================================
 
         async function init() {
             // Load timezone preference first
             loadTimezonePreference();
-
+            
             const token = getTokenFromUrl();
 
             if (!token) {
