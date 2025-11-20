@@ -937,7 +937,20 @@
                 const mid = slice[Math.floor(slice.length / 2)];
                 bin.timestamp = mid.timestamp;
 
+                // Check if this bin contains any gap marker (null point)
+                // If so, the entire bin should be null to preserve the gap
+                const hasGapMarker = slice.some(row => {
+                    // A gap marker has all sensor values as null
+                    return row.batt_curr_min === null && row.batt_curr_max === null && row.batt_curr_avg === null;
+                });
+
                 for (const key of keys) {
+                    if (hasGapMarker) {
+                        // If bin contains a gap marker, make everything null
+                        bin[key] = null;
+                        continue;
+                    }
+
                     const values = slice
                         .map(row => row[key])
                         .filter(v => typeof v === 'number' && !Number.isNaN(v));
