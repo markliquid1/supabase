@@ -1035,8 +1035,8 @@
                 // Prefer next interval, fall back to current
                 const I = Number(next.intended_interval_sec) || Number(curr.intended_interval_sec) || 0;
 
-                // If we have a valid interval and the gap exceeds it, inject a null point
-                if (I > 0 && dtSec > I) {
+                // If we have a valid interval and the gap exceeds it (with 10% tolerance), inject a null point
+                if (I > 0 && dtSec > I * 1.1) {
                     // GAP detected → insert a synthetic null row between them
                     const midTs = new Date((t1 + t2) / 2).toISOString();
 
@@ -2122,9 +2122,6 @@
                                 onPanComplete({ chart }) {
                                     rebinChart2ToVisibleRange(chart);
                                 }
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
                             }
                         }
                     },
@@ -2306,6 +2303,11 @@
 
             // Re-render with new data but keep current zoom/pan window
             chart.update('none');
+            
+            // After update completes, clear explicit min/max constraints
+            // This allows the zoom plugin to zoom freely while maintaining current position
+            chart.options.scales.x.min = undefined;
+            chart.options.scales.x.max = undefined;
         }
 
         // Time preset highlight
@@ -2624,9 +2626,6 @@
                                 onPanComplete({ chart }) {
                                     rebinChart3ToVisibleRange(chart);
                                 }
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
                             }
                         }
                     },
@@ -2822,6 +2821,11 @@
 
             // Re-render with new data but keep current zoom/pan window
             chart.update('none');
+            
+            // After update completes, clear explicit min/max constraints
+            // This allows the zoom plugin to zoom freely while maintaining current position
+            chart.options.scales.x.min = undefined;
+            chart.options.scales.x.max = undefined;
         }
 
 
@@ -3112,9 +3116,6 @@
                                 onPanComplete({ chart }) {
                                     rebinChart4ToVisibleRange(chart);
                                 }
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
                             }
                         }
                     },
@@ -3296,6 +3297,11 @@
 
             // Re-render with new data but keep current zoom/pan window
             chart.update('none');
+            
+            // After update completes, clear explicit min/max constraints
+            // This allows the zoom plugin to zoom freely while maintaining current position
+            chart.options.scales.x.min = undefined;
+            chart.options.scales.x.max = undefined;
         }
 
         function updateActivePresetButton4() {
@@ -3591,9 +3597,6 @@
                                 onPanComplete({ chart }) {
                                     rebinChart5ToVisibleRange(chart);
                                 }
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
                             }
                         }
                     },
@@ -3771,6 +3774,11 @@
             });
 
             chart.update('none');
+            
+            // After update completes, clear explicit min/max constraints
+            // This allows the zoom plugin to zoom freely while maintaining current position
+            chart.options.scales.x.min = undefined;
+            chart.options.scales.x.max = undefined;
         }
 
         function updateActivePresetButton5() {
@@ -4008,9 +4016,6 @@
                                 onPanComplete({ chart }) {
                                     rebinChart6ToVisibleRange(chart);
                                 }
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
                             }
                         }
                     },
@@ -4200,6 +4205,11 @@
             });
 
             chart.update('none');
+            
+            // After update completes, clear explicit min/max constraints
+            // This allows the zoom plugin to zoom freely while maintaining current position
+            chart.options.scales.x.min = undefined;
+            chart.options.scales.x.max = undefined;
         }
 
         function updateActivePresetButton6() {
@@ -4390,9 +4400,6 @@
                                 onPanComplete({ chart }) {
                                     rebinChart7ToVisibleRange(chart);
                                 }
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
                             }
                         }
                     },
@@ -4541,6 +4548,11 @@
             });
 
             chart.update('none');
+            
+            // After update completes, clear explicit min/max constraints
+            // This allows the zoom plugin to zoom freely while maintaining current position
+            chart.options.scales.x.min = undefined;
+            chart.options.scales.x.max = undefined;
         }
 
         function updateActivePresetButton7() {
