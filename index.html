@@ -1844,10 +1844,6 @@
 
             // Then re-bin into that window
             rebinChart1ToVisibleRange(chart1);
-
-            // Clear explicit min/max so zoom plugin can freely zoom in/out after pan
-            chart1.options.scales.x.min = undefined;
-            chart1.options.scales.x.max = undefined;
         }
 
         document.getElementById('panLeft1').addEventListener('click', () => {
