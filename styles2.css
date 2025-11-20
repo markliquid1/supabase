@@ -41,6 +41,23 @@ body {
     }
 }
 
+/* Proper vertical spacing between plots AFTER their tool panels */
+#plotTools1,
+#plotTools2,
+#plotTools3,
+#plotTools4,
+#plotTools5,
+#plotTools6,
+#plotTools7 {
+    margin-bottom: 50px;   /* clean vertical separation */
+}
+
+/* Also add a small base margin below each chart tile */
+.chart-section {
+    margin-bottom: 20px;   /* spacing BELOW the chart itself */
+}
+
+
 
 .time-range-section {
     margin: 15px 0;
