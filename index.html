@@ -1540,9 +1540,6 @@
                                 onPanComplete({ chart }) {
                                     rebinChart1ToVisibleRange(chart);
                                 }
-                            },
-                            limits: {
-                                x: { min: 'original', max: 'original' }
                             }
                         }
                     },
@@ -1730,6 +1727,11 @@
 
             // Re-render with new data but keep current zoom/pan window
             chart.update('none');
+            
+            // After update completes, clear explicit min/max constraints
+            // This allows the zoom plugin to zoom freely while maintaining current position
+            chart.options.scales.x.min = undefined;
+            chart.options.scales.x.max = undefined;
         }
 
 
