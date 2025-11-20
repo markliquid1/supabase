@@ -41,26 +41,23 @@ body {
     }
 }
 
-/* Extra space AFTER the editing tools, before next chart */
-#plotTools1,
-#plotTools2,
-#plotTools3,
-#plotTools4,
-#plotTools5,
-#plotTools6,
-#plotTools7 {
-    margin-bottom: 40px;
+
+/* Base gap between charts (tools collapsed) */
+.chart-section {
+    margin-bottom: 40px;   /* was 20; now larger */
 }
 
-/* Base gap between each chart tile */
-.chart-section {
-    position: relative;
-    background: #f5f5f5;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    margin-bottom: 10px;  /* small gap under the chart itself */
+/* Expanded tools: make the gap even bigger */
+#plotTools1[style*="display: block"],
+#plotTools2[style*="display: block"],
+#plotTools3[style*="display: block"],
+#plotTools4[style*="display: block"],
+#plotTools5[style*="display: block"],
+#plotTools6[style*="display: block"],
+#plotTools7[style*="display: block"] {
+    margin-bottom: 80px;   /* expanded tools: bigger gap */
 }
+
 
 
 
