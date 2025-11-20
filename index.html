@@ -1728,10 +1728,6 @@
                 }
             });
 
-            // Clear explicit min/max so zoom plugin can freely zoom in/out
-            chart.options.scales.x.min = undefined;
-            chart.options.scales.x.max = undefined;
-
             // Re-render with new data but keep current zoom/pan window
             chart.update('none');
         }
