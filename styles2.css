@@ -1,247 +1,257 @@
+/* CSS Variables from ESP32 Interface */
+:root {
+    --primary: #333333;
+    --accent: #00a19a;
+    --bg-light: #f5f5f5;
+    --text-dark: #333333;
+    --text-light: #ffffff;
+    --card-light: #ffffff;
+    --border: #dddddd;
+    --radius: 4px;
+}
 
-        /* CSS Variables from ESP32 Interface */
-        :root {
-            --primary: #333333;
-            --accent: #00a19a;
-            --bg-light: #f5f5f5;
-            --text-dark: #333333;
-            --text-light: #ffffff;
-            --card-light: #ffffff;
-            --border: #dddddd;
-            --radius: 4px;
-        }
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background: var(--bg-light);
+    color: var(--text-dark);
+    line-height: 1.4;
+    font-size: 14px;
+}
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 10px;
-            background: var(--bg-light);
-            color: var(--text-dark);
-            line-height: 1.4;
-            font-size: 14px;
-        }
+.container {
+    max-width: 1000px;
+    /* wider on large screens */
+    width: 100%;
+    /* responsive */
+    margin: 0 auto;
+    /* centered */
+    background: var(--card-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-        .container {
-            max-width: 1000px;
-            /* wider on large screens */
-            width: 100%;
-            /* responsive */
-            margin: 0 auto;
-            /* centered */
-            background: var(--card-light);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .time-range-section {
-            margin: 15px 0;
-            padding: 10px;
-            background: #fafafa;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            font-size: 13px;
-            color: #666;
-        }
-
-        .time-range-section label {
-            font-weight: normal;
-            margin-right: 5px;
-        }
-
-        .time-range-section input[type="number"] {
-            width: 60px;
-            padding: 4px 6px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 13px;
-            background: var(--card-light);
-            color: var(--text-dark);
-        }
-
-        .time-range-section input[type="number"]:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(0, 161, 154, 0.2);
-        }
-
-        .time-unit-box {
-            padding: 4px 10px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: var(--card-light);
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-            color: var(--text-dark);
-        }
-
-        .time-unit-box:hover {
-            background: #e3f2fd;
-            border-color: #90caf9;
-        }
-
-        .time-unit-box.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        .time-range-section button {
-            padding: 4px 10px;
-            background: #555555;
-            color: white;
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: normal;
-            min-width: 28px;
-            height: 26px;
-            transition: all 0.3s ease;
-        }
-
-        .time-range-section button:hover {
-            background: var(--accent);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .time-range-section button:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        .time-range-section button.secondary {
-            background: #e0e0e0;
-            color: #333;
-            border: 1px solid #ccc;
-            min-width: 30px;
-            width: 30px;
-            height: 26px;
-            padding: 4px 8px;
-            font-size: 11px;
-            transition: all 0.3s ease;
-        }
-
-        .time-range-section button.secondary:hover {
-            background: #d0d0d0;
-            border-color: var(--accent);
-            color: var(--accent);
-            transform: translateY(-1px);
-        }
-
-        .time-range-section button.secondary:active {
-            background: #c0c0c0;
-            border-color: var(--accent);
-            color: var(--accent);
-            transform: translateY(0);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .preset-btn {
-            padding: 4px 10px;
-            background: #f5f5f5;
-            color: #333;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-size: 11px;
-            height: 26px;
-            transition: all 0.2s;
-        }
-
-        .preset-btn:hover {
-            background: #e0e0e0;
-            border-color: var(--accent);
-        }
-
-        .preset-btn.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-            font-weight: bold;
-        }
-
-        .variable-controls {
-            margin: 15px 0;
-            padding: 15px;
-            background: #fafafa;
-            border-radius: 6px;
-        }
-
-        .variable-row {
-            display: flex;
-            align-items: center;
-            margin: 10px 0;
-            padding: 8px;
-            background: var(--card-light);
-            border-radius: var(--radius);
-            border-left: 4px solid var(--border);
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .variable-row:hover {
-            background: #f5f5f5;
-        }
-
-        .variable-master {
-            min-width: 160px;
-            font-weight: 500;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .variable-master {
-                min-width: 120px;
-                font-size: 13px;
-            }
-        }
+/* Desktop-only: add left/right whitespace so user can scroll without hitting charts */
+@media (min-width: 1025px) {
+    .container {
+        max-width: 800px;
+        /* narrower container only on desktop */
+    }
+}
 
 
+.time-range-section {
+    margin: 15px 0;
+    padding: 10px;
+    background: #fafafa;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+    color: #666;
+}
 
+.time-range-section label {
+    font-weight: normal;
+    margin-right: 5px;
+}
 
+.time-range-section input[type="number"] {
+    width: 60px;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    background: var(--card-light);
+    color: var(--text-dark);
+}
 
+.time-range-section input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 161, 154, 0.2);
+}
 
+.time-unit-box {
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card-light);
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    color: var(--text-dark);
+}
 
+.time-unit-box:hover {
+    background: #e3f2fd;
+    border-color: #90caf9;
+}
 
-        @media (max-width: 768px) {
-            .chart-section {
-                height: 400px;
-            }
-        }
+.time-unit-box.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.time-range-section button {
+    padding: 4px 10px;
+    background: #555555;
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: normal;
+    min-width: 28px;
+    height: 26px;
+    transition: all 0.3s ease;
+}
+
+.time-range-section button:hover {
+    background: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.time-range-section button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.time-range-section button.secondary {
+    background: #e0e0e0;
+    color: #333;
+    border: 1px solid #ccc;
+    min-width: 30px;
+    width: 30px;
+    height: 26px;
+    padding: 4px 8px;
+    font-size: 11px;
+    transition: all 0.3s ease;
+}
+
+.time-range-section button.secondary:hover {
+    background: #d0d0d0;
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.time-range-section button.secondary:active {
+    background: #c0c0c0;
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(0);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.preset-btn {
+    padding: 4px 10px;
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 11px;
+    height: 26px;
+    transition: all 0.2s;
+}
+
+.preset-btn:hover {
+    background: #e0e0e0;
+    border-color: var(--accent);
+}
+
+.preset-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    font-weight: bold;
+}
+
+.variable-controls {
+    margin: 15px 0;
+    padding: 15px;
+    background: #fafafa;
+    border-radius: 6px;
+}
+
+.variable-row {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    padding: 8px;
+    background: var(--card-light);
+    border-radius: var(--radius);
+    border-left: 4px solid var(--border);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.variable-row:hover {
+    background: #f5f5f5;
+}
+
+.variable-master {
+    min-width: 160px;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .variable-master {
+        min-width: 120px;
+        font-size: 13px;
+    }
+}
 
 
 
-        .control-group-label {
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-top: 10px;
-            margin-bottom: 5px;
-            padding: 6px 8px;
-            background: rgba(0, 161, 154, 0.1);
-            border-radius: var(--radius);
-            font-size: 12px;
-            border-left: 3px solid var(--accent);
-        }
 
-          /* Below here is unique to the Vercel code */
 
-        
-          .chart-section {
-            position: relative;
-            height: 500px;
-            background: #f5f5f5;  /* Light gray tile background */
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            padding: 10px;
-            margin-bottom: 30px;  /* Space between tiles to show background */
-        }
+
+
+
+@media (max-width: 768px) {
+    .chart-section {
+        height: 400px;
+    }
+}
+
+
+
+.control-group-label {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-top: 10px;
+    margin-bottom: 5px;
+    padding: 6px 8px;
+    background: rgba(0, 161, 154, 0.1);
+    border-radius: var(--radius);
+    font-size: 12px;
+    border-left: 3px solid var(--accent);
+}
+
+/* Below here is unique to the Vercel code */
+
+
+.chart-section {
+    position: relative;
+    height: 500px;
+    background: #f5f5f5;
+    /* Light gray tile background */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    margin-bottom: 30px;
+    /* Space between tiles to show background */
+}
