@@ -898,6 +898,8 @@
             'awa_min,awa_max,awa_avg,' +
             'twa_min,twa_max,twa_avg,' +
             'leeway_min,leeway_max,leeway_avg,' +
+            'baro_min,baro_max,baro_avg,' +
+            'temp_margin_min,temp_margin_max,temp_margin_avg,' +
             'alt_zero_min,alt_zero_max,alt_zero_avg';
 
 
@@ -1316,6 +1318,22 @@
         // PLOT 1 ONLY — Currents (A) / SETTINGS PERSISTENCE
         // ============================================
         // ============================================
+        function saveScrollPosition() {
+            localStorage.setItem('scrollPosition', window.scrollY);
+        }
+
+        function loadScrollPosition() {
+            const savedScroll = localStorage.getItem('scrollPosition');
+            if (savedScroll !== null) {
+                window.scrollTo(0, parseInt(savedScroll));
+            }
+        }
+
+        // Save scroll position before page unload
+        window.addEventListener('beforeunload', saveScrollPosition);
+
+        // Restore scroll position on page load (called after init completes)
+        window.addEventListener('load', loadScrollPosition);
 
         function saveSettings1() {
             const settings = {
