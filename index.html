@@ -167,6 +167,13 @@
                         <strong>Alternator Current</strong>
                     </label>
                 </div>
+
+                <div class="variable-row" style="border-left-color: #CC79A7;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle1" data-group="TargetAmps" checked>
+                        <strong>Target Amps (Setpoint)</strong>
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -730,6 +737,13 @@
                     <label class="variable-master">
                         <input type="checkbox" class="variable-toggle7" data-group="AltZero" checked>
                         <strong>Alternator Zero Offset</strong>
+                    </label>
+                </div>
+
+                <div class="variable-row" style="border-left-color: #D55E00;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle7" data-group="TempMargin" checked>
+                        <strong>Temperature Margin</strong>
                     </label>
                 </div>
             </div>
@@ -1490,6 +1504,48 @@
                         data: data.map(d => d.alt_curr_avg),
                         borderColor: 'rgba(0, 158, 115, 1)',
                         backgroundColor: 'rgba(0, 158, 115, 1)',
+                        pointRadius: 2,
+                        borderWidth: 2,
+                        fill: false,
+                        order: 1,
+                        spanGaps: false,
+                        stepped: 'before'
+                    }
+                );
+            }
+
+            // Target Amps - Pink (#CC79A7)
+            if (checkedVars.has('TargetAmps')) {
+                datasets.push(
+                    {
+                        label: 'Target Amps Min',
+                        data: data.map(d => d.u_target_amps_min),
+                        borderColor: 'rgba(204, 121, 167, 0.3)',
+                        backgroundColor: 'rgba(204, 121, 167, 0)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: 1,
+                        order: 2,
+                        spanGaps: false,
+                        stepped: 'before'
+                    },
+                    {
+                        label: 'Target Amps Max',
+                        data: data.map(d => d.u_target_amps_max),
+                        borderColor: 'rgba(204, 121, 167, 0.3)',
+                        backgroundColor: 'rgba(204, 121, 167, 0.3)',
+                        pointRadius: 0,
+                        borderWidth: 1,
+                        fill: '-1',
+                        order: 2,
+                        spanGaps: false,
+                        stepped: 'before'
+                    },
+                    {
+                        label: 'Target Amps',
+                        data: data.map(d => d.u_target_amps_avg),
+                        borderColor: 'rgba(204, 121, 167, 1)',
+                        backgroundColor: 'rgba(204, 121, 167, 1)',
                         pointRadius: 2,
                         borderWidth: 2,
                         fill: false,
@@ -4464,6 +4520,24 @@
                     },
                     {
                         label: 'Alt Zero', data: data.map(d => d.alt_zero_avg), yAxisID: 'y', borderColor: 'rgba(0, 114, 178, 1)', backgroundColor: 'rgba(0, 114, 178, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
+                        spanGaps: false
+                    }
+                );
+            }
+
+            // Temp Margin - orange (#D55E00)
+            if (checkedVars.has('TempMargin')) {
+                datasets.push(
+                    {
+                        label: 'Temp Margin Min', data: data.map(d => d.temp_margin_min), yAxisID: 'y', borderColor: 'rgba(213, 94, 0, 0.3)', backgroundColor: 'rgba(213, 94, 0, 0)', pointRadius: 0, borderWidth: 1, fill: 1, order: 2,
+                        spanGaps: false
+                    },
+                    {
+                        label: 'Temp Margin Max', data: data.map(d => d.temp_margin_max), yAxisID: 'y', borderColor: 'rgba(213, 94, 0, 0.3)', backgroundColor: 'rgba(213, 94, 0, 0.3)', pointRadius: 0, borderWidth: 1, fill: '-1', order: 2,
+                        spanGaps: false
+                    },
+                    {
+                        label: 'Temp Margin', data: data.map(d => d.temp_margin_avg), yAxisID: 'y', borderColor: 'rgba(213, 94, 0, 1)', backgroundColor: 'rgba(213, 94, 0, 1)', pointRadius: 2, borderWidth: 2, fill: false, order: 1,
                         spanGaps: false
                     }
                 );
