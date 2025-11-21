@@ -675,14 +675,21 @@
 
 
         <!-- ============================================
-             PLOT 7: Alternator Zero Offset
+             PLOT 7: Current Sensor Calibration & Thermal Safety
              ============================================ -->
         <div class="chart-section" style="position: relative;">
             <button id="toggleTools7" style="position:absolute; top:10px; left:10px; z-index:10;
-                       padding:3px 8px; background:var(--accent); color:#fff;
-                       border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
+                           padding:3px 8px; background:var(--accent); color:#fff;
+                           border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
                 ▼ Open Plot Tools Below
             </button>
+
+            <div
+                style="text-align: center; padding: 8px 10px 0px 10px; color: #999; font-size: 11px; line-height: 1.4;">
+                <strong style="color: #0072B2;">Alt Zero:</strong> Alternator current sensor zero-point offset (A) |
+                <strong style="color: #D55E00;">Temp Margin:</strong> Degrees below alternator thermal limit (°F) — Positive = safe
+                headroom, Negative = overheating
+            </div>
 
             <div id="loadingChart7"
                 style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
