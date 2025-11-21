@@ -881,6 +881,7 @@
             'batt_curr_min,batt_curr_max,batt_curr_avg,' +
             'alt_curr_min,alt_curr_max,alt_curr_avg,' +
             'victron_curr_min,victron_curr_max,victron_curr_avg,' +
+            'u_target_amps_min,u_target_amps_max,u_target_amps_avg,' +  // ADD THIS LINE
             'batt_volt_min,batt_volt_max,batt_volt_avg,' +
             'soc_min,soc_max,soc_avg,' +
             'alt_temp_min,alt_temp_max,alt_temp_avg,' +
@@ -1785,7 +1786,6 @@
                     case 'Batt Curr':
                         key = 'batt_curr_avg';
                         break;
-
                     case 'Solar Curr Min':
                         key = 'victron_curr_min';
                         break;
@@ -1795,7 +1795,6 @@
                     case 'Solar Curr':
                         key = 'victron_curr_avg';
                         break;
-
                     case 'Alt Curr Min':
                         key = 'alt_curr_min';
                         break;
@@ -1804,8 +1803,15 @@
                         break;
                     case 'Alt Curr':
                         key = 'alt_curr_avg';
+                    case 'Target Amps Min':
+                        key = 'u_target_amps_min';
                         break;
-
+                    case 'Target Amps Max':
+                        key = 'u_target_amps_max';
+                        break;
+                    case 'Target Amps':
+                        key = 'u_target_amps_avg';
+                        break;
                     default:
                         key = null; // leave any other datasets alone
                 }
@@ -4751,7 +4757,15 @@
                     case 'Alt Zero':
                         key = 'alt_zero_avg';
                         break;
-
+                    case 'Temp Margin Min':
+                        key = 'temp_margin_min';
+                        break;
+                    case 'Temp Margin Max':
+                        key = 'temp_margin_max';
+                        break;
+                    case 'Temp Margin':
+                        key = 'temp_margin_avg';
+                        break;
                     default:
                         key = null;
                 }
