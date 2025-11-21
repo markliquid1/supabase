@@ -23,41 +23,30 @@
             <div id="loading-message" style="margin:15px 0; color:#666;">Loading fleet statistics...</div>
 
             <div id="stats-content" style="display:none;">
-                <!-- Fleet Overview -->
+                
                 <div class="section-title">Fleet Overview</div>
+                <div class="grid">
+                    <div class="card">
+                        <p>Total Registered Devices</p>
+                        <p class="reading"><span id="fleet-total-devices">-</span></p>
+                    </div>
 
-                <hr />
-                <div class="form-row">
-                    <div class="form-label">Total Registered Devices</div>
-                    <div class="form-input">
-                        <span id="fleet-total-devices" style="font-weight: bold; font-size: 18px;">-</span>
+                    <div class="card">
+                        <p>Active Devices (Last 7 Days)</p>
+                        <p class="reading"><span id="fleet-active-devices">-</span></p>
                     </div>
                 </div>
 
-                <hr />
-                <div class="form-row">
-                    <div class="form-label">Active Devices (Last 7 Days)</div>
-                    <div class="form-input">
-                        <span id="fleet-active-devices" style="font-weight: bold; font-size: 18px;">-</span>
-                    </div>
-                </div>
-
-                <!-- Fleet Averages -->
                 <div class="section-title">Fleet Averages (Lifetime, Time-Weighted)</div>
-
-                <hr />
-                <div class="form-row">
-                    <div class="form-label">Average Battery Voltage</div>
-                    <div class="form-input">
-                        <span id="fleet-avg-voltage" style="font-weight: bold; font-size: 18px;">-</span>
+                <div class="grid">
+                    <div class="card">
+                        <p>Average Battery Voltage</p>
+                        <p class="reading"><span id="fleet-avg-voltage">-</span></p>
                     </div>
-                </div>
 
-                <hr />
-                <div class="form-row">
-                    <div class="form-label">Average Battery SOC</div>
-                    <div class="form-input">
-                        <span id="fleet-avg-soc" style="font-weight: bold; font-size: 18px;">-</span>
+                    <div class="card">
+                        <p>Average Battery SOC</p>
+                        <p class="reading"><span id="fleet-avg-soc">-</span></p>
                     </div>
                 </div>
 
@@ -76,14 +65,12 @@
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Show error message
         function showError(message) {
             document.getElementById('loading-message').style.display = 'none';
             document.getElementById('error-message').textContent = message;
             document.getElementById('error-message').style.display = 'block';
         }
 
-        // Fetch fleet statistics
         async function fetchFleetStats() {
             try {
                 // 1. Total Registered Devices
@@ -93,8 +80,7 @@
 
                 if (devicesError) throw devicesError;
 
-
-                // 2. Active Devices (Last 7 days) - fetch all, filter client-side
+                // 2. Active Devices (Last 7 days)
                 const { data: allData, error: allDataError } = await supabase
                     .from('sensor_history')
                     .select('device_uid, timestamp');
@@ -106,43 +92,17 @@
                 const uniqueDevices = new Set(recentData.map(d => d.device_uid));
                 const activeDevices = uniqueDevices.size;
 
-                // 3. Average Battery Voltage (Lifetime)
-                const { data: voltageData, error: voltageError } = await supabase
+                // 3. Average Battery Voltage (time-weighted)
+                const { data: avgVoltage, error: voltageError } = await supabase
                     .rpc('avg_battery_voltage');
 
-                let avgVoltage = null;
-                if (!voltageError && voltageData !== null) {
-                    avgVoltage = voltageData;
-                } else {
-                    // Fallback: calculate client-side
-                    const { data: allVoltages, error: voltFetchError } = await supabase
-                        .from('sensor_history')
-                        .select('batt_volt_avg');
+                if (voltageError) console.error('Voltage RPC error:', voltageError);
 
-                    if (!voltFetchError && allVoltages && allVoltages.length > 0) {
-                        const sum = allVoltages.reduce((acc, d) => acc + (d.batt_volt_avg || 0), 0);
-                        avgVoltage = sum / allVoltages.length;
-                    }
-                }
-
-                // 4. Average Battery SOC (Lifetime)
-                const { data: socData, error: socError } = await supabase
+                // 4. Average Battery SOC (time-weighted)
+                const { data: avgSoc, error: socError } = await supabase
                     .rpc('avg_battery_soc');
 
-                let avgSoc = null;
-                if (!socError && socData !== null) {
-                    avgSoc = socData;
-                } else {
-                    // Fallback: calculate client-side
-                    const { data: allSoc, error: socFetchError } = await supabase
-                        .from('sensor_history')
-                        .select('soc_avg');
-
-                    if (!socFetchError && allSoc && allSoc.length > 0) {
-                        const sum = allSoc.reduce((acc, d) => acc + (d.soc_avg || 0), 0);
-                        avgSoc = sum / allSoc.length;
-                    }
-                }
+                if (socError) console.error('SOC RPC error:', socError);
 
                 return {
                     totalDevices,
@@ -157,28 +117,26 @@
             }
         }
 
-        // Display fleet statistics
         function displayStats(stats) {
             document.getElementById('fleet-total-devices').textContent = stats.totalDevices || '0';
             document.getElementById('fleet-active-devices').textContent = stats.activeDevices || '0';
-            if (stats.avgVoltage !== null) {
+            
+            if (stats.avgVoltage !== null && stats.avgVoltage !== undefined) {
                 document.getElementById('fleet-avg-voltage').textContent = stats.avgVoltage.toFixed(2) + ' V';
             } else {
                 document.getElementById('fleet-avg-voltage').textContent = 'No data';
             }
 
-            if (stats.avgSoc !== null) {
+            if (stats.avgSoc !== null && stats.avgSoc !== undefined) {
                 document.getElementById('fleet-avg-soc').textContent = stats.avgSoc.toFixed(1) + ' %';
             } else {
                 document.getElementById('fleet-avg-soc').textContent = 'No data';
             }
 
-            // Show stats, hide loading
             document.getElementById('loading-message').style.display = 'none';
             document.getElementById('stats-content').style.display = 'block';
         }
 
-        // Main initialization
         async function init() {
             try {
                 const stats = await fetchFleetStats();
@@ -188,7 +146,6 @@
             }
         }
 
-        // Run on page load
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
