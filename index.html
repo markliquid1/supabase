@@ -672,84 +672,86 @@
                 </div>
             </div>
         </div>
-<!-- ============================================
+        <!-- ============================================
              PLOT 7: Current Sensor Calibration & Thermal Safety
              ============================================ -->
-             <div class="chart-section" style="position: relative;">
-                <button id="toggleTools7" style="position:absolute; top:10px; left:10px; z-index:10;
+        <div class="chart-section" style="position: relative;">
+            <button id="toggleTools7" style="position:absolute; top:10px; left:10px; z-index:10;
                                padding:3px 8px; background:var(--accent); color:#fff;
                                border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
-                    ▼ Open Plot Tools Below
-                </button>
-    
-                <div id="loadingChart7"
-                    style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
-                    Loading chart...
+                ▼ Open Plot Tools Below
+            </button>
+
+            <div id="loadingChart7"
+                style="text-align: center; padding-top: 200px; color: #999; font-size: 14px; display:none;">
+                Loading chart...
+            </div>
+            <canvas id="chart7" style="display: none;"></canvas>
+
+            <div
+                style="text-align: left; padding: 12px 10px; color: #999; font-size: 11px; line-height: 1.4; border-top: 1px solid #333;">
+                <strong style="color: #D55E00;">Temp Margin:</strong> Degrees below alternator thermal limit (°F) —
+                Positive = safe headroom, Negative = overheating
+            </div>
+        </div>
+
+        <div id="plotTools7" style="display: none;">
+            <div class="control-group-label">Time Range Controls</div>
+
+            <div class="time-range-section">
+                <label>Show last:</label>
+                <input type="number" id="timeValue7" value="24" min="1">
+                <div class="time-unit-box plot7-unit" data-unit="seconds">sec</div>
+                <div class="time-unit-box plot7-unit" data-unit="minutes">min</div>
+                <div class="time-unit-box plot7-unit active" data-unit="hours">hrs</div>
+                <div class="time-unit-box plot7-unit" data-unit="days">days</div>
+                <button id="applyTimeRange7">Apply</button>
+                <button id="panLeft7" class="secondary">◀</button>
+                <button id="panRight7" class="secondary">▶</button>
+            </div>
+
+            <div class="time-range-section">
+                <label>Quick:</label>
+                <button class="preset-btn preset7" data-value="1" data-unit="hours">Last Hour</button>
+                <button class="preset-btn preset7" data-value="24" data-unit="hours">Last Day</button>
+                <button class="preset-btn preset7" data-value="7" data-unit="days">Last Week</button>
+                <button class="preset-btn preset7" data-value="30" data-unit="days">Last Month</button>
+            </div>
+
+            <div class="control-group-label">Y-Axis Controls</div>
+
+            <div class="time-range-section">
+                <label style="font-weight: 500;">Y-axis:</label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
+                    <input type="checkbox" id="yAxisAutoScale7" checked> Auto scale
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
+                    Min: <input type="number" id="yAxisMin7" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <label style="display: flex; align-items: center; gap: 5px;">
+                    Max: <input type="number" id="yAxisMax7" style="width: 70px;" placeholder="auto" disabled>
+                </label>
+                <button id="applyYAxis7" style="margin-left: 5px;" disabled>Apply</button>
+            </div>
+
+            <div class="control-group-label">Variables</div>
+
+            <div class="variable-controls">
+                <div class="variable-row" style="border-left-color: #0072B2;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle7" data-group="AltZero" checked>
+                        <strong>Alternator Zero Offset</strong>
+                    </label>
                 </div>
-                <canvas id="chart7" style="display: none;"></canvas>
-    
-                <div style="text-align: left; padding: 12px 10px; color: #999; font-size: 11px; line-height: 1.4; border-top: 1px solid #333;">
-                    <strong style="color: #D55E00;">Temp Margin:</strong> Degrees below alternator thermal limit (°F) — Positive = safe headroom, Negative = overheating
+
+                <div class="variable-row" style="border-left-color: #D55E00;">
+                    <label class="variable-master">
+                        <input type="checkbox" class="variable-toggle7" data-group="TempMargin" checked>
+                        <strong>Temperature Margin</strong>
+                    </label>
                 </div>
             </div>
-    
-            <div id="plotTools7" style="display: none;">
-                <div class="control-group-label">Time Range Controls</div>
-    
-                <div class="time-range-section">
-                    <label>Show last:</label>
-                    <input type="number" id="timeValue7" value="24" min="1">
-                    <div class="time-unit-box plot7-unit" data-unit="seconds">sec</div>
-                    <div class="time-unit-box plot7-unit" data-unit="minutes">min</div>
-                    <div class="time-unit-box plot7-unit active" data-unit="hours">hrs</div>
-                    <div class="time-unit-box plot7-unit" data-unit="days">days</div>
-                    <button id="applyTimeRange7">Apply</button>
-                    <button id="panLeft7" class="secondary">◀</button>
-                    <button id="panRight7" class="secondary">▶</button>
-                </div>
-    
-                <div class="time-range-section">
-                    <label>Quick:</label>
-                    <button class="preset-btn preset7" data-value="1" data-unit="hours">Last Hour</button>
-                    <button class="preset-btn preset7" data-value="24" data-unit="hours">Last Day</button>
-                    <button class="preset-btn preset7" data-value="7" data-unit="days">Last Week</button>
-                    <button class="preset-btn preset7" data-value="30" data-unit="days">Last Month</button>
-                </div>
-    
-                <div class="control-group-label">Y-Axis Controls</div>
-    
-                <div class="time-range-section">
-                    <label style="font-weight: 500;">Y-axis:</label>
-                    <label style="display: flex; align-items: center; gap: 5px; margin-left: 10px;">
-                        <input type="checkbox" id="yAxisAutoScale7" checked> Auto scale
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 5px; margin-left: 15px;">
-                        Min: <input type="number" id="yAxisMin7" style="width: 70px;" placeholder="auto" disabled>
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 5px;">
-                        Max: <input type="number" id="yAxisMax7" style="width: 70px;" placeholder="auto" disabled>
-                    </label>
-                    <button id="applyYAxis7" style="margin-left: 5px;" disabled>Apply</button>
-                </div>
-    
-                <div class="control-group-label">Variables</div>
-    
-                <div class="variable-controls">
-                    <div class="variable-row" style="border-left-color: #0072B2;">
-                        <label class="variable-master">
-                            <input type="checkbox" class="variable-toggle7" data-group="AltZero" checked>
-                            <strong>Alternator Zero Offset</strong>
-                        </label>
-                    </div>
-    
-                    <div class="variable-row" style="border-left-color: #D55E00;">
-                        <label class="variable-master">
-                            <input type="checkbox" class="variable-toggle7" data-group="TempMargin" checked>
-                            <strong>Temperature Margin</strong>
-                        </label>
-                    </div>
-                </div>
-            </div>
+        </div>
 
 
     </div>
@@ -1336,7 +1338,7 @@
         window.addEventListener('beforeunload', saveScrollPosition);
 
         // Restore scroll position on page load (called after init completes)
-        window.addEventListener('load', loadScrollPosition);
+       // window.addEventListener('load', loadScrollPosition); // maybe wasn't actually called after init completed...
 
         function saveSettings1() {
             const settings = {
@@ -1735,6 +1737,15 @@
             const initialBinned = applyBinning(filteredData);
             createChart1(initialBinned);
             updateActivePresetButton1();
+            // Apply saved Y-axis limits after chart creation
+            const yAxisAuto = document.getElementById('yAxisAutoScale1').checked;
+            if (!yAxisAuto && chart1) {
+                const min = parseFloat(document.getElementById('yAxisMin1').value);
+                const max = parseFloat(document.getElementById('yAxisMax1').value);
+                if (!isNaN(min)) chart1.options.scales.y.min = min;
+                if (!isNaN(max)) chart1.options.scales.y.max = max;
+                chart1.update('none');
+            }
         }
 
 
@@ -4944,6 +4955,8 @@
                 // Plot 7
                 loadSettings7();
                 updateChart7();
+
+                loadScrollPosition();
 
             } catch (error) {
                 showError(error.message);
