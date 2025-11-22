@@ -47,13 +47,32 @@ async function loadEnergyLeaderboard(type, column, tbodyId) {
             .from('device_statistics')
             .select(`
                 device_uid,
-                ${column},
-                user_profiles!inner(username, boat_name, boat_type, boat_length)
+                user_id,
+                ${column}
             `)
             .order(column, { ascending: false })
             .limit(10);
 
         if (error) throw error;
+        
+        // Get user profiles separately
+        if (data && data.length > 0) {
+            const userIds = data.map(d => d.user_id);
+            const { data: profiles, error: profileError } = await supabase
+                .from('user_profiles')
+                .select('user_id, username, boat_name, boat_type, boat_length')
+                .in('user_id', userIds);
+            
+            if (profileError) throw profileError;
+            
+            // Merge profiles into data
+            data.forEach(entry => {
+                const profile = profiles.find(p => p.user_id === entry.user_id);
+                if (profile) {
+                    entry.user_profiles = profile;
+                }
+            });
+        }
 
         const tbody = document.getElementById(tbodyId);
         if (!data || data.length === 0) {
@@ -120,16 +139,24 @@ async function loadSpeedLeaderboards() {
 // Get a single speed entry for a specific boat type, size, and rank
 async function getSpeedEntry(boatType, minLength, maxLength, rank) {
     try {
+        // First get matching user profiles
+        const { data: profiles, error: profileError } = await supabase
+            .from('user_profiles')
+            .select('user_id, username, boat_name, boat_type, boat_length')
+            .eq('boat_type', boatType)
+            .gte('boat_length', minLength)
+            .lte('boat_length', maxLength);
+
+        if (profileError) throw profileError;
+        if (!profiles || profiles.length === 0) return '---';
+
+        const userIds = profiles.map(p => p.user_id);
+
+        // Then get device stats for those users
         const { data, error } = await supabase
             .from('device_statistics')
-            .select(`
-                device_uid,
-                max_speed,
-                user_profiles!inner(username, boat_name, boat_type, boat_length)
-            `)
-            .eq('user_profiles.boat_type', boatType)
-            .gte('user_profiles.boat_length', minLength)
-            .lte('user_profiles.boat_length', maxLength)
+            .select('device_uid, user_id, max_speed')
+            .in('user_id', userIds)
             .order('max_speed', { ascending: false })
             .limit(rank);
 
@@ -137,14 +164,17 @@ async function getSpeedEntry(boatType, minLength, maxLength, rank) {
         if (!data || data.length < rank) return '---';
 
         const entry = data[rank - 1];
+        const profile = profiles.find(p => p.user_id === entry.user_id);
+        if (!profile) return '---';
+
         const isCurrentUser = entry.device_uid === currentDeviceUID;
         const style = isCurrentUser ? 'style="color: #00a19a; font-weight: bold;"' : '';
 
         return `
             <div ${style}>
                 <strong>${entry.max_speed.toFixed(1)} kts</strong><br>
-                <small>${entry.user_profiles.username}</small><br>
-                <small style="color: #999;">${entry.user_profiles.boat_name} (${entry.user_profiles.boat_length} ft)</small>
+                <small>${profile.username}</small><br>
+                <small style="color: #999;">${profile.boat_name} (${profile.boat_length} ft)</small>
             </div>
         `;
     } catch (error) {
