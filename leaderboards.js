@@ -1,6 +1,6 @@
 // Supabase configuration
-const SUPABASE_URL = 'https://nbuyfpclfguvqmbgrnny.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5idXlmcGNsZmd1dnFtYmdybm55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU0NzI0ODMsImV4cCI6MjA1MTA0ODQ4M30.s4hqBmqZmCe4rw3P8OU7nYy9SDIL7rl9_hgMPTpMLrc';
+const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
 
 let supabase;
 let currentDeviceUID = null;
