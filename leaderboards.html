@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Leaderboards</title>
+    <link rel="stylesheet" href="styles2.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="settings-card">
+            <div class="section-title">Leaderboards</div>
+
+            <p style="margin: 15px 0; color: #666;">See how your boat compares with others in the fleet!</p>
+
+            <!-- Energy Production Leaderboards -->
+            <div class="section-title">🔥 Energy Production Champions</div>
+
+            <hr />
+            <div style="margin: 15px 0;">
+                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Alternator kWh (Lifetime)</h4>
+                <div id="leaderboard-alt-wh-lifetime" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Boat</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
+                                <th style="padding: 10px; text-align: right; font-size: 14px;">kWh</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-alt-wh-lifetime-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <hr />
+            <div style="margin: 15px 0;">
+                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Solar kWh (Lifetime)</h4>
+                <div id="leaderboard-solar-wh-lifetime" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Boat</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
+                                <th style="padding: 10px; text-align: right; font-size: 14px;">kWh</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-solar-wh-lifetime-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <hr />
+            <div style="margin: 15px 0;">
+                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Highest Instantaneous Alternator Output</h4>
+                <div id="leaderboard-max-alt-amps" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Boat</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
+                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
+                                <th style="padding: 10px; text-align: right; font-size: 14px;">Amps</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-max-alt-amps-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Speed Records by Boat Type -->
+            <div class="section-title">🚤 Speed Records</div>
+
+            <hr />
+            <div style="margin: 15px 0;">
+                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Overall (All Sizes)</h4>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Sailboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Catamaran</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚤 Powerboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚢 Trawler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-speed-overall">
+                            <tr><td colspan="4" style="text-align: center; padding: 20px; color: #999;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <hr />
+            <div style="margin: 15px 0;">
+                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Under 30 ft</h4>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Sailboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Catamaran</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚤 Powerboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚢 Trawler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-speed-under30">
+                            <tr><td colspan="4" style="text-align: center; padding: 20px; color: #999;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <hr />
+            <div style="margin: 15px 0;">
+                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">30-40 ft</h4>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Sailboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Catamaran</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚤 Powerboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚢 Trawler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-speed-30-40">
+                            <tr><td colspan="4" style="text-align: center; padding: 20px; color: #999;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <hr />
+            <div style="margin: 15px 0;">
+                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">40-50 ft</h4>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Sailboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Catamaran</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚤 Powerboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚢 Trawler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-speed-40-50">
+                            <tr><td colspan="4" style="text-align: center; padding: 20px; color: #999;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <hr />
+            <div style="margin: 15px 0;">
+                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Over 50 ft</h4>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Sailboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">⛵ Catamaran</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚤 Powerboat</th>
+                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 25%;">🚢 Trawler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-speed-over50">
+                            <tr><td colspan="4" style="text-align: center; padding: 20px; color: #999;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 13px; color: #888;">
+                Leaderboards update every 6 hours when devices upload data to the cloud. Your entry is highlighted in blue.
+            </p>
+        </div>
+    </div>
+
+    <script src="leaderboards.js"></script>
+</body>
+</html>
