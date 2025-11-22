@@ -1301,6 +1301,58 @@
             const cutoff = new Date(now - milliseconds);
             return data.filter(d => new Date(d.timestamp) >= cutoff);
         }
+// Old scroll fail
+
+            //     function saveScrollPosition() {
+    //         localStorage.setItem('scrollPosition', window.scrollY);
+    //     }
+
+    //     function loadScrollPosition() {
+    //         const savedScroll = localStorage.getItem('scrollPosition');
+    //         if (savedScroll !== null) {
+    //             window.scrollTo(0, parseInt(savedScroll));
+    //         }
+    //     }
+
+    //     // Save scroll position before page unload
+    //     window.addEventListener('beforeunload', saveScrollPosition);
+
+    //     // Restore scroll position on page load (called after init completes)
+    //    // window.addEventListener('load', loadScrollPosition); // maybe wasn't actually called after init completed...
+
+// new scroll stuff
+let scrollSaveTimer;
+function saveScrollPosition() {
+    clearTimeout(scrollSaveTimer);
+    scrollSaveTimer = setTimeout(() => {
+        localStorage.setItem('scrollPosition', window.scrollY);
+    }, 100);
+}
+
+function loadScrollPosition() {
+    const savedScroll = localStorage.getItem('scrollPosition');
+    if (savedScroll !== null) {
+        // Delay slightly to ensure page layout is complete
+        setTimeout(() => {
+            window.scrollTo(0, parseInt(savedScroll));
+        }, 50);
+    }
+}
+
+// Save continuously while scrolling (debounced)
+window.addEventListener('scroll', saveScrollPosition);
+
+// Also save periodically in case scroll doesn't fire
+setInterval(saveScrollPosition, 2000);
+
+// Save before page hides (more reliable than beforeunload)
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        localStorage.setItem('scrollPosition', window.scrollY);
+    }
+});
+
+
 
         // ============================================
         // ============================================
@@ -1323,22 +1375,7 @@
         // PLOT 1 ONLY — Currents (A) / SETTINGS PERSISTENCE
         // ============================================
         // ============================================
-        function saveScrollPosition() {
-            localStorage.setItem('scrollPosition', window.scrollY);
-        }
 
-        function loadScrollPosition() {
-            const savedScroll = localStorage.getItem('scrollPosition');
-            if (savedScroll !== null) {
-                window.scrollTo(0, parseInt(savedScroll));
-            }
-        }
-
-        // Save scroll position before page unload
-        window.addEventListener('beforeunload', saveScrollPosition);
-
-        // Restore scroll position on page load (called after init completes)
-       // window.addEventListener('load', loadScrollPosition); // maybe wasn't actually called after init completed...
 
         function saveSettings1() {
             const settings = {
