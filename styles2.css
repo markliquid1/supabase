@@ -335,3 +335,39 @@ body {
     margin-bottom: 30px;
     /* Space between tiles to show background */
 }
+
+/* Floating Refresh Button — matches corner-status style */
+#refresh-button {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+  
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  
+    background-color: #00a19a;   /* same as corner-status-connected */
+    color: white;
+  
+    padding: 4px 8px;
+    border-radius: 10px;
+    border: none;
+  
+    cursor: pointer;
+    opacity: 0.9;
+    z-index: 999;
+  
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+  }
+  
+  #refresh-button:hover {
+    opacity: 1.0;
+    background-color: #00b9b1; /* slight highlight */
+  }
+  
+  .dark-mode #refresh-button {
+    background-color: #00a19a;
+    color: white;
+  }
+  
