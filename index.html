@@ -770,7 +770,12 @@
             let saveTimer = null;
 
             function getY() {
-                return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                return (
+                    window.scrollY ||
+                    document.documentElement.scrollTop ||
+                    document.body.scrollTop ||
+                    0
+                );
             }
 
             function saveNow() {
@@ -779,25 +784,37 @@
                 } catch (e) { }
             }
 
-            document.addEventListener("scroll", function () {
-                if (saveTimer) return;
-                saveTimer = setTimeout(function () {
-                    saveTimer = null;
-                    saveNow();
-                }, 150);
-            }, { passive: true });
+            // Save continuously while user scrolls
+            document.addEventListener(
+                "scroll",
+                function () {
+                    if (saveTimer) return;
+                    saveTimer = setTimeout(function () {
+                        saveTimer = null;
+                        saveNow();
+                    }, 150);
+                },
+                { passive: true }
+            );
 
             window.addEventListener("beforeunload", saveNow);
             window.addEventListener("pagehide", saveNow);
-
-            window.addEventListener("load", function () {
-                const v = localStorage.getItem(STORAGE_KEY);
-                const y = v ? parseInt(v, 10) : 0;
-                if (Number.isFinite(y) && y > 0) {
-                    window.scrollTo(0, y);
-                }
+            document.addEventListener("visibilitychange", function () {
+                if (document.hidden) saveNow();
             });
+
+            // Restore ONLY when called explicitly from init()
+            window.loadScrollPosition = function () {
+                setTimeout(function () {
+                    const v = localStorage.getItem(STORAGE_KEY);
+                    const y = v ? parseInt(v, 10) : 0;
+                    if (Number.isFinite(y) && y > 0) {
+                        window.scrollTo(0, y);
+                    }
+                }, 200); // slight delay for final layout settle
+            };
         })();
+
 
 
 
@@ -4982,6 +4999,9 @@
                 // Plot 7
                 loadSettings7();
                 updateChart7();
+
+                loadScrollPosition(); // last line
+
 
             } catch (error) {
                 showError(error.message);
