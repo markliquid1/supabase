@@ -16,6 +16,14 @@
 
 <body>
 
+    <button id="refreshBtn" style="position:fixed; top:15px; right:15px; z-index:9999;
+           padding:6px 10px; background:var(--accent); color:#fff;
+           border:1px solid #444; border-radius:4px; cursor:pointer;
+           font-size:12px; opacity:0.85;">
+        Refresh
+    </button>
+
+
     <div class="container">
         <div id="error-message"
             style="display:none; color:#f44336; margin:10px 0; padding:10px; background:#ffebee; border-radius:4px;">
@@ -4880,6 +4888,11 @@
         }
 
         window.addEventListener('DOMContentLoaded', init);
+
+        document.getElementById("refreshBtn").onclick = () => {
+            location.reload();
+        };
+
 
         // ============================================
         // ============================================
