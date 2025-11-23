@@ -2,77 +2,50 @@
 const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
 
-let supabase;
 let currentDeviceUID = null;
+let token = null;
 
 // Initialize on page load
 async function init() {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    token = urlParams.get('token');
 
     if (!token) {
         document.querySelector('.container').innerHTML = '<div class="settings-card"><p style="color: #ff6b6b;">No authentication token provided</p></div>';
         return;
     }
 
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Get current device UID from token
-    try {
-        const { data, error } = await supabase
-            .from('devices')
-            .select('device_uid')
-            .eq('auth_token', token)
-            .single();
-
-        if (error) throw error;
-        currentDeviceUID = data.device_uid;
-    } catch (error) {
-        console.error('Error getting device UID:', error);
-    }
-
     // Load all leaderboards
     await Promise.all([
-        loadEnergyLeaderboard('alt', 'alt_kwh_alltime', 'leaderboard-alt-wh-lifetime-body'),
-        loadEnergyLeaderboard('solar', 'solar_kwh_alltime', 'leaderboard-solar-wh-lifetime-body'),
-        loadEnergyLeaderboard('amps', 'max_alt_amps', 'leaderboard-max-alt-amps-body'),
+        loadEnergyLeaderboard('alt_kwh_alltime', 'leaderboard-alt-wh-lifetime-body', 'kWh'),
+        loadEnergyLeaderboard('solar_kwh_alltime', 'leaderboard-solar-wh-lifetime-body', 'kWh'),
+        loadEnergyLeaderboard('max_alt_amps', 'leaderboard-max-alt-amps-body', 'A'),
         loadSpeedLeaderboards()
     ]);
 }
 
 // Load energy production leaderboards
-async function loadEnergyLeaderboard(type, column, tbodyId) {
+async function loadEnergyLeaderboard(column, tbodyId, unit) {
     try {
-        const { data, error } = await supabase
-            .from('device_statistics')
-            .select(`
-                device_uid,
-                user_id,
-                ${column}
-            `)
-            .order(column, { ascending: false })
-            .limit(10);
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/get-leaderboards`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({
+                token: token,
+                type: 'energy',
+                column: column,
+                limit: 10
+            })
+        });
 
-        if (error) throw error;
-        
-        // Get user profiles separately
-        if (data && data.length > 0) {
-            const userIds = data.map(d => d.user_id);
-            const { data: profiles, error: profileError } = await supabase
-                .from('user_profiles')
-                .select('user_id, username, boat_name, boat_type, boat_length')
-                .in('user_id', userIds);
-            
-            if (profileError) throw profileError;
-            
-            // Merge profiles into data
-            data.forEach(entry => {
-                const profile = profiles.find(p => p.user_id === entry.user_id);
-                if (profile) {
-                    entry.user_profiles = profile;
-                }
-            });
-        }
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+
+        const { data, currentDeviceUID: deviceUID } = result;
+        if (!currentDeviceUID) currentDeviceUID = deviceUID;
 
         const tbody = document.getElementById(tbodyId);
         if (!data || data.length === 0) {
@@ -82,10 +55,7 @@ async function loadEnergyLeaderboard(type, column, tbodyId) {
 
         tbody.innerHTML = data.map((entry, index) => {
             const isCurrentUser = entry.device_uid === currentDeviceUID;
-            const value = type === 'amps' 
-                ? entry[column].toFixed(1) 
-                : entry[column].toFixed(2);
-            const unit = type === 'amps' ? 'A' : 'kWh';
+            const value = entry[column].toFixed(unit === 'A' ? 1 : 2);
             
             return `
                 <tr style="${isCurrentUser ? 'background-color: #e3f2fd; font-weight: bold;' : ''}">
@@ -99,7 +69,7 @@ async function loadEnergyLeaderboard(type, column, tbodyId) {
             `;
         }).join('');
     } catch (error) {
-        console.error(`Error loading ${type} leaderboard:`, error);
+        console.error(`Error loading leaderboard:`, error);
         document.getElementById(tbodyId).innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #ff6b6b;">Error loading data</td></tr>';
     }
 }
@@ -139,32 +109,32 @@ async function loadSpeedLeaderboards() {
 // Get a single speed entry for a specific boat type, size, and rank
 async function getSpeedEntry(boatType, minLength, maxLength, rank) {
     try {
-        // First get matching user profiles
-        const { data: profiles, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('user_id, username, boat_name, boat_type, boat_length')
-            .eq('boat_type', boatType)
-            .gte('boat_length', minLength)
-            .lte('boat_length', maxLength);
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/get-leaderboards`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({
+                token: token,
+                type: 'speed',
+                boat_type: boatType,
+                min_length: minLength,
+                max_length: maxLength,
+                limit: rank
+            })
+        });
 
-        if (profileError) throw profileError;
-        if (!profiles || profiles.length === 0) return '---';
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
 
-        const userIds = profiles.map(p => p.user_id);
+        const { data, currentDeviceUID: deviceUID } = result;
+        if (!currentDeviceUID) currentDeviceUID = deviceUID;
 
-        // Then get device stats for those users
-        const { data, error } = await supabase
-            .from('device_statistics')
-            .select('device_uid, user_id, max_speed')
-            .in('user_id', userIds)
-            .order('max_speed', { ascending: false })
-            .limit(rank);
-
-        if (error) throw error;
         if (!data || data.length < rank) return '---';
 
         const entry = data[rank - 1];
-        const profile = profiles.find(p => p.user_id === entry.user_id);
+        const profile = entry.user_profiles;
         if (!profile) return '---';
 
         const isCurrentUser = entry.device_uid === currentDeviceUID;
@@ -178,7 +148,7 @@ async function getSpeedEntry(boatType, minLength, maxLength, rank) {
             </div>
         `;
     } catch (error) {
-        console.error(`Error loading speed entry for ${boatType}:`, error);
+        console.error(`Error loading speed entry:`, error);
         return '---';
     }
 }

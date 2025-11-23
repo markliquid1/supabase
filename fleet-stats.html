@@ -19,7 +19,7 @@
             <div id="loading-message" style="margin:15px 0; color:#666;">Loading fleet statistics...</div>
 
             <div id="stats-content" style="display:none;">
-                
+
                 <div class="section-title">Fleet Overview</div>
                 <div class="grid">
                     <div class="card">
@@ -117,8 +117,6 @@
         const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         function showError(message) {
             document.getElementById('loading-message').style.display = 'none';
             document.getElementById('error-message').textContent = message;
@@ -134,100 +132,66 @@
 
         async function fetchFleetStats() {
             try {
-                // Total Registered Devices
-                const { count: totalDevices, error: devicesError } = await supabase
-                    .from('devices')
-                    .select('*', { count: 'exact', head: true });
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/get-fleet-stats`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({})
+                });
 
-                if (devicesError) throw devicesError;
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to fetch fleet statistics');
+                }
 
-                // Active Devices (Last 7 days)
-                const { data: allData, error: allDataError } = await supabase
-                    .from('sensor_history')
-                    .select('device_uid, timestamp');
-
-                if (allDataError) throw allDataError;
-
-                const sevenDaysAgo = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000));
-                const recentData = allData.filter(d => new Date(d.timestamp) > sevenDaysAgo);
-                const uniqueDevices = new Set(recentData.map(d => d.device_uid));
-                const activeDevices = uniqueDevices.size;
-
-                // Call all SQL functions (will implement these next)
-                const { data: avgVoltage } = await supabase.rpc('avg_battery_voltage');
-                const { data: avgSoc } = await supabase.rpc('avg_battery_soc');
-                const { data: totalDistance } = await supabase.rpc('total_distance');
-                const { data: avgSpeed } = await supabase.rpc('avg_speed');
-                const { data: batteryCharged } = await supabase.rpc('total_battery_charged');
-                const { data: discharged } = await supabase.rpc('total_discharged');
-                const { data: altEnergy } = await supabase.rpc('total_alt_energy');
-                const { data: solarEnergy } = await supabase.rpc('total_solar_energy');
-                const { data: altFuel } = await supabase.rpc('total_alt_fuel');
-                const { data: altTime } = await supabase.rpc('total_alt_time');
-                const { data: engineHours } = await supabase.rpc('total_engine_hours');
-                const { data: engineFuel } = await supabase.rpc('total_engine_fuel');
-
-                return {
-                    totalDevices,
-                    activeDevices,
-                    avgVoltage,
-                    avgSoc,
-                    totalDistance,
-                    avgSpeed,
-                    batteryCharged,
-                    discharged,
-                    altEnergy,
-                    solarEnergy,
-                    altFuel,
-                    altTime,
-                    engineHours,
-                    engineFuel
-                };
+                return await response.json();
 
             } catch (error) {
                 console.error('Fleet stats fetch error:', error);
-                throw new Error('Failed to fetch fleet statistics');
+                throw error;
             }
         }
 
         function displayStats(stats) {
             document.getElementById('fleet-total-devices').textContent = stats.totalDevices || '0';
             document.getElementById('fleet-active-devices').textContent = stats.activeDevices || '0';
-            
-            document.getElementById('fleet-avg-voltage').textContent = 
+
+            document.getElementById('fleet-avg-voltage').textContent =
                 stats.avgVoltage != null ? stats.avgVoltage.toFixed(2) + ' V' : 'No data';
-            
-            document.getElementById('fleet-avg-soc').textContent = 
+
+            document.getElementById('fleet-avg-soc').textContent =
                 stats.avgSoc != null ? stats.avgSoc.toFixed(1) + ' %' : 'No data';
-            
-            document.getElementById('fleet-battery-charged').textContent = 
+
+            document.getElementById('fleet-battery-charged').textContent =
                 stats.batteryCharged != null ? (stats.batteryCharged / 1000).toFixed(1) + ' kWh' : 'No data';
-            
-            document.getElementById('fleet-discharged').textContent = 
+
+            document.getElementById('fleet-discharged').textContent =
                 stats.discharged != null ? (stats.discharged / 1000).toFixed(1) + ' kWh' : 'No data';
-            
-            document.getElementById('fleet-alt-energy').textContent = 
+
+            document.getElementById('fleet-alt-energy').textContent =
                 stats.altEnergy != null ? (stats.altEnergy / 1000).toFixed(1) + ' kWh' : 'No data';
-            
-            document.getElementById('fleet-solar-energy').textContent = 
+
+            document.getElementById('fleet-solar-energy').textContent =
                 stats.solarEnergy != null ? (stats.solarEnergy / 1000).toFixed(1) + ' kWh' : 'No data';
-            
-            document.getElementById('fleet-engine-hours').textContent = 
+
+            document.getElementById('fleet-engine-hours').textContent =
                 stats.engineHours != null ? formatHours(stats.engineHours) : 'No data';
-            
-            document.getElementById('fleet-alt-time').textContent = 
+
+            document.getElementById('fleet-alt-time').textContent =
                 stats.altTime != null ? formatHours(stats.altTime) : 'No data';
-            
-            document.getElementById('fleet-engine-fuel').textContent = 
+
+            document.getElementById('fleet-engine-fuel').textContent =
                 stats.engineFuel != null ? stats.engineFuel.toFixed(1) + ' L' : 'No data';
-            
-            document.getElementById('fleet-alt-fuel').textContent = 
+
+            document.getElementById('fleet-alt-fuel').textContent =
                 stats.altFuel != null ? stats.altFuel.toFixed(1) + ' L' : 'No data';
-            
-            document.getElementById('fleet-distance').textContent = 
+
+            document.getElementById('fleet-distance').textContent =
                 stats.totalDistance != null ? stats.totalDistance.toFixed(1) + ' nm' : 'No data';
-            
-            document.getElementById('fleet-avg-speed').textContent = 
+
+            document.getElementById('fleet-avg-speed').textContent =
                 stats.avgSpeed != null ? stats.avgSpeed.toFixed(2) + ' kts' : 'No data';
 
             document.getElementById('loading-message').style.display = 'none';
@@ -245,6 +209,8 @@
 
         window.addEventListener('DOMContentLoaded', init);
     </script>
+
+
 </body>
 
 </html>
