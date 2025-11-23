@@ -1142,145 +1142,75 @@
         }
 
         // Fetch sensor history 
-        async function fetchSensorHistory(deviceUid) {
-            try {
-                const { data, error } = await supabase
-                    .from('sensor_history')
-                    .select(HISTORY_COLUMNS)
-                    .eq('device_uid', deviceUid)
-                    .order('timestamp', { ascending: false });
+        async function fetchSensorHistory(token) {
+    try {
+        // Call secure Edge Function instead of direct query
+        const response = await fetch('https://qnbekuaoweuteylitzvo.supabase.co/functions/v1/get-history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ token: token })
+        });
 
-                if (error) {
-                    // debugLog('fetchSensorHistory ERROR:', error.message || JSON.stringify(error));
-                    throw error;
-                }
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch sensor history');
+        }
 
-                const minDate = new Date('2020-01-01').getTime();
-                const maxDate = new Date('2100-01-01').getTime();
+        const result = await response.json();
+        const data = result.data;
 
-                const filtered = (data || []).filter(d => {
-                    const ts = new Date(d.timestamp).getTime();
-                    return ts >= minDate && ts <= maxDate;
-                });
+        if (!data || data.length === 0) {
+            return [];
+        }
 
-                // debugLog('rows:', filtered.length);
+        const minDate = new Date('2020-01-01').getTime();
+        const maxDate = new Date('2100-01-01').getTime();
 
-                if (filtered.length > 0) {
-                    const f = filtered[0];
-                    // debugLog('keys:', Object.keys(f).join(','));
-                    // debugLog('temps:', {
-                    //     alt_temp_min: f.alt_temp_min,
-                    //     temp_therm_min: f.temp_therm_min,
-                    //     amb_temp_min: f.amb_temp_min
-                    // });
-                }
+        const filtered = (data || []).filter(d => {
+            const ts = new Date(d.timestamp).getTime();
+            return ts >= minDate && ts <= maxDate;
+        });
 
-                // Inject gap markers based on intended_interval_sec
-                const withGaps = injectGaps(filtered);
+        // Inject gap markers based on intended_interval_sec
+        const withGaps = injectGaps(filtered);
 
-                // Extend data to present time with NaN values
-                if (withGaps.length > 0) {
-                    // Get the most recent data point (index 0 since data is sorted descending)
-                    const mostRecent = withGaps[0];
-                    const mostRecentTime = new Date(mostRecent.timestamp);
+        // Extend data to present time with NaN values
+        if (withGaps.length > 0) {
+            const mostRecent = withGaps[0];
+            const mostRecentTime = new Date(mostRecent.timestamp);
 
-                    // Get current time in the selected timezone
-                    let now;
-                    if (selectedTimezone === 'local') {
-                        now = new Date();
-                    } else if (selectedTimezone === 'UTC') {
-                        now = new Date();
-                    } else {
-                        // For specific timezones, create a properly adjusted time
-                        now = new Date();
-                    }
+            let now;
+            if (selectedTimezone === 'local') {
+                now = new Date();
+            } else if (selectedTimezone === 'UTC') {
+                now = new Date();
+            } else {
+                now = new Date();
+            }
 
-                    // Only add extension point if most recent data is older than 1 minute
-                    if (now - mostRecentTime > 60000) {
-                        // Create a data point at "now" with all values as null
-                        // null creates gaps in Chart.js line charts
-                        const extensionPoint = {
-                            timestamp: now.toISOString(),
-                            _isExtensionPoint: true,  // Marker to identify this point
-                            intended_interval_sec: null,
-                            // All numeric fields set to null to create gaps
-                            batt_curr_min: null,
-                            batt_curr_max: null,
-                            batt_curr_avg: null,
-                            alt_curr_min: null,
-                            alt_curr_max: null,
-                            alt_curr_avg: null,
-                            victron_curr_min: null,
-                            victron_curr_max: null,
-                            victron_curr_avg: null,
-                            batt_volt_min: null,
-                            batt_volt_max: null,
-                            batt_volt_avg: null,
-                            soc_min: null,
-                            soc_max: null,
-                            soc_avg: null,
-                            alt_temp_min: null,
-                            alt_temp_max: null,
-                            alt_temp_avg: null,
-                            temp_therm_min: null,
-                            temp_therm_max: null,
-                            temp_therm_avg: null,
-                            amb_temp_min: null,
-                            amb_temp_max: null,
-                            amb_temp_avg: null,
-                            rpm_min: null,
-                            rpm_max: null,
-                            rpm_avg: null,
-                            duty_cycle_min: null,
-                            duty_cycle_max: null,
-                            duty_cycle_avg: null,
-                            ign_duty: null,
-                            eng_duty: null,
-                            sog_min: null,
-                            sog_max: null,
-                            sog_avg: null,
-                            aws_min: null,
-                            aws_max: null,
-                            aws_avg: null,
-                            tws_min: null,
-                            tws_max: null,
-                            tws_avg: null,
-                            vmg_min: null,
-                            vmg_max: null,
-                            vmg_avg: null,
-                            cog_min: null,
-                            cog_max: null,
-                            cog_avg: null,
-                            heading_min: null,
-                            heading_max: null,
-                            heading_avg: null,
-                            awa_min: null,
-                            awa_max: null,
-                            awa_avg: null,
-                            twa_min: null,
-                            twa_max: null,
-                            twa_avg: null,
-                            leeway_min: null,
-                            leeway_max: null,
-                            leeway_avg: null,
-                            alt_zero_min: null,
-                            alt_zero_max: null,
-                            alt_zero_avg: null
-                        };
-
-                        // Insert at the beginning (since data is sorted descending)
-                        withGaps.unshift(extensionPoint);
-                    }
-                }
-
-                return withGaps;
-            } catch (error) {
-                // debugLog('fetchSensorHistory THROWN:', error.message || error);
-                console.error('Data fetch error:', error);
-                throw new Error('Failed to fetch sensor data');
+            if (now - mostRecentTime > 60000) {
+                const extensionPoint = {
+                    timestamp: now.toISOString(),
+                    _isExtensionPoint: true
+                };
+                
+                const allKeys = Object.keys(withGaps[0]).filter(k => k !== 'timestamp' && k !== '_isExtensionPoint');
+                allKeys.forEach(k => { extensionPoint[k] = null; });
+                
+                withGaps.unshift(extensionPoint);
             }
         }
 
+        return withGaps;
+
+    } catch (error) {
+        console.error('Fetch sensor history error:', error);
+        throw error;
+    }
+}
         // Shared helper: apply time window
         function filterDataByTime(data, value, unit) {
             if (!value || value <= 0 || data.length === 0) return data;
@@ -4904,7 +4834,7 @@
 
             try {
                 const deviceUid = await validateToken(token);
-                const sensorData = await fetchSensorHistory(deviceUid);
+                const sensorData = await fetchSensorHistory(token);
 
                 if (!sensorData || sensorData.length === 0) {
                     showError('No sensor data available yet. Start collecting data to see your history!');
