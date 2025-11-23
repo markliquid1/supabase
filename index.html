@@ -763,6 +763,171 @@
         // ============================================
         // ============================================
 
+
+        // Scroll Saver
+        // It works standalone inside the iframe (different origin from parent is fine).
+
+        (function () {
+            const STORAGE_KEY = "history_scroll_v1";
+            const MAX_ATTEMPTS = 40; // retries while charts/layout settle
+            const RETRY_INTERVAL_MS = 100;
+
+            let saveTimeout = null;
+            let lastSavedY = 0;
+
+            function getScrollY() {
+                return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+            }
+
+            function safeGetItem(key) {
+                try {
+                    return window.localStorage ? window.localStorage.getItem(key) : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function safeSetItem(key, value) {
+                try {
+                    if (window.localStorage) window.localStorage.setItem(key, value);
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            function saveScrollPosition() {
+                const y = getScrollY();
+                lastSavedY = y;
+                safeSetItem(
+                    STORAGE_KEY,
+                    JSON.stringify({
+                        y,
+                        ts: Date.now(),
+                        path: window.location.pathname,
+                        href: window.location.href
+                    })
+                );
+
+                // Optional: notify parent (ignored if parent doesn't listen / cross-origin)
+                try {
+                    if (window.parent && window.parent !== window) {
+                        window.parent.postMessage(
+                            { type: "HISTORY_SCROLL_SAVED", scrollY: y, href: window.location.href },
+                            "*"
+                        );
+                    }
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            function scheduleSave() {
+                if (saveTimeout !== null) return;
+                saveTimeout = setTimeout(function () {
+                    saveTimeout = null;
+                    saveScrollPosition();
+                }, 200);
+            }
+
+            function parseStoredPosition() {
+                const raw = safeGetItem(STORAGE_KEY);
+                if (!raw) return null;
+                try {
+                    const obj = JSON.parse(raw);
+                    if (!obj || typeof obj.y !== "number") return null;
+                    return obj;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function restoreScrollPositionInternal() {
+                const stored = parseStoredPosition();
+                if (!stored) return;
+
+                const targetY = stored.y;
+                if (typeof targetY !== "number" || targetY <= 0) return;
+
+                let attempts = 0;
+
+                function attemptScroll() {
+                    attempts++;
+
+                    const maxY =
+                        (document.documentElement.scrollHeight || document.body.scrollHeight || 0) -
+                        window.innerHeight;
+
+                    if (maxY <= 0) {
+                        if (attempts < MAX_ATTEMPTS) {
+                            setTimeout(attemptScroll, RETRY_INTERVAL_MS);
+                        }
+                        return;
+                    }
+
+                    const clampedY = Math.max(0, Math.min(targetY, maxY));
+
+                    window.scrollTo(0, clampedY);
+
+                    const current = getScrollY();
+                    if (
+                        Math.abs(current - clampedY) > 2 &&
+                        attempts < MAX_ATTEMPTS
+                    ) {
+                        setTimeout(attemptScroll, RETRY_INTERVAL_MS);
+                    }
+                }
+
+                attemptScroll();
+            }
+
+            // Public function so you can call after all 7 charts are rendered:
+            // call loadScrollPosition() at the end of your init() as you already do.
+            window.loadScrollPosition = function loadScrollPosition() {
+                restoreScrollPositionInternal();
+            };
+
+            // Save on scroll (covers most navigation / tab-switch cases even if beforeunload misses)
+            document.addEventListener("scroll", scheduleSave, { passive: true });
+
+            // Save when iframe goes hidden (tab switch, navigation, etc.)
+            document.addEventListener("visibilitychange", function () {
+                if (document.hidden) saveScrollPosition();
+            });
+
+            // Extra safety: save on pagehide/beforeunload if they do fire
+            window.addEventListener("pagehide", saveScrollPosition);
+            window.addEventListener("beforeunload", saveScrollPosition);
+
+            // Optional: allow parent to push a scroll position via postMessage
+            window.addEventListener("message", function (event) {
+                const data = event.data;
+                if (!data || typeof data !== "object") return;
+                if (data.type !== "HISTORY_SCROLL_RESTORE") return;
+                if (typeof data.scrollY !== "number") return;
+
+                // Parent can override stored value if desired
+                safeSetItem(
+                    STORAGE_KEY,
+                    JSON.stringify({
+                        y: data.scrollY,
+                        ts: Date.now(),
+                        path: window.location.pathname,
+                        href: window.location.href
+                    })
+                );
+                restoreScrollPositionInternal();
+            });
+
+            // Fallback auto-restore on full load in case you forget to call loadScrollPosition()
+            window.addEventListener("load", function () {
+                // Short delay to let charts inflate layout
+                setTimeout(restoreScrollPositionInternal, 200);
+            });
+        })();
+
+
+
+
         // Supabase configuration
         const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
@@ -1300,50 +1465,6 @@
 
             const cutoff = new Date(now - milliseconds);
             return data.filter(d => new Date(d.timestamp) >= cutoff);
-        }
-        // Old scroll fail
-
-        //     function saveScrollPosition() {
-        //         localStorage.setItem('scrollPosition', window.scrollY);
-        //     }
-
-        //     function loadScrollPosition() {
-        //         const savedScroll = localStorage.getItem('scrollPosition');
-        //         if (savedScroll !== null) {
-        //             window.scrollTo(0, parseInt(savedScroll));
-        //         }
-        //     }
-
-        //     // Save scroll position before page unload
-        //     window.addEventListener('beforeunload', saveScrollPosition);
-
-        //     // Restore scroll position on page load (called after init completes)
-        //    // window.addEventListener('load', loadScrollPosition); // maybe wasn't actually called after init completed...
-
-        // new scroll stuff
-        // Save scroll position - use beforeunload (most reliable)
-        window.addEventListener('beforeunload', () => {
-            localStorage.setItem('scrollPosition', window.scrollY);
-        });
-
-        // Also save during scroll (debounced)
-        let scrollTimeout;
-        window.addEventListener('scroll', () => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                localStorage.setItem('scrollPosition', window.scrollY);
-            }, 200);
-        });
-
-        // Restore after DOM + charts are fully loaded
-        function loadScrollPosition() {
-            const scrollpos = localStorage.getItem('scrollPosition');
-            if (scrollpos) {
-                // Small delay to ensure all charts have rendered
-                setTimeout(() => {
-                    window.scrollTo(0, parseInt(scrollpos));
-                }, 100);
-            }
         }
 
 
