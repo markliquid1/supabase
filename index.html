@@ -758,67 +758,8 @@
 
     <script>
         // ============================================
-        // ============================================
         // SHARED (UNIFIED FOR ALL PLOTS) — CONFIG & STATE
         // ============================================
-        // ============================================
-
-
-        // Scroll Saver
-        (function () {
-            const STORAGE_KEY = "history_scroll_" + window.location.pathname;
-            let saveTimer = null;
-
-            function getY() {
-                return (
-                    window.scrollY ||
-                    document.documentElement.scrollTop ||
-                    document.body.scrollTop ||
-                    0
-                );
-            }
-
-            function saveNow() {
-                try {
-                    localStorage.setItem(STORAGE_KEY, String(getY()));
-                } catch (e) { }
-            }
-
-            // Save continuously while user scrolls
-            document.addEventListener(
-                "scroll",
-                function () {
-                    if (saveTimer) return;
-                    saveTimer = setTimeout(function () {
-                        saveTimer = null;
-                        saveNow();
-                    }, 150);
-                },
-                { passive: true }
-            );
-
-            window.addEventListener("beforeunload", saveNow);
-            window.addEventListener("pagehide", saveNow);
-            document.addEventListener("visibilitychange", function () {
-                if (document.hidden) saveNow();
-            });
-
-            // Restore ONLY when called explicitly from init()
-            window.loadScrollPosition = function () {
-                setTimeout(function () {
-                    const v = localStorage.getItem(STORAGE_KEY);
-                    const y = v ? parseInt(v, 10) : 0;
-                    if (Number.isFinite(y) && y > 0) {
-                        window.scrollTo(0, y);
-                    }
-                }, 200); // slight delay for final layout settle
-            };
-        })();
-
-
-
-
-
 
         // Supabase configuration
         const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
@@ -4999,9 +4940,6 @@
                 // Plot 7
                 loadSettings7();
                 updateChart7();
-
-                loadScrollPosition(); // last line
-
 
             } catch (error) {
                 showError(error.message);
