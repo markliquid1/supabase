@@ -765,167 +765,38 @@
 
 
         // Scroll Saver
-        // Put this in the CHILD (Vercel) page JS, loaded on every visit.
-        // It does NOT rely on the parent at all. Works even when embedded in an iframe on a different origin.
-
         (function () {
-            const STORAGE_KEY = "xeng_history_scroll_" + window.location.pathname;
-            const SAVE_DEBOUNCE_MS = 150;
-            const MAX_RESTORE_TRIES = 80;
-            const RESTORE_RETRY_MS = 100;
-
+            const STORAGE_KEY = "history_scroll_" + window.location.pathname;
             let saveTimer = null;
-            let targetY = null;
-            let restoreTries = 0;
-            let restoreDone = false;
-            let observer = null;
 
-            function getScrollY() {
+            function getY() {
                 return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
             }
 
-            function safeGetItem(key) {
+            function saveNow() {
                 try {
-                    return window.localStorage ? window.localStorage.getItem(key) : null;
-                } catch (e) {
-                    return null;
-                }
+                    localStorage.setItem(STORAGE_KEY, String(getY()));
+                } catch (e) { }
             }
 
-            function safeSetItem(key, value) {
-                try {
-                    if (window.localStorage) window.localStorage.setItem(key, value);
-                } catch (e) {
-                    // ignore
-                }
-            }
-
-            function saveScrollNow() {
-                const y = getScrollY();
-                safeSetItem(
-                    STORAGE_KEY,
-                    JSON.stringify({
-                        y,
-                        ts: Date.now(),
-                        href: window.location.href
-                    })
-                );
-            }
-
-            function scheduleSave() {
-                if (saveTimer !== null) return;
+            document.addEventListener("scroll", function () {
+                if (saveTimer) return;
                 saveTimer = setTimeout(function () {
                     saveTimer = null;
-                    saveScrollNow();
-                }, SAVE_DEBOUNCE_MS);
-            }
+                    saveNow();
+                }, 150);
+            }, { passive: true });
 
-            function loadStoredTarget() {
-                if (targetY !== null) return;
-                const raw = safeGetItem(STORAGE_KEY);
-                if (!raw) return;
-                try {
-                    const obj = JSON.parse(raw);
-                    if (!obj || typeof obj.y !== "number") return;
-                    targetY = obj.y;
-                } catch (e) {
-                    targetY = null;
-                }
-            }
+            window.addEventListener("beforeunload", saveNow);
+            window.addEventListener("pagehide", saveNow);
 
-            function attemptRestore() {
-                if (restoreDone) return;
-                loadStoredTarget();
-                if (targetY === null || targetY <= 0) return;
-
-                restoreTries++;
-                if (restoreTries > MAX_RESTORE_TRIES) {
-                    if (observer) observer.disconnect();
-                    restoreDone = true;
-                    return;
-                }
-
-                const doc = document.documentElement;
-                const body = document.body || doc;
-                const scrollHeight = Math.max(
-                    doc.scrollHeight || 0,
-                    body.scrollHeight || 0
-                );
-                const maxY = scrollHeight - window.innerHeight;
-
-                if (maxY <= 0) {
-                    // Not enough content yet; wait for more layout
-                    setTimeout(attemptRestore, RESTORE_RETRY_MS);
-                    return;
-                }
-
-                const clamped = Math.max(0, Math.min(targetY, maxY));
-                window.scrollTo(0, clamped);
-
-                const current = getScrollY();
-                if (Math.abs(current - clamped) <= 2) {
-                    // Good enough; stop observing
-                    restoreDone = true;
-                    if (observer) observer.disconnect();
-                } else {
-                    // Try again while layout is still changing
-                    setTimeout(attemptRestore, RESTORE_RETRY_MS);
-                }
-            }
-
-            // Expose for your existing init() sequence:
-            // call loadScrollPosition() at the END of init(), after all 7 charts are drawn.
-            window.loadScrollPosition = function loadScrollPosition() {
-                // Force one immediate attempt, plus let the observer keep nudging it
-                targetY = null; // re-read in case user navigated since last load
-                restoreTries = 0;
-                restoreDone = false;
-                loadStoredTarget();
-                if (targetY !== null && targetY > 0) {
-                    attemptRestore();
-                }
-            };
-
-            // Observe DOM changes (charts, async data, etc.)
-            observer = new MutationObserver(function () {
-                if (!restoreDone) attemptRestore();
-            });
-
-            // Start observing early; this will keep firing as charts render.
-            if (document.readyState === "loading") {
-                document.addEventListener("DOMContentLoaded", function () {
-                    observer.observe(document.documentElement, {
-                        childList: true,
-                        subtree: true,
-                        attributes: false,
-                        characterData: false
-                    });
-                });
-            } else {
-                observer.observe(document.documentElement, {
-                    childList: true,
-                    subtree: true,
-                    attributes: false,
-                    characterData: false
-                });
-            }
-
-            // Fallback: also try once after full load if init() forgets to call loadScrollPosition()
             window.addEventListener("load", function () {
-                if (!restoreDone) attemptRestore();
+                const v = localStorage.getItem(STORAGE_KEY);
+                const y = v ? parseInt(v, 10) : 0;
+                if (Number.isFinite(y) && y > 0) {
+                    window.scrollTo(0, y);
+                }
             });
-
-            // Save on scroll while user interacts
-            document.addEventListener("scroll", scheduleSave, { passive: true });
-
-            // Save when iframe/page is hidden (tab switch, parent nav, etc.)
-            document.addEventListener("visibilitychange", function () {
-                if (document.hidden) saveScrollNow();
-            });
-
-            // Extra: save on pagehide/beforeunload if they do fire in this iframe
-            window.addEventListener("pagehide", saveScrollNow);
-            window.addEventListener("beforeunload", saveScrollNow);
         })();
 
 
@@ -5111,8 +4982,6 @@
                 // Plot 7
                 loadSettings7();
                 updateChart7();
-
-                loadScrollPosition();
 
             } catch (error) {
                 showError(error.message);
