@@ -173,7 +173,7 @@
                 <div class="variable-row" style="border-left-color: #CC79A7;">
                     <label class="variable-master">
                         <input type="checkbox" class="variable-toggle1" data-group="TargetAmps" checked>
-                        <strong>Target Current (Setpoint)</strong>
+                        <strong>Alternator Target (Setpoint)</strong>
                     </label>
                 </div>
             </div>
@@ -1528,7 +1528,7 @@
                                 font: { size: 10 },
                                 filter: function (item) {
                                     // Only show main average lines in legend
-                                    return /Curr$/.test(item.text);
+                                    return /Curr$|Amps$/.test(item.text);
                                 }
                             }
                         },
@@ -1736,6 +1736,7 @@
                         break;
                     case 'Alt Curr':
                         key = 'alt_curr_avg';
+                        break;
                     case 'Target Amps Min':
                         key = 'u_target_amps_min';
                         break;
