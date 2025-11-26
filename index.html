@@ -173,7 +173,7 @@
                 <div class="variable-row" style="border-left-color: #CC79A7;">
                     <label class="variable-master">
                         <input type="checkbox" class="variable-toggle1" data-group="TargetAmps" checked>
-                        <strong>Target Amps (Setpoint)</strong>
+                        <strong>Target Current (Setpoint)</strong>
                     </label>
                 </div>
             </div>
@@ -885,7 +885,7 @@
             'batt_curr_min,batt_curr_max,batt_curr_avg,' +
             'alt_curr_min,alt_curr_max,alt_curr_avg,' +
             'victron_curr_min,victron_curr_max,victron_curr_avg,' +
-            'u_target_amps_min,u_target_amps_max,u_target_amps_avg,' +  // ADD THIS LINE
+            'u_target_amps_min,u_target_amps_max,u_target_amps_avg,' +  
             'batt_volt_min,batt_volt_max,batt_volt_avg,' +
             'soc_min,soc_max,soc_avg,' +
             'alt_temp_min,alt_temp_max,alt_temp_avg,' +
@@ -1457,11 +1457,11 @@
                 );
             }
 
-            // Target Amps - Pink (#CC79A7)
+            // Target Current - Pink (#CC79A7)
             if (checkedVars.has('TargetAmps')) {
                 datasets.push(
                     {
-                        label: 'Target Amps Min',
+                        label: 'Target Current Min',
                         data: data.map(d => d.u_target_amps_min),
                         borderColor: 'rgba(204, 121, 167, 0.3)',
                         backgroundColor: 'rgba(204, 121, 167, 0)',
@@ -1473,7 +1473,7 @@
                         stepped: 'before'
                     },
                     {
-                        label: 'Target Amps Max',
+                        label: 'Target Current Max',
                         data: data.map(d => d.u_target_amps_max),
                         borderColor: 'rgba(204, 121, 167, 0.3)',
                         backgroundColor: 'rgba(204, 121, 167, 0.3)',
@@ -1485,7 +1485,7 @@
                         stepped: 'before'
                     },
                     {
-                        label: 'Target Amps',
+                        label: 'Target Current',
                         data: data.map(d => d.u_target_amps_avg),
                         borderColor: 'rgba(204, 121, 167, 1)',
                         backgroundColor: 'rgba(204, 121, 167, 1)',
