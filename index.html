@@ -885,7 +885,7 @@
             'batt_curr_min,batt_curr_max,batt_curr_avg,' +
             'alt_curr_min,alt_curr_max,alt_curr_avg,' +
             'victron_curr_min,victron_curr_max,victron_curr_avg,' +
-            'u_target_amps_min,u_target_amps_max,u_target_amps_avg,' +  
+            'u_target_amps_min,u_target_amps_max,u_target_amps_avg,' +
             'batt_volt_min,batt_volt_max,batt_volt_avg,' +
             'soc_min,soc_max,soc_avg,' +
             'alt_temp_min,alt_temp_max,alt_temp_avg,' +
@@ -1526,9 +1526,9 @@
                                 pointStyleWidth: 6,
                                 padding: 8,
                                 font: { size: 10 },
+                                //only show averages
                                 filter: function (item) {
-                                    // Only show main average lines in legend
-                                    return /Curr$|Amps$/.test(item.text);
+                                    return !/Min|Max/.test(item.text);
                                 }
                             }
                         },
