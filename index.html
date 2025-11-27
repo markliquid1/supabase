@@ -3015,44 +3015,6 @@
             rebinChart3ToVisibleRange(chart3);
         }
 
-        // With descending order: newest at [0], oldest at [length-1]
-        const dataMin = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
-        const dataMax = new Date(chart3SourceData[0].timestamp).getTime();
-
-        if (currentMin == null || currentMax == null) {
-            currentMin = dataMin;
-            currentMax = dataMax;
-        }
-
-        const range = currentMax - currentMin;
-        if (range <= 0) return;
-
-        // Pan by 50% of current window width
-        const shift = range * 0.5;
-
-        let newMin = direction === 'left' ? currentMin - shift : currentMin + shift;
-        let newMax = direction === 'left' ? currentMax - shift : currentMax + shift;
-
-        // Clamp to data range so we never pan into pure empty space
-        if (newMin < dataMin) {
-            newMin = dataMin;
-            newMax = dataMin + range;
-            if (newMax > dataMax) newMax = dataMax;
-        }
-        if (newMax > dataMax) {
-            newMax = dataMax;
-            newMin = dataMax - range;
-            if (newMin < dataMin) newMin = dataMin;
-        }
-
-        // Write new limits, update scales, then rebin using the new window
-        chart3.options.scales.x.min = newMin;
-        chart3.options.scales.x.max = newMax;
-
-        chart3.update('none');
-        rebinChart3ToVisibleRange(chart3);
-        }
-
         document.getElementById('panLeft3').addEventListener('click', () => {
             panChart3('left');
         });
