@@ -75,6 +75,7 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
 }
 
 // Load speed leaderboards by boat type and size
+// Load speed leaderboards by boat type and size
 async function loadSpeedLeaderboards() {
     const categories = [
         { id: 'overall', minLength: 0, maxLength: 999 },
@@ -86,6 +87,38 @@ async function loadSpeedLeaderboards() {
 
     const boatTypes = ['sailboat', 'catamaran', 'powerboat', 'trawler'];
 
+    // Fetch all data at once (5 categories × 4 boat types = 20 calls instead of 100)
+    const allPromises = [];
+    for (const category of categories) {
+        for (const boatType of boatTypes) {
+            allPromises.push(
+                fetch(`${SUPABASE_URL}/functions/v1/get-leaderboards`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        type: 'speed',
+                        boat_type: boatType,
+                        min_length: category.minLength,
+                        max_length: category.maxLength,
+                        limit: 5
+                    })
+                }).then(r => r.json()).then(result => ({
+                    categoryId: category.id,
+                    boatType: boatType,
+                    data: result.data || []
+                }))
+            );
+        }
+    }
+
+    // Wait for all 20 requests to complete in parallel
+    const allResults = await Promise.all(allPromises);
+
+    // Build tables from results
     for (const category of categories) {
         const tbody = document.getElementById(`leaderboard-speed-${category.id}`);
         let rows = '';
@@ -94,8 +127,21 @@ async function loadSpeedLeaderboards() {
             let rowHtml = '<tr>';
             
             for (const boatType of boatTypes) {
-                const entry = await getSpeedEntry(boatType, category.minLength, category.maxLength, rank);
-                rowHtml += `<td style="padding: 8px; border-right: 1px solid #eee;"><div class="speed-entry">${entry}</div></td>`;
+                const resultData = allResults.find(r => r.categoryId === category.id && r.boatType === boatType);
+                const entries = resultData ? resultData.data : [];
+                const entry = entries[rank - 1];
+                
+                if (!entry || !entry.user_profiles) {
+                    rowHtml += `<td style="padding: 8px; border-right: 1px solid #eee;"><div class="speed-entry">---</div></td>`;
+                } else {
+                    const isCurrentUser = entry.device_uid === currentDeviceUID;
+                    const style = isCurrentUser ? 'style="color: #00a19a; font-weight: bold;"' : '';
+                    rowHtml += `<td style="padding: 8px; border-right: 1px solid #eee;"><div class="speed-entry" ${style}>
+                        <strong>${entry.max_speed.toFixed(1)} kts</strong><br>
+                        <small>${entry.user_profiles.username}</small><br>
+                        <small style="color: #999;">${entry.user_profiles.boat_name} (${entry.user_profiles.boat_length} ft)</small>
+                    </div></td>`;
+                }
             }
             
             rowHtml += '</tr>';
