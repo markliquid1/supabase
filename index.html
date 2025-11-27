@@ -2967,6 +2967,16 @@
         });
 
         function panChart3(direction) {
+            if (!chart3 || !chart3.scales || !chart3.scales.x) return;
+            if (!chart3SourceData || !chart3SourceData.length) return;
+
+            const xScale = chart3.scales.x;
+            const xOpts = chart3.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
             const dataMax = new Date(chart3SourceData[0].timestamp).getTime();
@@ -3003,6 +3013,44 @@
 
             chart3.update('none');
             rebinChart3ToVisibleRange(chart3);
+        }
+
+        // With descending order: newest at [0], oldest at [length-1]
+        const dataMin = new Date(chart3SourceData[chart3SourceData.length - 1].timestamp).getTime();
+        const dataMax = new Date(chart3SourceData[0].timestamp).getTime();
+
+        if (currentMin == null || currentMax == null) {
+            currentMin = dataMin;
+            currentMax = dataMax;
+        }
+
+        const range = currentMax - currentMin;
+        if (range <= 0) return;
+
+        // Pan by 50% of current window width
+        const shift = range * 0.5;
+
+        let newMin = direction === 'left' ? currentMin - shift : currentMin + shift;
+        let newMax = direction === 'left' ? currentMax - shift : currentMax + shift;
+
+        // Clamp to data range so we never pan into pure empty space
+        if (newMin < dataMin) {
+            newMin = dataMin;
+            newMax = dataMin + range;
+            if (newMax > dataMax) newMax = dataMax;
+        }
+        if (newMax > dataMax) {
+            newMax = dataMax;
+            newMin = dataMax - range;
+            if (newMin < dataMin) newMin = dataMin;
+        }
+
+        // Write new limits, update scales, then rebin using the new window
+        chart3.options.scales.x.min = newMin;
+        chart3.options.scales.x.max = newMax;
+
+        chart3.update('none');
+        rebinChart3ToVisibleRange(chart3);
         }
 
         document.getElementById('panLeft3').addEventListener('click', () => {
@@ -3457,6 +3505,16 @@
         });
 
         function panChart4(direction) {
+            if (!chart4 || !chart4.scales || !chart4.scales.x) return;
+            if (!chart4SourceData || !chart4SourceData.length) return;
+
+            const xScale = chart4.scales.x;
+            const xOpts = chart4.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart4SourceData[chart4SourceData.length - 1].timestamp).getTime();
             const dataMax = new Date(chart4SourceData[0].timestamp).getTime();
@@ -3494,7 +3552,6 @@
             chart4.update('none');
             rebinChart4ToVisibleRange(chart4);
         }
-
         document.getElementById('panLeft4').addEventListener('click', () => {
             panChart4('left');
         });
@@ -3928,6 +3985,16 @@
         });
 
         function panChart5(direction) {
+            if (!chart5 || !chart5.scales || !chart5.scales.x) return;
+            if (!chart5SourceData || !chart5SourceData.length) return;
+
+            const xScale = chart5.scales.x;
+            const xOpts = chart5.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart5SourceData[chart5SourceData.length - 1].timestamp).getTime();
             const dataMax = new Date(chart5SourceData[0].timestamp).getTime();
@@ -4389,7 +4456,18 @@
         });
 
         document.getElementById('applyTimeRange6').addEventListener('click', () => { updateChart6(); saveSettings6(); });
+
         function panChart6(direction) {
+            if (!chart6 || !chart6.scales || !chart6.scales.x) return;
+            if (!chart6SourceData || !chart6SourceData.length) return;
+
+            const xScale = chart6.scales.x;
+            const xOpts = chart6.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart6SourceData[chart6SourceData.length - 1].timestamp).getTime();
             const dataMax = new Date(chart6SourceData[0].timestamp).getTime();
@@ -4764,6 +4842,16 @@
         });
 
         function panChart7(direction) {
+            if (!chart7 || !chart7.scales || !chart7.scales.x) return;
+            if (!chart7SourceData || !chart7SourceData.length) return;
+
+            const xScale = chart7.scales.x;
+            const xOpts = chart7.options.scales.x || {};
+
+            // Prefer explicit options.min/max if set, otherwise current scale
+            let currentMin = (xOpts.min !== undefined && xOpts.min !== null) ? xOpts.min : xScale.min;
+            let currentMax = (xOpts.max !== undefined && xOpts.max !== null) ? xOpts.max : xScale.max;
+
             // With descending order: newest at [0], oldest at [length-1]
             const dataMin = new Date(chart7SourceData[chart7SourceData.length - 1].timestamp).getTime();
             const dataMax = new Date(chart7SourceData[0].timestamp).getTime();
