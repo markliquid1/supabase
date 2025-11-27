@@ -78,13 +78,13 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
 async function loadSpeedLeaderboards() {
     const categories = [
         { id: 'overall', minLength: 0, maxLength: 999 },
-        { id: 'under30', minLength: 0, maxLength: 29 },
-        { id: '30-40', minLength: 30, maxLength: 40 },
-        { id: '40-50', minLength: 40, maxLength: 50 },
-        { id: 'over50', minLength: 50, maxLength: 999 }
+        { id: 'under30', minLength: 0, maxLength: 30 },
+        { id: 'under40', minLength: 0, maxLength: 40 },
+        { id: 'under50', minLength: 0, maxLength: 50 },
+        { id: 'over50', minLength: 51, maxLength: 999 }
     ];
 
-    const boatTypes = ['Sailboat', 'Catamaran', 'Powerboat', 'Trawler'];
+    const boatTypes = ['sailboat', 'catamaran', 'powerboat', 'trawler'];
 
     for (const category of categories) {
         const tbody = document.getElementById(`leaderboard-speed-${category.id}`);
