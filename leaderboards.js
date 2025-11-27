@@ -82,7 +82,7 @@ async function loadSpeedLeaderboards() {
         { id: 'under30', minLength: 0, maxLength: 30 },
         { id: 'under40', minLength: 0, maxLength: 40 },
         { id: 'under50', minLength: 0, maxLength: 50 },
-        { id: 'over50', minLength: 51, maxLength: 999 }
+        { id: 'under60', minLength: 0, maxLength: 60 }
     ];
 
     const boatTypes = ['sailboat', 'catamaran', 'powerboat', 'trawler'];
