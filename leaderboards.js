@@ -53,7 +53,9 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
             return;
         }
 
-        tbody.innerHTML = data.map((entry, index) => {
+        tbody.innerHTML = data
+        .filter(entry => entry.user_profiles) // Skip entries without profiles
+        .map((entry, index) => {
             const isCurrentUser = entry.device_uid === currentDeviceUID;
             const value = entry[column].toFixed(unit === 'A' ? 1 : 2);
             
