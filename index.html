@@ -3494,6 +3494,25 @@
         }
 
 
+        function saveSettings4() {
+            const settings = {
+                timeValue: document.getElementById('timeValue4').value,
+                timeUnit: document.querySelector('.plot4-unit.active')?.dataset.unit || 'hours',
+                yAxisAuto: document.getElementById('yAxisAutoScale4').checked,
+                yAxisMin: document.getElementById('yAxisMin4').value,
+                yAxisMax: document.getElementById('yAxisMax4').value,
+                y1AxisAuto: document.getElementById('y1AxisAutoScale4').checked,
+                y1AxisMin: document.getElementById('y1AxisMin4').value,
+                y1AxisMax: document.getElementById('y1AxisMax4').value,
+                variables: {}
+            };
+            document.querySelectorAll('.variable-toggle4').forEach(cb => {
+                settings.variables[cb.dataset.group] = cb.checked;
+            });
+            localStorage.setItem('plot4Settings', JSON.stringify(settings));
+        }
+
+
         function loadSettings4() {
             const saved = localStorage.getItem('plot4Settings');
             if (!saved) return;
@@ -3510,27 +3529,6 @@
             if (settings.y1AxisMin) document.getElementById('y1AxisMin4').value = settings.y1AxisMin;
             if (settings.y1AxisMax) document.getElementById('y1AxisMax4').value = settings.y1AxisMax;
 
-            if (settings.variables) {
-                document.querySelectorAll('.variable-toggle4').forEach(cb => {
-                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
-                        cb.checked = settings.variables[cb.dataset.group];
-                    }
-                });
-            }
-        }
-
-
-        function loadSettings4() {
-            const saved = localStorage.getItem('plot4Settings');
-            if (!saved) return;
-            const settings = JSON.parse(saved);
-            document.getElementById('timeValue4').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot4-unit').forEach(box => {
-                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
-            });
-            document.getElementById('yAxisAutoScale4').checked = settings.yAxisAuto !== false;
-            if (settings.yAxisMin) document.getElementById('yAxisMin4').value = settings.yAxisMin;
-            if (settings.yAxisMax) document.getElementById('yAxisMax4').value = settings.yAxisMax;
             if (settings.variables) {
                 document.querySelectorAll('.variable-toggle4').forEach(cb => {
                     if (settings.variables.hasOwnProperty(cb.dataset.group)) {
