@@ -766,7 +766,7 @@
         // Supabase configuration
         const SUPABASE_URL = 'https://qnbekuaoweuteylitzvo.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFuYmVrdWFvd2V1dGV5bGl0enZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5NzY1MzUsImV4cCI6MjA2NzU1MjUzNX0.k2S_kzkdAyN1Azs_7enxLun9LouB1bA_q7Sw8x1Cp0o';
-       // const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);    //Claude claimed this was unused
+        // const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);    //Claude claimed this was unused
 
         // Shared data store (all plots use this)
         let fullData = [];
@@ -2909,6 +2909,9 @@
             const settings = {
                 timeValue: document.getElementById('timeValue3').value,
                 timeUnit: document.querySelector('.plot3-unit.active')?.dataset.unit || 'hours',
+                yAxisAuto: document.getElementById('yAxisAutoScale3').checked,
+                yAxisMin: document.getElementById('yAxisMin3').value,
+                yAxisMax: document.getElementById('yAxisMax3').value,
                 variables: {}
             };
             document.querySelectorAll('.variable-toggle3').forEach(cb => {
@@ -2925,6 +2928,9 @@
             document.querySelectorAll('.plot3-unit').forEach(box => {
                 box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
             });
+            document.getElementById('yAxisAutoScale3').checked = settings.yAxisAuto !== false;
+            if (settings.yAxisMin) document.getElementById('yAxisMin3').value = settings.yAxisMin;
+            if (settings.yAxisMax) document.getElementById('yAxisMax3').value = settings.yAxisMax;
             if (settings.variables) {
                 document.querySelectorAll('.variable-toggle3').forEach(cb => {
                     if (settings.variables.hasOwnProperty(cb.dataset.group)) {
@@ -3409,6 +3415,9 @@
             const settings = {
                 timeValue: document.getElementById('timeValue4').value,
                 timeUnit: document.querySelector('.plot4-unit.active')?.dataset.unit || 'hours',
+                yAxisAuto: document.getElementById('yAxisAutoScale4').checked,
+                yAxisMin: document.getElementById('yAxisMin4').value,
+                yAxisMax: document.getElementById('yAxisMax4').value,
                 variables: {}
             };
             document.querySelectorAll('.variable-toggle4').forEach(cb => {
@@ -3425,6 +3434,9 @@
             document.querySelectorAll('.plot4-unit').forEach(box => {
                 box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
             });
+            document.getElementById('yAxisAutoScale4').checked = settings.yAxisAuto !== false;
+            if (settings.yAxisMin) document.getElementById('yAxisMin4').value = settings.yAxisMin;
+            if (settings.yAxisMax) document.getElementById('yAxisMax4').value = settings.yAxisMax;
             if (settings.variables) {
                 document.querySelectorAll('.variable-toggle4').forEach(cb => {
                     if (settings.variables.hasOwnProperty(cb.dataset.group)) {
@@ -3911,8 +3923,17 @@
         }
 
         function saveSettings5() {
-            const settings = { timeValue: document.getElementById('timeValue5').value, timeUnit: document.querySelector('.plot5-unit.active')?.dataset.unit || 'hours', variables: {} };
-            document.querySelectorAll('.variable-toggle5').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
+            const settings = {
+                timeValue: document.getElementById('timeValue5').value,
+                timeUnit: document.querySelector('.plot5-unit.active')?.dataset.unit || 'hours',
+                yAxisAuto: document.getElementById('yAxisAutoScale5').checked,
+                yAxisMin: document.getElementById('yAxisMin5').value,
+                yAxisMax: document.getElementById('yAxisMax5').value,
+                variables: {}
+            };
+            document.querySelectorAll('.variable-toggle5').forEach(cb => {
+                settings.variables[cb.dataset.group] = cb.checked;
+            });
             localStorage.setItem('plot5Settings', JSON.stringify(settings));
         }
 
@@ -3921,8 +3942,19 @@
             if (!saved) return;
             const settings = JSON.parse(saved);
             document.getElementById('timeValue5').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot5-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            if (settings.variables) { document.querySelectorAll('.variable-toggle5').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
+            document.querySelectorAll('.plot5-unit').forEach(box => {
+                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
+            });
+            document.getElementById('yAxisAutoScale5').checked = settings.yAxisAuto !== false;
+            if (settings.yAxisMin) document.getElementById('yAxisMin5').value = settings.yAxisMin;
+            if (settings.yAxisMax) document.getElementById('yAxisMax5').value = settings.yAxisMax;
+            if (settings.variables) {
+                document.querySelectorAll('.variable-toggle5').forEach(cb => {
+                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
+                        cb.checked = settings.variables[cb.dataset.group];
+                    }
+                });
+            }
         }
 
         document.getElementById('toggleTools5').addEventListener('click', function () {
@@ -4382,8 +4414,17 @@
         }
 
         function saveSettings6() {
-            const settings = { timeValue: document.getElementById('timeValue6').value, timeUnit: document.querySelector('.plot6-unit.active')?.dataset.unit || 'hours', variables: {} };
-            document.querySelectorAll('.variable-toggle6').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
+            const settings = {
+                timeValue: document.getElementById('timeValue6').value,
+                timeUnit: document.querySelector('.plot6-unit.active')?.dataset.unit || 'hours',
+                yAxisAuto: document.getElementById('yAxisAutoScale6').checked,
+                yAxisMin: document.getElementById('yAxisMin6').value,
+                yAxisMax: document.getElementById('yAxisMax6').value,
+                variables: {}
+            };
+            document.querySelectorAll('.variable-toggle6').forEach(cb => {
+                settings.variables[cb.dataset.group] = cb.checked;
+            });
             localStorage.setItem('plot6Settings', JSON.stringify(settings));
         }
 
@@ -4392,8 +4433,19 @@
             if (!saved) return;
             const settings = JSON.parse(saved);
             document.getElementById('timeValue6').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot6-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            if (settings.variables) { document.querySelectorAll('.variable-toggle6').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
+            document.querySelectorAll('.plot6-unit').forEach(box => {
+                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
+            });
+            document.getElementById('yAxisAutoScale6').checked = settings.yAxisAuto !== false;
+            if (settings.yAxisMin) document.getElementById('yAxisMin6').value = settings.yAxisMin;
+            if (settings.yAxisMax) document.getElementById('yAxisMax6').value = settings.yAxisMax;
+            if (settings.variables) {
+                document.querySelectorAll('.variable-toggle6').forEach(cb => {
+                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
+                        cb.checked = settings.variables[cb.dataset.group];
+                    }
+                });
+            }
         }
 
         document.getElementById('toggleTools6').addEventListener('click', function () {
@@ -4768,8 +4820,17 @@
         }
 
         function saveSettings7() {
-            const settings = { timeValue: document.getElementById('timeValue7').value, timeUnit: document.querySelector('.plot7-unit.active')?.dataset.unit || 'hours', variables: {} };
-            document.querySelectorAll('.variable-toggle7').forEach(cb => { settings.variables[cb.dataset.group] = cb.checked; });
+            const settings = {
+                timeValue: document.getElementById('timeValue7').value,
+                timeUnit: document.querySelector('.plot7-unit.active')?.dataset.unit || 'hours',
+                yAxisAuto: document.getElementById('yAxisAutoScale7').checked,
+                yAxisMin: document.getElementById('yAxisMin7').value,
+                yAxisMax: document.getElementById('yAxisMax7').value,
+                variables: {}
+            };
+            document.querySelectorAll('.variable-toggle7').forEach(cb => {
+                settings.variables[cb.dataset.group] = cb.checked;
+            });
             localStorage.setItem('plot7Settings', JSON.stringify(settings));
         }
 
@@ -4778,8 +4839,19 @@
             if (!saved) return;
             const settings = JSON.parse(saved);
             document.getElementById('timeValue7').value = settings.timeValue || 24;
-            document.querySelectorAll('.plot7-unit').forEach(box => { box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours')); });
-            if (settings.variables) { document.querySelectorAll('.variable-toggle7').forEach(cb => { if (settings.variables.hasOwnProperty(cb.dataset.group)) cb.checked = settings.variables[cb.dataset.group]; }); }
+            document.querySelectorAll('.plot7-unit').forEach(box => {
+                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
+            });
+            document.getElementById('yAxisAutoScale7').checked = settings.yAxisAuto !== false;
+            if (settings.yAxisMin) document.getElementById('yAxisMin7').value = settings.yAxisMin;
+            if (settings.yAxisMax) document.getElementById('yAxisMax7').value = settings.yAxisMax;
+            if (settings.variables) {
+                document.querySelectorAll('.variable-toggle7').forEach(cb => {
+                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
+                        cb.checked = settings.variables[cb.dataset.group];
+                    }
+                });
+            }
         }
 
         document.getElementById('toggleTools7').addEventListener('click', function () {
