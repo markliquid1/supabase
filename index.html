@@ -1948,7 +1948,10 @@
                 timeUnit: document.querySelector('.plot2-unit.active')?.dataset.unit || 'hours',
                 yAxisAuto: document.getElementById('yAxisAutoScale2').checked,
                 yAxisMin: document.getElementById('yAxisMin2').value,
-                yAxisMax: document.getElementById('yAxisMax2').value
+                yAxisMax: document.getElementById('yAxisMax2').value,
+                y1AxisAuto: document.getElementById('y1AxisAutoScale2').checked,
+                y1AxisMin: document.getElementById('y1AxisMin2').value,
+                y1AxisMax: document.getElementById('y1AxisMax2').value
             };
             localStorage.setItem('chartSettings_plot2', JSON.stringify(settings));
         }
@@ -1976,6 +1979,10 @@
                 if (settings.yAxisMin) document.getElementById('yAxisMin2').value = settings.yAxisMin;
                 if (settings.yAxisMax) document.getElementById('yAxisMax2').value = settings.yAxisMax;
 
+                document.getElementById('y1AxisAutoScale2').checked = settings.y1AxisAuto !== false;
+                if (settings.y1AxisMin) document.getElementById('y1AxisMin2').value = settings.y1AxisMin;
+                if (settings.y1AxisMax) document.getElementById('y1AxisMax2').value = settings.y1AxisMax;
+
                 if (settings.checkedVariables && settings.checkedVariables.length > 0) {
                     document.querySelectorAll('.variable-toggle2').forEach(cb => {
                         cb.checked = settings.checkedVariables.includes(cb.dataset.group);
@@ -1994,6 +2001,7 @@
                 document.querySelectorAll('.variable-toggle2').forEach(cb => cb.checked = true);
             }
         }
+
         // ============================================
         // ============================================
         // PLOT 2 ONLY — Battery Voltage & SOC / CHART CREATION
@@ -2269,6 +2277,15 @@
                 const max2 = parseFloat(document.getElementById('yAxisMax2').value);
                 if (!isNaN(min2)) chart2.options.scales.y.min = min2;
                 if (!isNaN(max2)) chart2.options.scales.y.max = max2;
+                chart2.update('none');
+            }
+            // Apply saved secondary Y-axis limits
+            const y1AxisAuto2 = document.getElementById('y1AxisAutoScale2').checked;
+            if (!y1AxisAuto2 && chart2) {
+                const min2_y1 = parseFloat(document.getElementById('y1AxisMin2').value);
+                const max2_y1 = parseFloat(document.getElementById('y1AxisMax2').value);
+                if (!isNaN(min2_y1)) chart2.options.scales.y1.min = min2_y1;
+                if (!isNaN(max2_y1)) chart2.options.scales.y1.max = max2_y1;
                 chart2.update('none');
             }
             updateActivePresetButton2();
@@ -2802,6 +2819,15 @@
                 if (!isNaN(max3)) chart3.options.scales.y.max = max3;
                 chart3.update('none');
             }
+            // Apply saved secondary Y-axis limits
+            const y1AxisAuto3 = document.getElementById('y1AxisAutoScale3').checked;
+            if (!y1AxisAuto3 && chart3) {
+                const min3_y1 = parseFloat(document.getElementById('y1AxisMin3').value);
+                const max3_y1 = parseFloat(document.getElementById('y1AxisMax3').value);
+                if (!isNaN(min3_y1)) chart3.options.scales.y1.min = min3_y1;
+                if (!isNaN(max3_y1)) chart3.options.scales.y1.max = max3_y1;
+                chart3.update('none');
+            }
             updateActivePresetButton3();
         }
         function rebinChart3ToVisibleRange(chart) {
@@ -2926,6 +2952,9 @@
                 yAxisAuto: document.getElementById('yAxisAutoScale3').checked,
                 yAxisMin: document.getElementById('yAxisMin3').value,
                 yAxisMax: document.getElementById('yAxisMax3').value,
+                y1AxisAuto: document.getElementById('y1AxisAutoScale3').checked,
+                y1AxisMin: document.getElementById('y1AxisMin3').value,
+                y1AxisMax: document.getElementById('y1AxisMax3').value,
                 variables: {}
             };
             document.querySelectorAll('.variable-toggle3').forEach(cb => {
@@ -2944,6 +2973,11 @@
             document.getElementById('yAxisAutoScale3').checked = settings.yAxisAuto !== false;
             if (settings.yAxisMin) document.getElementById('yAxisMin3').value = settings.yAxisMin;
             if (settings.yAxisMax) document.getElementById('yAxisMax3').value = settings.yAxisMax;
+
+            document.getElementById('y1AxisAutoScale3').checked = settings.y1AxisAuto !== false;
+            if (settings.y1AxisMin) document.getElementById('y1AxisMin3').value = settings.y1AxisMin;
+            if (settings.y1AxisMax) document.getElementById('y1AxisMax3').value = settings.y1AxisMax;
+
             if (settings.variables) {
                 document.querySelectorAll('.variable-toggle3').forEach(cb => {
                     if (settings.variables.hasOwnProperty(cb.dataset.group)) {
@@ -3304,7 +3338,6 @@
             document.getElementById('loadingChart4').style.display = 'none';
             canvas.style.display = 'block';
         }
-
         function updateChart4() {
             const timeValue = parseInt(document.getElementById('timeValue4').value);
             const activeUnit = document.querySelector('.plot4-unit.active');
@@ -3327,6 +3360,15 @@
                 const max4 = parseFloat(document.getElementById('yAxisMax4').value);
                 if (!isNaN(min4)) chart4.options.scales.y.min = min4;
                 if (!isNaN(max4)) chart4.options.scales.y.max = max4;
+                chart4.update('none');
+            }
+            // Apply saved secondary Y-axis limits
+            const y1AxisAuto4 = document.getElementById('y1AxisAutoScale4').checked;
+            if (!y1AxisAuto4 && chart4) {
+                const min4_y1 = parseFloat(document.getElementById('y1AxisMin4').value);
+                const max4_y1 = parseFloat(document.getElementById('y1AxisMax4').value);
+                if (!isNaN(min4_y1)) chart4.options.scales.y1.min = min4_y1;
+                if (!isNaN(max4_y1)) chart4.options.scales.y1.max = max4_y1;
                 chart4.update('none');
             }
             updateActivePresetButton4();
@@ -3440,6 +3482,9 @@
                 yAxisAuto: document.getElementById('yAxisAutoScale4').checked,
                 yAxisMin: document.getElementById('yAxisMin4').value,
                 yAxisMax: document.getElementById('yAxisMax4').value,
+                y1AxisAuto: document.getElementById('y1AxisAutoScale4').checked,
+                y1AxisMin: document.getElementById('y1AxisMin4').value,
+                y1AxisMax: document.getElementById('y1AxisMax4').value,
                 variables: {}
             };
             document.querySelectorAll('.variable-toggle4').forEach(cb => {
@@ -3447,6 +3492,7 @@
             });
             localStorage.setItem('plot4Settings', JSON.stringify(settings));
         }
+
 
         function loadSettings4() {
             const saved = localStorage.getItem('plot4Settings');
@@ -3459,6 +3505,11 @@
             document.getElementById('yAxisAutoScale4').checked = settings.yAxisAuto !== false;
             if (settings.yAxisMin) document.getElementById('yAxisMin4').value = settings.yAxisMin;
             if (settings.yAxisMax) document.getElementById('yAxisMax4').value = settings.yAxisMax;
+
+            document.getElementById('y1AxisAutoScale4').checked = settings.y1AxisAuto !== false;
+            if (settings.y1AxisMin) document.getElementById('y1AxisMin4').value = settings.y1AxisMin;
+            if (settings.y1AxisMax) document.getElementById('y1AxisMax4').value = settings.y1AxisMax;
+
             if (settings.variables) {
                 document.querySelectorAll('.variable-toggle4').forEach(cb => {
                     if (settings.variables.hasOwnProperty(cb.dataset.group)) {
@@ -3467,6 +3518,7 @@
                 });
             }
         }
+
 
         function loadSettings4() {
             const saved = localStorage.getItem('plot4Settings');
