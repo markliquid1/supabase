@@ -1941,7 +1941,6 @@
         // PLOT 2 ONLY — Battery Voltage & SOC / SETTINGS PERSISTENCE
         // ============================================
         // ============================================
-
         function saveSettings2() {
             const settings = {
                 checkedVariables: Array.from(document.querySelectorAll('.variable-toggle2:checked')).map(cb => cb.dataset.group),
@@ -1987,7 +1986,7 @@
 
                 updateActivePresetButton2();
             } catch (e) {
-                console.error('Failed to load settings for plot 2:', e);
+                console.error('Failed to load settings:', e);
                 document.getElementById('timeValue2').value = 24;
                 document.querySelectorAll('.plot2-unit').forEach(box => {
                     box.classList.toggle('active', box.dataset.unit === 'hours');
@@ -1995,7 +1994,6 @@
                 document.querySelectorAll('.variable-toggle2').forEach(cb => cb.checked = true);
             }
         }
-
         // ============================================
         // ============================================
         // PLOT 2 ONLY — Battery Voltage & SOC / CHART CREATION
@@ -2246,8 +2244,8 @@
         // ============================================
         // ============================================
 
-        // Apply time filter & rebuild chart
         // Apply time window & rebuild chart
+
         function updateChart2() {
             const timeValue = parseInt(document.getElementById('timeValue2').value);
             const activeUnit = document.querySelector('.plot2-unit.active');
@@ -2264,9 +2262,17 @@
             const initialBinned = applyBinning(filteredData);
 
             createChart2(initialBinned);
+            // Apply saved Y-axis limits after chart creation
+            const yAxisAuto2 = document.getElementById('yAxisAutoScale2').checked;
+            if (!yAxisAuto2 && chart2) {
+                const min2 = parseFloat(document.getElementById('yAxisMin2').value);
+                const max2 = parseFloat(document.getElementById('yAxisMax2').value);
+                if (!isNaN(min2)) chart2.options.scales.y.min = min2;
+                if (!isNaN(max2)) chart2.options.scales.y.max = max2;
+                chart2.update('none');
+            }
             updateActivePresetButton2();
         }
-
         function rebinChart2ToVisibleRange(chart) {
             if (!chart2SourceData || chart2SourceData.length === 0) return;
 
@@ -2787,9 +2793,17 @@
             const binnedData = applyBinning(filteredData);
 
             createChart3(binnedData);
+            // Apply saved Y-axis limits after chart creation
+            const yAxisAuto3 = document.getElementById('yAxisAutoScale3').checked;
+            if (!yAxisAuto3 && chart3) {
+                const min3 = parseFloat(document.getElementById('yAxisMin3').value);
+                const max3 = parseFloat(document.getElementById('yAxisMax3').value);
+                if (!isNaN(min3)) chart3.options.scales.y.min = min3;
+                if (!isNaN(max3)) chart3.options.scales.y.max = max3;
+                chart3.update('none');
+            }
             updateActivePresetButton3();
         }
-
         function rebinChart3ToVisibleRange(chart) {
             if (!chart3SourceData || chart3SourceData.length === 0) return;
             if (!chart || !chart.scales || !chart.scales.x) return;
@@ -2919,7 +2933,6 @@
             });
             localStorage.setItem('plot3Settings', JSON.stringify(settings));
         }
-
         function loadSettings3() {
             const saved = localStorage.getItem('plot3Settings');
             if (!saved) return;
@@ -3307,6 +3320,15 @@
 
             const initialBinned = applyBinning(filteredData);
             createChart4(initialBinned);
+            // Apply saved Y-axis limits after chart creation
+            const yAxisAuto4 = document.getElementById('yAxisAutoScale4').checked;
+            if (!yAxisAuto4 && chart4) {
+                const min4 = parseFloat(document.getElementById('yAxisMin4').value);
+                const max4 = parseFloat(document.getElementById('yAxisMax4').value);
+                if (!isNaN(min4)) chart4.options.scales.y.min = min4;
+                if (!isNaN(max4)) chart4.options.scales.y.max = max4;
+                chart4.update('none');
+            }
             updateActivePresetButton4();
         }
         function rebinChart4ToVisibleRange(chart) {
@@ -3424,6 +3446,26 @@
                 settings.variables[cb.dataset.group] = cb.checked;
             });
             localStorage.setItem('plot4Settings', JSON.stringify(settings));
+        }
+
+        function loadSettings4() {
+            const saved = localStorage.getItem('plot4Settings');
+            if (!saved) return;
+            const settings = JSON.parse(saved);
+            document.getElementById('timeValue4').value = settings.timeValue || 24;
+            document.querySelectorAll('.plot4-unit').forEach(box => {
+                box.classList.toggle('active', box.dataset.unit === (settings.timeUnit || 'hours'));
+            });
+            document.getElementById('yAxisAutoScale4').checked = settings.yAxisAuto !== false;
+            if (settings.yAxisMin) document.getElementById('yAxisMin4').value = settings.yAxisMin;
+            if (settings.yAxisMax) document.getElementById('yAxisMax4').value = settings.yAxisMax;
+            if (settings.variables) {
+                document.querySelectorAll('.variable-toggle4').forEach(cb => {
+                    if (settings.variables.hasOwnProperty(cb.dataset.group)) {
+                        cb.checked = settings.variables[cb.dataset.group];
+                    }
+                });
+            }
         }
 
         function loadSettings4() {
@@ -3818,6 +3860,15 @@
 
             const initialBinned = applyBinning(filteredData);
             createChart5(initialBinned);
+            // Apply saved Y-axis limits after chart creation
+            const yAxisAuto5 = document.getElementById('yAxisAutoScale5').checked;
+            if (!yAxisAuto5 && chart5) {
+                const min5 = parseFloat(document.getElementById('yAxisMin5').value);
+                const max5 = parseFloat(document.getElementById('yAxisMax5').value);
+                if (!isNaN(min5)) chart5.options.scales.y.min = min5;
+                if (!isNaN(max5)) chart5.options.scales.y.max = max5;
+                chart5.update('none');
+            }
             updateActivePresetButton5();
         }
         function rebinChart5ToVisibleRange(chart) {
@@ -4298,6 +4349,15 @@
 
             const initialBinned = applyBinning(filteredData);
             createChart6(initialBinned);
+            // Apply saved Y-axis limits after chart creation
+            const yAxisAuto6 = document.getElementById('yAxisAutoScale6').checked;
+            if (!yAxisAuto6 && chart6) {
+                const min6 = parseFloat(document.getElementById('yAxisMin6').value);
+                const max6 = parseFloat(document.getElementById('yAxisMax6').value);
+                if (!isNaN(min6)) chart6.options.scales.y.min = min6;
+                if (!isNaN(max6)) chart6.options.scales.y.max = max6;
+                chart6.update('none');
+            }
             updateActivePresetButton6();
         }
 
@@ -4737,8 +4797,18 @@
 
             const initialBinned = applyBinning(filteredData);
             createChart7(initialBinned);
+            // Apply saved Y-axis limits after chart creation
+            const yAxisAuto7 = document.getElementById('yAxisAutoScale7').checked;
+            if (!yAxisAuto7 && chart7) {
+                const min7 = parseFloat(document.getElementById('yAxisMin7').value);
+                const max7 = parseFloat(document.getElementById('yAxisMax7').value);
+                if (!isNaN(min7)) chart7.options.scales.y.min = min7;
+                if (!isNaN(max7)) chart7.options.scales.y.max = max7;
+                chart7.update('none');
+            }
             updateActivePresetButton7();
         }
+
         function rebinChart7ToVisibleRange(chart) {
             if (!chart7SourceData || chart7SourceData.length === 0) return;
             if (!chart || !chart.scales || !chart.scales.x) return;
