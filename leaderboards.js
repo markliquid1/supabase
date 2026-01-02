@@ -54,12 +54,12 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
         }
 
         tbody.innerHTML = data
-        .filter(entry => entry.user_profiles) // Skip entries without profiles
-        .map((entry, index) => {
-            const isCurrentUser = entry.device_uid === currentDeviceUID;
-            const value = entry[column].toFixed(unit === 'A' ? 1 : 2);
-            
-            return `
+            .filter(entry => entry.user_profiles) // Skip entries without profiles
+            .map((entry, index) => {
+                const isCurrentUser = entry.device_uid === currentDeviceUID;
+                const value = entry[column].toFixed(unit === 'A' ? 1 : 2);
+
+                return `
                 <tr style="${isCurrentUser ? 'background-color: #e3f2fd; font-weight: bold;' : ''}">
                     <td style="padding: 8px;">${index + 1}</td>
                     <td style="padding: 8px;">${entry.user_profiles.username}</td>
@@ -69,14 +69,13 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
                     <td style="padding: 8px; text-align: right;">${value} ${unit}</td>
                 </tr>
             `;
-        }).join('');
+            }).join('');
     } catch (error) {
         console.error(`Error loading leaderboard:`, error);
         document.getElementById(tbodyId).innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #ff6b6b;">Error loading data</td></tr>';
     }
 }
 
-// Load speed leaderboards by boat type and size
 // Load speed leaderboards by boat type and size
 async function loadSpeedLeaderboards() {
     const categories = [
@@ -87,7 +86,7 @@ async function loadSpeedLeaderboards() {
         { id: 'under60', minLength: 0, maxLength: 60 }
     ];
 
-    const boatTypes = ['sailboat', 'catamaran', 'powerboat', 'trawler'];
+    const boatTypes = ['sailboat', 'catamaran', 'powerboat', 'trawler', 'other'];
 
     // Fetch all data at once (5 categories × 4 boat types = 20 calls instead of 100)
     const allPromises = [];
@@ -127,12 +126,12 @@ async function loadSpeedLeaderboards() {
 
         for (let rank = 1; rank <= 5; rank++) {
             let rowHtml = '<tr>';
-            
+
             for (const boatType of boatTypes) {
                 const resultData = allResults.find(r => r.categoryId === category.id && r.boatType === boatType);
                 const entries = resultData ? resultData.data : [];
                 const entry = entries[rank - 1];
-                
+
                 if (!entry || !entry.user_profiles) {
                     rowHtml += `<td style="padding: 8px; border-right: 1px solid #eee;"><div class="speed-entry">---</div></td>`;
                 } else {
@@ -145,7 +144,7 @@ async function loadSpeedLeaderboards() {
                     </div></td>`;
                 }
             }
-            
+
             rowHtml += '</tr>';
             rows += rowHtml;
         }
