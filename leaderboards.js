@@ -63,7 +63,6 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
                 <tr style="${isCurrentUser ? 'background-color: #e3f2fd; font-weight: bold;' : ''}">
                     <td style="padding: 8px;">${index + 1}</td>
                     <td style="padding: 8px;">${entry.user_profiles.username}</td>
-                    <td style="padding: 8px;">${entry.user_profiles.boat_name}</td>
                     <td style="padding: 8px;">${entry.user_profiles.boat_type}</td>
                     <td style="padding: 8px;">${entry.user_profiles.boat_length} ft</td>
                     <td style="padding: 8px; text-align: right;">${value} ${unit}</td>
@@ -72,7 +71,7 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
             }).join('');
     } catch (error) {
         console.error(`Error loading leaderboard:`, error);
-        document.getElementById(tbodyId).innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #ff6b6b;">Error loading data</td></tr>';
+        document.getElementById(tbodyId).innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #ff6b6b;">Error loading data</td></tr>';
     }
 }
 
@@ -138,10 +137,9 @@ async function loadSpeedLeaderboards() {
                     const isCurrentUser = entry.device_uid === currentDeviceUID;
                     const style = isCurrentUser ? 'style="color: #00a19a; font-weight: bold;"' : '';
                     rowHtml += `<td style="padding: 8px; border-right: 1px solid #eee;"><div class="speed-entry" ${style}>
-                        <strong>${entry.max_speed.toFixed(1)} kts</strong><br>
-                        <small>${entry.user_profiles.username}</small><br>
-                        <small style="color: #999;">${entry.user_profiles.boat_name} (${entry.user_profiles.boat_length} ft)</small>
-                    </div></td>`;
+                    <strong>${entry.max_speed.toFixed(1)} kts</strong><br>
+                    <small>${entry.user_profiles.username} (${entry.user_profiles.boat_length} ft)</small>
+                </div></td>`;
                 }
             }
 
@@ -188,12 +186,11 @@ async function getSpeedEntry(boatType, minLength, maxLength, rank) {
         const style = isCurrentUser ? 'style="color: #00a19a; font-weight: bold;"' : '';
 
         return `
-            <div ${style}>
-                <strong>${entry.max_speed.toFixed(1)} kts</strong><br>
-                <small>${profile.username}</small><br>
-                <small style="color: #999;">${profile.boat_name} (${profile.boat_length} ft)</small>
-            </div>
-        `;
+        <div ${style}>
+            <strong>${entry.max_speed.toFixed(1)} kts</strong><br>
+            <small>${profile.username} (${profile.boat_length} ft)</small>
+        </div>
+    `;
     } catch (error) {
         console.error(`Error loading speed entry:`, error);
         return '---';
