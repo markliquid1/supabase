@@ -24,10 +24,11 @@ async function init() {
     ]);
 }
 
-// Load energy production leaderboards
+// Load energy production leaderboards with top 5 + user's actual rank
 async function loadEnergyLeaderboard(column, tbodyId, unit) {
     try {
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/get-leaderboards`, {
+        // Fetch top 5
+        const top5Response = await fetch(`${SUPABASE_URL}/functions/v1/get-leaderboards`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -37,24 +38,49 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
                 token: token,
                 type: 'energy',
                 column: column,
-                limit: 10
+                limit: 5
             })
         });
 
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error);
+        const top5Result = await top5Response.json();
+        if (!top5Response.ok) throw new Error(top5Result.error);
 
-        const { data, currentDeviceUID: deviceUID } = result;
+        const { data: top5Data, currentDeviceUID: deviceUID } = top5Result;
         if (!currentDeviceUID) currentDeviceUID = deviceUID;
 
+        // Fetch user's rank
+        const userRankResponse = await fetch(`${SUPABASE_URL}/functions/v1/get-user-rank`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({
+                token: token,
+                type: 'energy',
+                column: column
+            })
+        });
+
+        const userRankResult = await userRankResponse.json();
+        if (!userRankResponse.ok) throw new Error(userRankResult.error);
+
+        const { rank: userRank, entry: userEntry } = userRankResult;
+
         const tbody = document.getElementById(tbodyId);
-        if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">No data available</td></tr>';
+        if (!top5Data || top5Data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #999;">No data available</td></tr>';
             return;
         }
 
-        tbody.innerHTML = data
-            .filter(entry => entry.user_profiles) // Skip entries without profiles
+        // Check if user is in top 5
+        const userInTop5 = top5Data.some(entry => entry.device_uid === currentDeviceUID);
+
+        let html = '';
+
+        // Render top 5
+        html += top5Data
+            .filter(entry => entry.user_profiles)
             .map((entry, index) => {
                 const isCurrentUser = entry.device_uid === currentDeviceUID;
                 const value = entry[column].toFixed(unit === 'A' ? 1 : 2);
@@ -69,6 +95,22 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
                 </tr>
             `;
             }).join('');
+
+        // Add user's row if not in top 5
+        if (!userInTop5 && userEntry && userEntry.user_profiles) {
+            const value = userEntry[column].toFixed(unit === 'A' ? 1 : 2);
+            html += `
+                <tr style="background-color: #e3f2fd; font-weight: bold; border-top: 2px solid #90caf9;">
+                    <td style="padding: 8px;">${userRank} ★</td>
+                    <td style="padding: 8px;">${userEntry.user_profiles.username}</td>
+                    <td style="padding: 8px;">${userEntry.user_profiles.boat_type}</td>
+                    <td style="padding: 8px;">${userEntry.user_profiles.boat_length} ft</td>
+                    <td style="padding: 8px; text-align: right;">${value} ${unit}</td>
+                </tr>
+            `;
+        }
+
+        tbody.innerHTML = html;
     } catch (error) {
         console.error(`Error loading leaderboard:`, error);
         document.getElementById(tbodyId).innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #ff6b6b;">Error loading data</td></tr>';
@@ -87,7 +129,7 @@ async function loadSpeedLeaderboards() {
 
     const boatTypes = ['sailboat', 'catamaran', 'powerboat', 'trawler', 'other'];
 
-    // Fetch all data at once (5 categories × 4 boat types = 20 calls instead of 100)
+    // Fetch all data at once (5 categories × 5 boat types = 25 calls)
     const allPromises = [];
     for (const category of categories) {
         for (const boatType of boatTypes) {
@@ -115,8 +157,40 @@ async function loadSpeedLeaderboards() {
         }
     }
 
-    // Wait for all 20 requests to complete in parallel
+    // Fetch user ranks for each category/boat type combination
+    for (const category of categories) {
+        for (const boatType of boatTypes) {
+            allPromises.push(
+                fetch(`${SUPABASE_URL}/functions/v1/get-user-rank`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        type: 'speed',
+                        boat_type: boatType,
+                        min_length: category.minLength,
+                        max_length: category.maxLength
+                    })
+                }).then(r => r.json()).then(result => ({
+                    categoryId: category.id,
+                    boatType: boatType,
+                    rank: result.rank,
+                    entry: result.entry,
+                    isRankData: true
+                }))
+            );
+        }
+    }
+
+    // Wait for all requests to complete in parallel
     const allResults = await Promise.all(allPromises);
+
+    // Separate leaderboard data from rank data
+    const leaderboardData = allResults.filter(r => !r.isRankData);
+    const rankData = allResults.filter(r => r.isRankData);
 
     // Build tables from results
     for (const category of categories) {
@@ -127,7 +201,9 @@ async function loadSpeedLeaderboards() {
             let rowHtml = '<tr>';
 
             for (const boatType of boatTypes) {
-                const resultData = allResults.find(r => r.categoryId === category.id && r.boatType === boatType);
+                const resultData = leaderboardData.find(r => r.categoryId === category.id && r.boatType === boatType);
+                const userRankData = rankData.find(r => r.categoryId === category.id && r.boatType === boatType);
+                
                 const entries = resultData ? resultData.data : [];
                 const entry = entries[rank - 1];
 
@@ -147,53 +223,32 @@ async function loadSpeedLeaderboards() {
             rows += rowHtml;
         }
 
+        // Add user row for each boat type if not in top 5
+        let userRowHtml = '<tr style="border-top: 2px solid #90caf9;">';
+        for (const boatType of boatTypes) {
+            const userRankData = rankData.find(r => r.categoryId === category.id && r.boatType === boatType);
+            const leaderboardEntries = leaderboardData.find(r => r.categoryId === category.id && r.boatType === boatType);
+            
+            const userInTop5 = leaderboardEntries?.data?.some(e => e.device_uid === currentDeviceUID);
+            
+            if (!userInTop5 && userRankData?.entry && userRankData.entry.user_profiles) {
+                const entry = userRankData.entry;
+                userRowHtml += `<td style="padding: 8px; border-right: 1px solid #eee;"><div class="speed-entry" style="color: #00a19a; font-weight: bold;">
+                    <strong>#${userRankData.rank}: ${entry.max_speed.toFixed(1)} kts</strong><br>
+                    <small>${entry.user_profiles.username} (${entry.user_profiles.boat_length} ft)</small>
+                </div></td>`;
+            } else {
+                userRowHtml += `<td style="padding: 8px; border-right: 1px solid #eee;"></td>`;
+            }
+        }
+        userRowHtml += '</tr>';
+
+        // Only add user row if at least one cell has content
+        if (!userRowHtml.includes('></td>'.repeat(5))) {
+            rows += userRowHtml;
+        }
+
         tbody.innerHTML = rows;
-    }
-}
-
-// Get a single speed entry for a specific boat type, size, and rank
-async function getSpeedEntry(boatType, minLength, maxLength, rank) {
-    try {
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/get-leaderboards`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': SUPABASE_ANON_KEY
-            },
-            body: JSON.stringify({
-                token: token,
-                type: 'speed',
-                boat_type: boatType,
-                min_length: minLength,
-                max_length: maxLength,
-                limit: rank
-            })
-        });
-
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error);
-
-        const { data, currentDeviceUID: deviceUID } = result;
-        if (!currentDeviceUID) currentDeviceUID = deviceUID;
-
-        if (!data || data.length < rank) return '---';
-
-        const entry = data[rank - 1];
-        const profile = entry.user_profiles;
-        if (!profile) return '---';
-
-        const isCurrentUser = entry.device_uid === currentDeviceUID;
-        const style = isCurrentUser ? 'style="color: #00a19a; font-weight: bold;"' : '';
-
-        return `
-        <div ${style}>
-            <strong>${entry.max_speed.toFixed(1)} kts</strong><br>
-            <small>${profile.username} (${profile.boat_length} ft)</small>
-        </div>
-    `;
-    } catch (error) {
-        console.error(`Error loading speed entry:`, error);
-        return '---';
     }
 }
 
