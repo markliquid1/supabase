@@ -18,12 +18,49 @@ async function init() {
     console.log('Initializing leaderboards with token:', token.substring(0, 10) + '...');
 
     // Load all leaderboards
-    await Promise.all([
-        loadEnergyLeaderboard('alt_kwh_alltime', 'leaderboard-alt-wh-lifetime-body', 'kWh'),
-        loadEnergyLeaderboard('solar_kwh_alltime', 'leaderboard-solar-wh-lifetime-body', 'kWh'),
-        loadEnergyLeaderboard('max_alt_amps', 'leaderboard-max-alt-amps-body', 'A'),
-        loadSpeedLeaderboards()
-    ]);
+// Load all leaderboards
+await Promise.all([
+    // Energy production
+    loadEnergyLeaderboard('alt_kwh_alltime', 'leaderboard-alt-wh-lifetime-body', 'kWh'),
+    loadEnergyLeaderboard('solar_kwh_alltime', 'leaderboard-solar-wh-lifetime-body', 'kWh'),
+    loadEnergyLeaderboard('max_alt_amps', 'leaderboard-max-alt-amps-body', 'A'),
+    
+    // Distance & efficiency
+    loadEnergyLeaderboard('total_distance_alltime', 'leaderboard-total-distance-body', 'nm'),
+    loadEnergyLeaderboard('mpg', 'leaderboard-mpg-body', 'mpg'),
+    loadEnergyLeaderboard('distance_per_engine_hour', 'leaderboard-distance-per-hour-body', 'nm/hr'),
+    
+    // Engine hours
+    loadEnergyLeaderboard('engine_hours', 'leaderboard-engine-hours-body', 'hrs'),
+    
+    // Sailing
+    loadEnergyLeaderboard('sailing_days_alltime', 'leaderboard-sailing-days-body', 'days'),
+    loadEnergyLeaderboard('sailing_ratio', 'leaderboard-sailing-ratio-body', '%'),
+    
+    // Days at sea
+    loadEnergyLeaderboard('days_at_sea_alltime', 'leaderboard-days-at-sea-body', 'days'),
+    loadEnergyLeaderboard('longest_streak_days', 'leaderboard-longest-streak-body', 'days'),
+    loadEnergyLeaderboard('current_streak_days', 'leaderboard-current-streak-body', 'days'),
+    
+    // Movement streaks
+    loadEnergyLeaderboard('consecutive_days_moving', 'leaderboard-consecutive-moving-body', 'days'),
+    loadEnergyLeaderboard('longest_consecutive_days_moving', 'leaderboard-longest-moving-body', 'days'),
+    
+    // Wind records
+    loadEnergyLeaderboard('max_wind_speed_true_alltime', 'leaderboard-true-wind-body', 'kts'),
+    loadEnergyLeaderboard('max_wind_speed_apparent_alltime', 'leaderboard-apparent-wind-body', 'kts'),
+    
+    // Temperature records
+    loadEnergyLeaderboard('board_temp_max_alltime', 'leaderboard-max-temp-body', '°F'),
+    loadEnergyLeaderboard('board_temp_min_alltime', 'leaderboard-min-temp-body', '°F'),
+    
+    // Pressure records
+    loadEnergyLeaderboard('baro_pressure_max_alltime', 'leaderboard-max-pressure-body', 'mbar'),
+    loadEnergyLeaderboard('baro_pressure_min_alltime', 'leaderboard-min-pressure-body', 'mbar'),
+    
+    // Speed grids
+    loadSpeedLeaderboards()
+]);
 }
 
 // Load energy production leaderboards with top 5 + user's actual rank
@@ -100,8 +137,18 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
             .filter(entry => entry.user_profiles)
             .map((entry, index) => {
                 const isCurrentUser = entry.device_uid === currentDeviceUID;
-                const value = entry[column].toFixed(unit === 'A' ? 1 : 2);
-
+                let value;
+                if (unit === 'A' || unit === 'kts') {
+                    value = entry[column].toFixed(1);
+                } else if (unit === 'days' || unit === 'hrs') {
+                    value = Math.round(entry[column]);
+                } else if (unit === '%' || unit === 'mpg' || unit === 'nm/hr') {
+                    value = entry[column].toFixed(1);
+                } else if (unit === '°F' || unit === 'mbar') {
+                    value = entry[column].toFixed(1);
+                } else {
+                    value = entry[column].toFixed(2);
+                }
                 return `
                 <tr style="${isCurrentUser ? 'background-color: #e3f2fd; font-weight: bold;' : ''}">
                     <td style="padding: 8px;">${index + 1}</td>
@@ -115,8 +162,19 @@ async function loadEnergyLeaderboard(column, tbodyId, unit) {
 
         // Add user's row if not in top 5
         if (!userInTop5 && userEntry && userEntry.user_profiles) {
-            const value = userEntry[column].toFixed(unit === 'A' ? 1 : 2);
-            html += `
+            let value;
+            if (unit === 'A' || unit === 'kts') {
+                value = userEntry[column].toFixed(1);
+            } else if (unit === 'days' || unit === 'hrs') {
+                value = Math.round(userEntry[column]);
+            } else if (unit === '%' || unit === 'mpg' || unit === 'nm/hr') {
+                value = userEntry[column].toFixed(1);
+            } else if (unit === '°F' || unit === 'mbar') {
+                value = userEntry[column].toFixed(1);
+            } else {
+                value = userEntry[column].toFixed(2);
+            }
+                        html += `
                 <tr style="background-color: #e3f2fd; font-weight: bold; border-top: 2px solid #90caf9;">
                     <td style="padding: 8px;">${userRank} ★</td>
                     <td style="padding: 8px;">${userEntry.user_profiles.username}</td>
