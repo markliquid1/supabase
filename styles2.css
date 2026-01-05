@@ -237,7 +237,7 @@ body {
 
 @media (max-width: 768px) {
     .chart-section {
-        height: 400px;
+        min-height: 400px;  /* ← Changed from height to min-height */
     }
 }
 
@@ -326,14 +326,12 @@ body {
 
 .chart-section {
     position: relative;
-    height: 500px;
+    min-height: 500px;  /* ← Changed from height to min-height */
     background: #f5f5f5;
-    /* Light gray tile background */
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     padding: 10px;
     margin-bottom: 30px;
-    /* Space between tiles to show background */
 }
 
 /* Floating Refresh Button — matches corner-status style */
