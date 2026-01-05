@@ -44,7 +44,8 @@ body {
 
 /* Base gap between charts (tools collapsed) */
 .chart-section {
-    margin-bottom: 40px;   /* was 20; now larger */
+    margin-bottom: 40px;
+    /* was 20; now larger */
 }
 
 /* Expanded tools: make the gap even bigger */
@@ -55,7 +56,8 @@ body {
 #plotTools5[style*="display: block"],
 #plotTools6[style*="display: block"],
 #plotTools7[style*="display: block"] {
-    margin-bottom: 80px;   /* expanded tools: bigger gap */
+    margin-bottom: 80px;
+    /* expanded tools: bigger gap */
 }
 
 
@@ -237,7 +239,12 @@ body {
 
 @media (max-width: 768px) {
     .chart-section {
-        min-height: 400px;  /* ← Changed from height to min-height */
+        min-height: 400px;
+    }
+
+    .chart-section canvas {
+        height: 350px !important;
+        max-height: 350px !important;
     }
 }
 
@@ -261,40 +268,40 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 10px;
-  }
-  
-  .card {
+}
+
+.card {
     background: var(--card-light);
     padding: 10px;
     border-left: 2px solid var(--accent);
     border-radius: var(--radius);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     margin-bottom: 4px;
-  }
-  
-  .card p {
+}
+
+.card p {
     margin: 0.25rem 0;
-  }
-  
-  .card p:first-child {
+}
+
+.card p:first-child {
     font-weight: bold;
     color: var(--text-dark);
     border-bottom: 1px solid var(--border);
     padding-bottom: 0.25rem;
     margin-bottom: 0.25rem;
     font-size: 13px;
-  }
-  
-  .reading {
+}
+
+.reading {
     font-size: 1.1rem;
     font-weight: bold;
-  }
-  
-  .reading span {
-    color: var(--reading);
-  }
+}
 
-  .settings-card {
+.reading span {
+    color: var(--reading);
+}
+
+.settings-card {
     background: var(--card-light);
     border-radius: var(--radius);
     padding: 10px;
@@ -303,9 +310,9 @@ body {
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
-  }
-  
-  .section-title {
+}
+
+.section-title {
     background-color: #f0f0f0;
     color: var(--text-dark);
     padding: 6px 10px;
@@ -314,19 +321,19 @@ body {
     font-weight: bold;
     border-left: 2px solid var(--accent);
     font-size: 14px;
-  }
+}
 
-  .dark-mode .section-title {
+.dark-mode .section-title {
     background-color: #222222;
     color: #cccccc;
-  }
+}
 
 /* Below here is unique to the Vercel code */
 
 
 .chart-section {
     position: relative;
-    min-height: 500px;  /* ← Changed from height to min-height */
+    min-height: 500px;
     background: #f5f5f5;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -334,38 +341,45 @@ body {
     margin-bottom: 30px;
 }
 
+/* Constrain canvas height to prevent Chart.js runaway growth */
+.chart-section canvas {
+    height: 450px !important;
+    max-height: 450px !important;
+}
+
 /* Floating Refresh Button — matches corner-status style */
 #refresh-button {
     position: fixed;
     top: 10px;
     right: 10px;
-  
+
     font-family: 'Courier New', monospace;
     font-size: 12px;
     letter-spacing: 0.5px;
-  
-    background-color: #00a19a;   /* same as corner-status-connected */
+
+    background-color: #00a19a;
+    /* same as corner-status-connected */
     color: white;
-  
+
     padding: 4px 8px;
     border-radius: 10px;
     border: none;
-  
+
     cursor: pointer;
     opacity: 0.9;
     z-index: 999;
-  
+
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     transition: background-color 0.2s ease, opacity 0.2s ease;
-  }
-  
-  #refresh-button:hover {
+}
+
+#refresh-button:hover {
     opacity: 1.0;
-    background-color: #00b9b1; /* slight highlight */
-  }
-  
-  .dark-mode #refresh-button {
+    background-color: #00b9b1;
+    /* slight highlight */
+}
+
+.dark-mode #refresh-button {
     background-color: #00a19a;
     color: white;
-  }
-  
+}

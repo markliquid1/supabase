@@ -649,6 +649,35 @@
     </div>
 
     <script src="leaderboards.js"></script>
+    <script>
+        // Iframe height reporting for parent page
+        (function () {
+            function sendHeight() {
+                const doc = document.documentElement;
+                const body = document.body;
+                const height = Math.max(
+                    doc.scrollHeight, doc.offsetHeight,
+                    body ? body.scrollHeight : 0,
+                    body ? body.offsetHeight : 0
+                );
+                window.parent.postMessage({ type: "IFRAME_HEIGHT", height }, "*");
+            }
+
+            sendHeight();
+
+            const ro = new ResizeObserver(() => sendHeight());
+            ro.observe(document.documentElement);
+            if (document.body) ro.observe(document.body);
+
+            window.addEventListener("message", (e) => {
+                if (e.data && e.data.type === "REQ_IFRAME_HEIGHT") sendHeight();
+            });
+
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(sendHeight).catch(() => { });
+            }
+        })();
+    </script>
 </body>
 
 </html>

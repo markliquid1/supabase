@@ -5137,6 +5137,39 @@
         // ============================================
         // ============================================
     </script>
+    <script>
+        // Iframe height reporting for parent page
+        (function () {
+            function sendHeight() {
+                const doc = document.documentElement;
+                const body = document.body;
+                const height = Math.max(
+                    doc.scrollHeight, doc.offsetHeight,
+                    body ? body.scrollHeight : 0,
+                    body ? body.offsetHeight : 0
+                );
+                window.parent.postMessage({ type: "IFRAME_HEIGHT", height }, "*");
+            }
+
+            // Send once at start
+            sendHeight();
+
+            // Update on layout changes (charts expanding controls, fonts loading, etc.)
+            const ro = new ResizeObserver(() => sendHeight());
+            ro.observe(document.documentElement);
+            if (document.body) ro.observe(document.body);
+
+            // Parent can request (useful for race conditions)
+            window.addEventListener("message", (e) => {
+                if (e.data && e.data.type === "REQ_IFRAME_HEIGHT") sendHeight();
+            });
+
+            // Also after fonts load (common height shift)
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(sendHeight).catch(() => { });
+            }
+        })();
+    </script>
 </body>
 
 </html>
