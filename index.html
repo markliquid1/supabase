@@ -93,7 +93,7 @@
             <button id="toggleTools1" style="position:absolute; top:10px; left:10px; z-index:10;
                        padding:3px 8px; background:var(--accent); color:#fff;
                        border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
-                ▼ Open Plot Tools Below
+                ▼ Tools
             </button>
 
             <div id="loadingChart1" style="text-align: center; padding-top: 200px; color: #999; font-size: 14px;">
@@ -189,7 +189,7 @@
             <button id="toggleTools2" style="position:absolute; top:10px; left:10px; z-index:10;
                padding:3px 8px; background:var(--accent); color:#fff;
                border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
-                ▼ Open Plot Tools Below
+                ▼ Tools
             </button>
 
             <div id="loadingChart2"
@@ -287,7 +287,7 @@
             <button id="toggleTools3" style="position:absolute; top:10px; left:10px; z-index:10;
                        padding:3px 8px; background:var(--accent); color:#fff;
                        border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
-                ▼ Open Plot Tools Below
+                ▼ Tools
             </button>
 
             <div id="loadingChart3"
@@ -392,7 +392,7 @@
             <button id="toggleTools4" style="position:absolute; top:10px; left:10px; z-index:10;
                        padding:3px 8px; background:var(--accent); color:#fff;
                        border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
-                ▼ Open Plot Tools Below
+                ▼ Tools
             </button>
 
             <div id="loadingChart4"
@@ -497,7 +497,7 @@
             <button id="toggleTools5" style="position:absolute; top:10px; left:10px; z-index:10;
                        padding:3px 8px; background:var(--accent); color:#fff;
                        border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
-                ▼ Open Plot Tools Below
+                ▼ Tools
             </button>
 
             <div id="loadingChart5"
@@ -586,7 +586,7 @@
             <button id="toggleTools6" style="position:absolute; top:10px; left:10px; z-index:10;
                        padding:3px 8px; background:var(--accent); color:#fff;
                        border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
-                ▼ Open Plot Tools Below
+                ▼ Tools
             </button>
 
             <div id="loadingChart6"
@@ -681,7 +681,7 @@
             <button id="toggleTools7" style="position:absolute; top:10px; left:10px; z-index:10;
                                padding:3px 8px; background:var(--accent); color:#fff;
                                border:1px solid #444444; border-radius:3px; cursor:pointer; font-size:11px;">
-                ▼ Open Plot Tools Below
+                ▼ Tools
             </button>
 
             <div id="loadingChart7"
@@ -1794,7 +1794,7 @@
             const tools = document.getElementById('plotTools1');
             const isHidden = tools.style.display === 'none';
             tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
+            this.textContent = isHidden ? '▲ Hide Tools' : '▼ Tools_';
         });
 
         // Preset buttons
@@ -2402,7 +2402,7 @@
             const tools = document.getElementById('plotTools2');
             const isHidden = tools.style.display === 'none';
             tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
+            this.textContent = isHidden ? '▲ Hide Tools' : '▼ Tools_';
         });
 
         // Preset buttons
@@ -2991,7 +2991,7 @@
             const tools = document.getElementById('plotTools3');
             const isHidden = tools.style.display === 'none';
             tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
+            this.textContent = isHidden ? '▲ Hide Tools' : '▼ Tools_';
         });
 
         document.querySelectorAll('.preset3').forEach(btn => {
@@ -3542,7 +3542,7 @@
             const tools = document.getElementById('plotTools4');
             const isHidden = tools.style.display === 'none';
             tools.style.display = isHidden ? 'block' : 'none';
-            this.textContent = isHidden ? '▲ Hide Plot Tools' : '▼ Open Plot Tools Below';
+            this.textContent = isHidden ? '▲ Hide Tools' : '▼ Tools_';
         });
 
         document.querySelectorAll('.preset4').forEach(btn => {
@@ -4061,7 +4061,7 @@
         document.getElementById('toggleTools5').addEventListener('click', function () {
             const tools = document.getElementById('plotTools5');
             tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
-            this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
+            this.textContent = tools.style.display === 'none' ? '▼ Tools_' : '▲ Hide Tools';
         });
 
         document.querySelectorAll('.preset5').forEach(btn => {
@@ -4561,7 +4561,7 @@
         document.getElementById('toggleTools6').addEventListener('click', function () {
             const tools = document.getElementById('plotTools6');
             tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
-            this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
+            this.textContent = tools.style.display === 'none' ? '▼ Tools_' : '▲ Hide Tools';
         });
 
         document.querySelectorAll('.preset6').forEach(btn => {
@@ -4977,7 +4977,7 @@
         document.getElementById('toggleTools7').addEventListener('click', function () {
             const tools = document.getElementById('plotTools7');
             tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
-            this.textContent = tools.style.display === 'none' ? '▼ Open Plot Tools Below' : '▲ Hide Plot Tools';
+            this.textContent = tools.style.display === 'none' ? '▼ Tools_' : '▲ Hide Tools';
         });
 
         document.querySelectorAll('.preset7').forEach(btn => {
