@@ -30,27 +30,27 @@ async function init() {
         loadCompactLeaderboard('longest_streak_days', 'lb-longest-passage', 'days'),
         loadCompactLeaderboard('days_cruising_this_year', 'lb-days-this-year', 'days'),
         loadCompactLeaderboard('consecutive_days_under_sail', 'lb-consecutive-sail', 'days'),
-        
+
         // Energy & Efficiency
         loadCompactLeaderboard('solar_kwh_alltime', 'lb-solar-kwh', 'kWh'),
         loadCompactLeaderboard('alt_kwh_alltime', 'lb-alt-kwh', 'kWh'),
         loadCompactLeaderboard('max_alt_amps', 'lb-max-alt-amps', 'A'),
         loadCompactLeaderboard('best_nm_per_gallon', 'lb-nm-per-gallon', 'mpg'),
         loadCompactLeaderboard('best_nm_per_kwh', 'lb-nm-per-kwh', 'nm/kWh'),
-        
+
         // Engine & Maintenance
         loadCompactLeaderboard('engine_hours', 'lb-engine-hours', 'hrs'),
-        
+
         // Weather Extremes
         loadCompactLeaderboard('board_temp_max_alltime', 'lb-max-temp', '°F'),
         loadCompactLeaderboard('board_temp_min_alltime', 'lb-min-temp', '°F'),
         loadCompactLeaderboard('baro_pressure_max_alltime', 'lb-max-pressure', 'mbar'),
         loadCompactLeaderboard('baro_pressure_min_alltime', 'lb-min-pressure', 'mbar'),
-        
+
         // Anchoring
         loadCompactLeaderboard('deepest_anchorage_ft', 'lb-deepest-anchorage', 'ft'),
         loadCompactLeaderboard('consecutive_days_at_anchor', 'lb-consecutive-anchor', 'days'),
-        
+
         // Speed data (for scatter plot)
         loadSpeedData()
     ]);
@@ -62,7 +62,7 @@ async function init() {
 // Load compact leaderboard: top 3 + user + expandable "more"
 async function loadCompactLeaderboard(column, containerId, unit) {
     console.log(`Loading compact leaderboard for ${column}`);
-    
+
     try {
         // Fetch top 10 (top 3 visible, rest in "more")
         const top10Response = await fetch(`${SUPABASE_URL}/functions/v1/get-leaderboards`, {
@@ -80,7 +80,7 @@ async function loadCompactLeaderboard(column, containerId, unit) {
         });
 
         const top10Result = await top10Response.json();
-        
+
         if (!top10Response.ok) {
             throw new Error(top10Result.error || 'Failed to fetch leaderboard');
         }
@@ -103,7 +103,7 @@ async function loadCompactLeaderboard(column, containerId, unit) {
         });
 
         const userRankResult = await userRankResponse.json();
-        
+
         if (!userRankResponse.ok) {
             throw new Error(userRankResult.error || 'Failed to fetch user rank');
         }
@@ -121,7 +121,7 @@ async function loadCompactLeaderboard(column, containerId, unit) {
 
         // Build HTML
         let html = '';
-        
+
         // Top 3
         const top3 = top10Data.slice(0, 3).filter(entry => entry.user_profiles);
         top3.forEach((entry, index) => {
@@ -149,7 +149,7 @@ async function loadCompactLeaderboard(column, containerId, unit) {
         }
 
         container.innerHTML = html;
-        
+
     } catch (error) {
         console.error(`Error loading leaderboard for ${column}:`, error);
         const container = document.getElementById(containerId);
@@ -162,7 +162,7 @@ function createLeaderboardRow(rank, entry, value, unit, isCurrentUser, isTop3) {
     const rankClass = rank <= 3 ? 'top3' : '';
     const userClass = isCurrentUser ? 'user-highlight' : '';
     const rankDisplay = isCurrentUser && rank > 3 ? `#${rank}` : `#${rank}`;
-    
+
     let html = `
         <div class="lb-row ${userClass}" onclick="toggleDetails(this)">
             <span class="rank ${rankClass}">${rankDisplay}</span>
@@ -171,7 +171,7 @@ function createLeaderboardRow(rank, entry, value, unit, isCurrentUser, isTop3) {
             <span class="value">${value}${unit ? ' ' + unit : ''}</span>
         </div>
         <div class="details">`;
-    
+
     if (entry.user_profiles.boat_type && entry.user_profiles.boat_length) {
         html += `<span class="detail-item">${entry.user_profiles.boat_type} • ${entry.user_profiles.boat_length} ft</span>`;
     }
@@ -183,7 +183,7 @@ function createLeaderboardRow(rank, entry, value, unit, isCurrentUser, isTop3) {
     if (entry.user_profiles.home_port) {
         html += `<span class="detail-item">${entry.user_profiles.home_port}</span>`;
     }
-    
+
     html += `</div>`;
     return html;
 }
@@ -191,7 +191,7 @@ function createLeaderboardRow(rank, entry, value, unit, isCurrentUser, isTop3) {
 // Format value based on unit
 function formatValue(value, unit) {
     if (value === null || value === undefined) return '---';
-    
+
     if (unit === 'A' || unit === 'kts') {
         return value.toFixed(1);
     } else if (unit === 'days' || unit === 'hrs' || unit === '') {
@@ -213,13 +213,13 @@ function formatValue(value, unit) {
 function toggleDetails(row) {
     const details = row.nextElementSibling;
     const isExpanded = details.classList.contains('expanded');
-    
+
     // Close all other expanded rows
     document.querySelectorAll('.details.expanded').forEach(d => {
         d.classList.remove('expanded');
         d.previousElementSibling.classList.remove('expanded');
     });
-    
+
     if (!isExpanded) {
         details.classList.add('expanded');
         row.classList.add('expanded');
@@ -230,7 +230,7 @@ function toggleDetails(row) {
 function toggleMore(hiddenId, button) {
     const hiddenRows = document.getElementById(hiddenId);
     const isVisible = hiddenRows.classList.contains('visible');
-    
+
     if (isVisible) {
         hiddenRows.classList.remove('visible');
         button.textContent = 'More ↓';
@@ -247,7 +247,7 @@ let selectedSpeedFilter = 'overall';
 // Load all speed data for scatter plot
 async function loadSpeedData() {
     console.log('Loading speed data for scatter plot...');
-    
+
     try {
         // Fetch all speed records (no limit, we need all for scatter plot)
         const response = await fetch(`${SUPABASE_URL}/functions/v1/get-leaderboards`, {
@@ -267,18 +267,18 @@ async function loadSpeedData() {
         });
 
         const result = await response.json();
-        
+
         if (!response.ok) {
             throw new Error(result.error || 'Failed to fetch speed data');
         }
 
         const { data, currentDeviceUID: deviceUID } = result;
         if (!currentDeviceUID) currentDeviceUID = deviceUID;
-        
+
         // Store all speed data
-        allSpeedData = data.filter(entry => 
-            entry.user_profiles && 
-            entry.max_speed && 
+        allSpeedData = data.filter(entry =>
+            entry.user_profiles &&
+            entry.max_speed &&
             entry.user_profiles.boat_length &&
             entry.user_profiles.boat_type
         ).map(entry => ({
@@ -290,9 +290,9 @@ async function loadSpeedData() {
             homePort: entry.user_profiles.home_port || '',
             isUser: entry.device_uid === currentDeviceUID
         }));
-        
+
         console.log(`Loaded ${allSpeedData.length} speed records`);
-        
+
     } catch (error) {
         console.error('Error loading speed data:', error);
         allSpeedData = [];
@@ -303,7 +303,7 @@ async function loadSpeedData() {
 function initSpeedChart() {
     const canvas = document.getElementById('speedChart');
     if (!canvas) return;
-    
+
     // Add radio button listeners
     document.querySelectorAll('input[name="speedFilter"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -311,51 +311,83 @@ function initSpeedChart() {
             drawSpeedChart();
         });
     });
-    
+
     // Draw initial chart
     drawSpeedChart();
-    
+
     // Add interaction handlers
     setupSpeedChartInteractions();
 }
 
 // Draw speed scatter plot
+// Draw speed scatter plot
 function drawSpeedChart() {
     const canvas = document.getElementById('speedChart');
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
     const padding = { top: 20, right: 30, bottom: 40, left: 50 };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
-    
+
     // Filter boats by selected type
     const boats = getFilteredBoats();
-    
-    // Scales
-    const minLength = 25;
-    const maxLength = 55;
-    const minSpeed = 0;
-    const maxSpeed = 28;
-    
+
+    // Adjust scales based on boat type
+    let minLength = 5;
+    let maxLength = 60;
+    let minSpeed = 0;
+    let maxSpeed = 28;
+
+    if (selectedSpeedFilter === 'sailboat') {
+        minLength = 20;
+        maxLength = 55;
+        minSpeed = 0;
+        maxSpeed = 15;  // Sailboats top out around 12-15 knots typically
+    } else if (selectedSpeedFilter === 'catamaran') {
+        minLength = 30;
+        maxLength = 60;
+        minSpeed = 0;
+        maxSpeed = 25;  // Performance cats can hit 20-25 knots
+    } else if (selectedSpeedFilter === 'powerboat') {
+        minLength = 20;
+        maxLength = 70;
+        minSpeed = 0;
+        maxSpeed = 50;  // Powerboats can be very fast
+    } else if (selectedSpeedFilter === 'trawler') {
+        minLength = 30;
+        maxLength = 60;
+        minSpeed = 0;
+        maxSpeed = 15;  // Trawlers are slow displacement hulls
+    } else {
+        // Overall - wide range
+        minLength = 5;
+        maxLength = 70;
+        minSpeed = 0;
+        maxSpeed = 30;
+    }
+
     const scaleX = (length) => padding.left + ((length - minLength) / (maxLength - minLength)) * chartWidth;
     const scaleY = (speed) => height - padding.bottom - ((speed - minSpeed) / (maxSpeed - minSpeed)) * chartHeight;
-    
+
+    // Declare speedStep once here
+    const speedStep = maxSpeed <= 15 ? 2.5 : 5;
+
     // Hull speed calculation: 1.34 * sqrt(LWL), assuming LWL ≈ 0.9 * LOA
     const hullSpeed = (length) => 1.34 * Math.sqrt(length * 0.9);
-    
+
     // Calculate pareto front
     const paretoFront = calculateParetoFront(boats);
-    
+
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
-    
+
     // Draw grid
     ctx.strokeStyle = '#f0f0f0';
     ctx.lineWidth = 1;
-    
+
     // Vertical gridlines (every 10 ft)
     for (let l = 30; l <= 50; l += 10) {
         const x = scaleX(l);
@@ -364,16 +396,17 @@ function drawSpeedChart() {
         ctx.lineTo(x, height - padding.bottom);
         ctx.stroke();
     }
-    
-    // Horizontal gridlines (every 5 kts)
-    for (let s = 5; s <= 25; s += 5) {
+
+    // Horizontal gridlines
+     speedStep = maxSpeed <= 15 ? 2.5 : 5;
+    for (let s = speedStep; s <= maxSpeed; s += speedStep) {
         const y = scaleY(s);
         ctx.beginPath();
         ctx.moveTo(padding.left, y);
         ctx.lineTo(width - padding.right, y);
         ctx.stroke();
     }
-    
+
     // Draw axes
     ctx.strokeStyle = '#ddd';
     ctx.lineWidth = 2;
@@ -382,7 +415,7 @@ function drawSpeedChart() {
     ctx.lineTo(padding.left, height - padding.bottom);
     ctx.lineTo(width - padding.right, height - padding.bottom);
     ctx.stroke();
-    
+
     // Draw hull speed curve
     ctx.strokeStyle = '#bbb';
     ctx.lineWidth = 2;
@@ -399,43 +432,42 @@ function drawSpeedChart() {
     }
     ctx.stroke();
     ctx.setLineDash([]);
-    
+
     // Draw axis labels
     ctx.fillStyle = '#666';
     ctx.font = '11px -apple-system, sans-serif';
     ctx.textAlign = 'center';
-    
+
     // X-axis labels
     for (let l = 30; l <= 50; l += 10) {
         ctx.fillText(`${l}`, scaleX(l), height - padding.bottom + 20);
     }
-    
-    // Y-axis labels
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    for (let s = 5; s <= 25; s += 5) {
-        ctx.fillText(`${s}`, padding.left - 10, scaleY(s));
+
+    // Y-axis labels - adjust step based on range
+     speedStep = maxSpeed <= 15 ? 2.5 : 5;
+    for (let s = speedStep; s <= maxSpeed; s += speedStep) {
+        ctx.fillText(`${Math.round(s)}`, padding.left - 10, scaleY(s));
     }
-    
+
     // Axis titles
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = '#888';
     ctx.font = '12px -apple-system, sans-serif';
     ctx.fillText('Boat Length (LOA)', width / 2, height - 8);
-    
+
     ctx.save();
     ctx.translate(15, height / 2);
     ctx.rotate(-Math.PI / 2);
     ctx.fillText('knots', 0, 0);
     ctx.restore();
-    
+
     // Draw boats
     boats.filter(b => !b.isUser).forEach(boat => {
         const x = scaleX(boat.length);
         const y = scaleY(boat.speed);
         const isPareto = paretoFront.includes(boat);
-        
+
         if (isPareto) {
             ctx.fillStyle = 'rgba(100, 100, 100, 0.4)';
             ctx.beginPath();
@@ -448,23 +480,23 @@ function drawSpeedChart() {
             ctx.fill();
         }
     });
-    
+
     // Draw user's boat on top
     const userBoat = boats.find(b => b.isUser);
     if (userBoat) {
         const x = scaleX(userBoat.length);
         const y = scaleY(userBoat.speed);
-        
+
         ctx.shadowColor = 'rgba(0, 102, 204, 0.5)';
         ctx.shadowBlur = 12;
-        
+
         ctx.fillStyle = '#0066cc';
         ctx.beginPath();
         ctx.arc(x, y, 6, 0, Math.PI * 2);
         ctx.fill();
-        
+
         ctx.shadowBlur = 0;
-        
+
         ctx.fillStyle = 'white';
         ctx.beginPath();
         ctx.arc(x, y, 2, 0, Math.PI * 2);
@@ -484,9 +516,9 @@ function getFilteredBoats() {
 function calculateParetoFront(boats) {
     const paretoBoats = [];
     const sortedBoats = [...boats].sort((a, b) => a.length - b.length);
-    
+
     for (const boat of sortedBoats) {
-        const isDominated = sortedBoats.some(other => 
+        const isDominated = sortedBoats.some(other =>
             other.length <= boat.length && other.speed > boat.speed
         );
         if (!isDominated) {
@@ -501,31 +533,31 @@ function setupSpeedChartInteractions() {
     const canvas = document.getElementById('speedChart');
     const tooltip = document.getElementById('speedTooltip');
     let hoveredBoat = null;
-    
+
     const width = canvas.width;
     const height = canvas.height;
     const padding = { top: 20, right: 30, bottom: 40, left: 50 };
     const chartWidth = width - padding.left - padding.right;
     const chartHeight = height - padding.top - padding.bottom;
-    
+
     const minLength = 25;
     const maxLength = 55;
     const minSpeed = 0;
     const maxSpeed = 28;
-    
+
     const scaleX = (length) => padding.left + ((length - minLength) / (maxLength - minLength)) * chartWidth;
     const scaleY = (speed) => height - padding.bottom - ((speed - minSpeed) / (maxSpeed - minSpeed)) * chartHeight;
-    
+
     function getBoatAtPoint(x, y) {
         const boats = getFilteredBoats();
         const paretoFront = calculateParetoFront(boats);
-        
+
         const canvasRect = canvas.getBoundingClientRect();
         const scaleFactorX = canvas.width / canvasRect.width;
         const scaleFactorY = canvas.height / canvasRect.height;
         const canvasX = (x - canvasRect.left) * scaleFactorX;
         const canvasY = (y - canvasRect.top) * scaleFactorY;
-        
+
         // Check user's boat first
         const userBoat = boats.find(b => b.isUser);
         if (userBoat) {
@@ -534,7 +566,7 @@ function setupSpeedChartInteractions() {
             const dist = Math.sqrt((canvasX - bx) ** 2 + (canvasY - by) ** 2);
             if (dist < 12) return userBoat;
         }
-        
+
         // Check pareto front boats
         for (const boat of paretoFront.filter(b => !b.isUser)) {
             const bx = scaleX(boat.length);
@@ -542,27 +574,27 @@ function setupSpeedChartInteractions() {
             const dist = Math.sqrt((canvasX - bx) ** 2 + (canvasY - by) ** 2);
             if (dist < 10) return boat;
         }
-        
+
         return null;
     }
-    
+
     function showTooltip(boat, x, y) {
         let content = `<strong>${boat.name}</strong><br>`;
         content += `${boat.length}ft • ${boat.speed} knots<br>`;
         if (boat.type) content += `${boat.type}`;
         if (boat.make) content += `<br>${boat.make}`;
         if (boat.homePort) content += `<br>${boat.homePort}`;
-        
+
         tooltip.innerHTML = content;
         tooltip.style.left = `${x + 15}px`;
         tooltip.style.top = `${y - 10}px`;
         tooltip.classList.add('visible');
     }
-    
+
     function hideTooltip() {
         tooltip.classList.remove('visible');
     }
-    
+
     canvas.addEventListener('mousemove', (e) => {
         const boat = getBoatAtPoint(e.clientX, e.clientY);
         if (boat !== hoveredBoat) {
@@ -579,12 +611,12 @@ function setupSpeedChartInteractions() {
             tooltip.style.top = `${e.clientY - 10}px`;
         }
     });
-    
+
     canvas.addEventListener('mouseleave', () => {
         hoveredBoat = null;
         hideTooltip();
     });
-    
+
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
         const touch = e.touches[0];
@@ -593,7 +625,7 @@ function setupSpeedChartInteractions() {
             showTooltip(boat, touch.clientX, touch.clientY);
         }
     });
-    
+
     canvas.addEventListener('touchend', () => {
         hideTooltip();
     });
