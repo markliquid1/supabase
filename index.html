@@ -24,10 +24,14 @@
         </div>
 
         <!-- Timezone Selection -->
-        <div style="padding: 10px 0; margin-bottom: 15px; display: flex; align-items: center; gap: 15px;">
-            <label style="color: #e0e0e0; font-weight: 500; font-size: 13px;">Display Timezone:</label>
+        <!-- To this: -->
+        <div
+            style="padding: 10px 0; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <label style="color: #e0e0e0; font-weight: 500; font-size: 13px;">Timezone:</label>
             <select id="timezone-selector"
-                style="padding: 5px 10px; background: transparent; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; min-width: 250px;">
+                style="padding: 5px 10px; background: transparent; color: #e0e0e0; border: 1px solid #555; border-radius: 3px; max-width: 200px; text-overflow: ellipsis;">
+                <!-- options... -->
+
                 <option value="local">Browser Local Time</option>
                 <option value="UTC">UTC</option>
                 <optgroup label="Americas">
@@ -81,7 +85,6 @@
                     <option value="Africa/Nairobi">Nairobi</option>
                 </optgroup>
             </select>
-            <span id="timezone-info" style="color: #999; font-size: 12px;"></span>
         </div>
 
         <!-- ============================================
