@@ -342,22 +342,22 @@ function drawSpeedChart() {
     let maxSpeed = 28;
 
     if (selectedSpeedFilter === 'sailboat') {
-        minLength = 20;
-        maxLength = 55;
+        minLength = 5;
+        maxLength = 70;
         minSpeed = 0;
         maxSpeed = 15;  // Sailboats top out around 12-15 knots typically
     } else if (selectedSpeedFilter === 'catamaran') {
-        minLength = 30;
+        minLength = 5;
         maxLength = 60;
         minSpeed = 0;
         maxSpeed = 25;  // Performance cats can hit 20-25 knots
     } else if (selectedSpeedFilter === 'powerboat') {
-        minLength = 20;
+        minLength = 5;
         maxLength = 70;
         minSpeed = 0;
         maxSpeed = 50;  // Powerboats can be very fast
     } else if (selectedSpeedFilter === 'trawler') {
-        minLength = 30;
+        minLength = 5;
         maxLength = 60;
         minSpeed = 0;
         maxSpeed = 15;  // Trawlers are slow displacement hulls
