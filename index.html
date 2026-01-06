@@ -798,6 +798,7 @@
         // Update timezone info display
         function updateTimezoneInfo() {
             const infoElement = document.getElementById('timezone-info');
+            if (!infoElement) return;  // ADD THIS LINE
             if (selectedTimezone === 'local') {
                 const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone;
                 const offset = new Date().getTimezoneOffset();
@@ -5130,9 +5131,10 @@
 
         window.addEventListener('DOMContentLoaded', init);
 
-        document.getElementById("refreshBtn").onclick = () => {
+        document.getElementById("refresh-button").onclick = () => {
             location.reload();
         };
+
 
 
         // ============================================
