@@ -342,23 +342,23 @@ function drawSpeedChart() {
     let maxSpeed = 28;
 
     if (selectedSpeedFilter === 'sailboat') {
-        minLength = 20;
-        maxLength = 55;
+        minLength = 5;
+        maxLength = 70;
         minSpeed = 0;
         maxSpeed = 15;  // Sailboats top out around 12-15 knots typically
     } else if (selectedSpeedFilter === 'catamaran') {
-        minLength = 30;
+        minLength = 5;
         maxLength = 60;
         minSpeed = 0;
         maxSpeed = 25;  // Performance cats can hit 20-25 knots
     } else if (selectedSpeedFilter === 'powerboat') {
-        minLength = 20;
+        minLength = 5;
         maxLength = 70;
         minSpeed = 0;
         maxSpeed = 50;  // Powerboats can be very fast
     } else if (selectedSpeedFilter === 'trawler') {
-        minLength = 30;
-        maxLength = 60;
+        minLength = 5;
+        maxLength = 70;
         minSpeed = 0;
         maxSpeed = 15;  // Trawlers are slow displacement hulls
     } else {
@@ -373,7 +373,7 @@ function drawSpeedChart() {
     const scaleY = (speed) => height - padding.bottom - ((speed - minSpeed) / (maxSpeed - minSpeed)) * chartHeight;
 
     // Declare speedStep once here
-    const speedStep = maxSpeed <= 15 ? 2.5 : 5;
+    const speedStep = maxSpeed <= 15 ? 2.5 : (maxSpeed <= 30 ? 5 : 10);
 
     // Hull speed calculation: 1.34 * sqrt(LWL), assuming LWL ≈ 0.9 * LOA
     const hullSpeed = (length) => 1.34 * Math.sqrt(length * 0.9);
@@ -398,7 +398,6 @@ function drawSpeedChart() {
     }
 
     // Horizontal gridlines
-     speedStep = maxSpeed <= 15 ? 2.5 : 5;
     for (let s = speedStep; s <= maxSpeed; s += speedStep) {
         const y = scaleY(s);
         ctx.beginPath();
@@ -443,11 +442,12 @@ function drawSpeedChart() {
         ctx.fillText(`${l}`, scaleX(l), height - padding.bottom + 20);
     }
 
-    // Y-axis labels - adjust step based on range
-     speedStep = maxSpeed <= 15 ? 2.5 : 5;
-    for (let s = speedStep; s <= maxSpeed; s += speedStep) {
-        ctx.fillText(`${Math.round(s)}`, padding.left - 10, scaleY(s));
-    }
+   // Y-axis labels
+   ctx.textAlign = 'right';
+   ctx.textBaseline = 'middle';
+   for (let s = speedStep; s <= maxSpeed; s += speedStep) {
+       ctx.fillText(`${Math.round(s)}`, padding.left - 10, scaleY(s));
+   }
 
     // Axis titles
     ctx.textAlign = 'center';
