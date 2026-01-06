@@ -13,642 +13,198 @@
     <div class="container" style="background: transparent; box-shadow: none; padding: 0; max-width: none;">
         <div class="settings-card" style="box-shadow: none; padding: 0; margin: 0;">
 
+            <!-- Exploration & Adventure -->
+            <div class="section-title">Exploration & Adventure</div>
+            <div class="leaderboards-container">
+                
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Countries Visited</div>
+                    <div class="leaderboard" id="lb-countries-visited"></div>
+                </div>
 
-            <!-- Energy Production Leaderboards -->
-            <div class="section-title">Energy Production</div>
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Ports Visited</div>
+                    <div class="leaderboard" id="lb-ports-visited"></div>
+                </div>
 
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Alternator kWh (Lifetime)</h4>
-                <div id="leaderboard-alt-wh-lifetime" style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">kWh</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-alt-wh-lifetime-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Total Distance</div>
+                    <div class="leaderboard" id="lb-total-distance"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Longest Trip Without Stopping</div>
+                    <div class="leaderboard" id="lb-longest-trip"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Most Distance in 24hrs</div>
+                    <div class="leaderboard" id="lb-max-24hr"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Total Days Cruising</div>
+                    <div class="leaderboard" id="lb-days-cruising"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Longest Passage (Days)</div>
+                    <div class="leaderboard" id="lb-longest-passage"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Days Cruising This Year</div>
+                    <div class="leaderboard" id="lb-days-this-year"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Consecutive Days Under Sail</div>
+                    <div class="leaderboard" id="lb-consecutive-sail"></div>
+                </div>
+
+            </div>
+
+            <!-- Energy & Efficiency -->
+            <div class="section-title">Energy & Efficiency</div>
+            <div class="leaderboards-container">
+                
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Solar kWh</div>
+                    <div class="leaderboard" id="lb-solar-kwh"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Alternator kWh</div>
+                    <div class="leaderboard" id="lb-alt-kwh"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Max Alternator Output</div>
+                    <div class="leaderboard" id="lb-max-alt-amps"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Best nM per Gallon</div>
+                    <div class="leaderboard" id="lb-nm-per-gallon"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Best nM per kWh</div>
+                    <div class="leaderboard" id="lb-nm-per-kwh"></div>
+                </div>
+
+            </div>
+
+            <!-- Speed Records -->
+            <div class="section-title">Speed Records</div>
+            <div class="speed-chart-container">
+                <div class="speed-chart-title">Sustained Speed Records</div>
+                <div class="speed-filter-controls">
+                    <label>
+                        <input type="radio" name="speedFilter" value="overall" checked>
+                        Overall
+                    </label>
+                    <label>
+                        <input type="radio" name="speedFilter" value="sailboat">
+                        Sailboats
+                    </label>
+                    <label>
+                        <input type="radio" name="speedFilter" value="catamaran">
+                        Catamarans
+                    </label>
+                    <label>
+                        <input type="radio" name="speedFilter" value="powerboat">
+                        Powerboats
+                    </label>
+                    <label>
+                        <input type="radio" name="speedFilter" value="trawler">
+                        Trawlers
+                    </label>
+                </div>
+                <canvas id="speedChart" width="400" height="360"></canvas>
+                <div class="speed-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #0066cc; box-shadow: 0 0 8px rgba(0,102,204,0.6);"></div>
+                        <span>Your boat</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: rgba(100,100,100,0.4);"></div>
+                        <span>Top performers</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: rgba(100,100,100,0.2);"></div>
+                        <span>Other boats</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line"></div>
+                        <span>Expected hull speed</span>
+                    </div>
                 </div>
             </div>
 
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Solar kWh (Lifetime)</h4>
-                <div id="leaderboard-solar-wh-lifetime" style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">kWh</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-solar-wh-lifetime-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Engine & Maintenance -->
+            <div class="section-title">Engine & Maintenance</div>
+            <div class="leaderboards-container">
+                
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Total Engine Hours</div>
+                    <div class="leaderboard" id="lb-engine-hours"></div>
                 </div>
+
             </div>
 
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Highest Instantaneous Alternator Output</h4>
-                <div id="leaderboard-max-alt-amps" style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Amps</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-max-alt-amps-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Weather Extremes -->
+            <div class="section-title">Weather Extremes</div>
+            <div class="leaderboards-container">
+                
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Highest Board Temperature</div>
+                    <div class="leaderboard" id="lb-max-temp"></div>
                 </div>
-            </div>
-            <br><br>
-            <!-- Speed Records by Boat Type -->
-            <div class="section-title">Speed over Ground</div>
 
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Overall (All Sizes)</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Sailboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Catamaran
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Powerboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Trawler</th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Other</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-speed-overall">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Lowest Board Temperature</div>
+                    <div class="leaderboard" id="lb-min-temp"></div>
                 </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Highest Barometric Pressure</div>
+                    <div class="leaderboard" id="lb-max-pressure"></div>
+                </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Lowest Barometric Pressure</div>
+                    <div class="leaderboard" id="lb-min-pressure"></div>
+                </div>
+
             </div>
 
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Under 30 ft</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Sailboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Catamaran
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Powerboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Trawler</th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Other</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-speed-under30">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Anchoring -->
+            <div class="section-title">Anchoring</div>
+            <div class="leaderboards-container">
+                
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Deepest Anchorage</div>
+                    <div class="leaderboard" id="lb-deepest-anchorage"></div>
                 </div>
+
+                <div class="leaderboard-wrapper">
+                    <div class="leaderboard-header">Consecutive Days at Anchor</div>
+                    <div class="leaderboard" id="lb-consecutive-anchor"></div>
+                </div>
+
             </div>
 
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Under 40 ft</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Sailboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Catamaran
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Powerboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Trawler</th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Other</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-speed-under40">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Under 50 ft</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Sailboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Catamaran
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Powerboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Trawler</th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Other</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-speed-under50">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Under 60 ft</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Sailboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Catamaran
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Powerboat
-                                </th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Trawler</th>
-                                <th style="padding: 10px; text-align: center; font-size: 14px; width: 20%;">Other</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-speed-under60">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <br><br>
-            <!-- Distance & Efficiency -->
-            <div class="section-title">Distance & Efficiency</div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Total Distance Traveled</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Distance</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-total-distance-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Best Fuel Efficiency (MPG)</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">MPG</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-mpg-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Distance per Engine Hour</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">NM/Hr</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-distance-per-hour-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <br><br>
-            <!-- Engine Hours -->
-            <div class="section-title">Engine Hours</div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Most Engine Hours</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Hours</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-engine-hours-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <br><br>
-            <!-- Sailing Performance -->
-            <div class="section-title">Sailing Performance</div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Most Sailing Days</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Days</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-sailing-days-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Best Sailing Ratio</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Ratio</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-sailing-ratio-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <br><br>
-            <!-- Days at Sea -->
-            <div class="section-title">Days at Sea</div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Most Days at Sea (All-Time)</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Days</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-days-at-sea-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Longest Streak at Sea</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Days</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-longest-streak-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Current Streak at Sea</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Days</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-current-streak-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <br><br>
-            <!-- Movement Streaks -->
-            <div class="section-title">Movement Streaks</div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Consecutive Days Moving</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Days</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-consecutive-moving-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Longest Trip Without Stopping</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Days</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-longest-moving-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <br><br>
-            <!-- Wind Records -->
-            <div class="section-title">Wind Records</div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Highest True Wind Speed</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Wind</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-true-wind-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Highest Apparent Wind Speed</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Wind</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-apparent-wind-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <br><br>
-            <!-- Temperature Records -->
-            <div class="section-title">Temperature Records</div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Highest Board Temperature</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Temp</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-max-temp-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Lowest Board Temperature</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Temp</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-min-temp-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <br><br>
-            <!-- Barometric Pressure Records -->
-            <div class="section-title">Barometric Pressure Records</div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Highest Barometric Pressure</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Pressure</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-max-pressure-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <hr />
-            <div style="margin: 15px 0;">
-                <h4 style="margin: 10px 0; color: #333; font-size: 16px;">Lowest Barometric Pressure</h4>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                        <thead>
-                            <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd;">
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Rank</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Username</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Type</th>
-                                <th style="padding: 10px; text-align: left; font-size: 14px;">Length</th>
-                                <th style="padding: 10px; text-align: right; font-size: 14px;">Pressure</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-min-pressure-body">
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
             <p style="margin-top: 30px; font-size: 13px; color: #888;">
                 There will be lag in Leaderboard updates to ensure accuracy, 24hrs in cases like "days at sea". Your
-                entry is highlighted in
-                blue.
+                entry is highlighted in blue.
             </p>
         </div>
     </div>
 
-    <script src="leaderboards.js"></script>
+    <div class="tooltip" id="speedTooltip"></div>
+
+    <script src="leaderboards_new.js"></script>
     <script>
         // Iframe height reporting for parent page
         (function () {
